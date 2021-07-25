@@ -84,8 +84,10 @@ class Window(QMainWindow):
 		self.stacked_pages.move(0, 0)
 		self.stacked_pages.setFixedSize(self.size())
 		self.show()
+		self.setMinimumSize(QSize(self.width(), self.height() - 20))
 	
 	def resizeEvent(self, event: QResizeEvent) -> None:
+		self.move(0, 20)
 		self.stacks["main-page"].title.move((event.size().width() - self.stacks["main-page"].title.width()) // 2, 100)
 		self.stacks["main-page"].select_mode_label.move((event.size().width() - self.stacks["main-page"].select_mode_label.width()) // 2, 200)
 		self.stacks["main-page"].two_player_mode_button.move((event.size().width() - self.stacks["main-page"].two_player_mode_button.width()) // 2, 250)

@@ -7,45 +7,291 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
+class MoveBullet(QLabel):
+	def __init__(self, parent, piece, index: list or tuple or set = (0, 0), hide: bool = True, capture: bool = False):
+		super(MoveBullet, self).__init__(parent = parent)
+		self.setPixmap(QPixmap("images/bullet.png"))
+		self.piece, self.index, self.capture = piece, index, capture
+		self.resize(100, 100)
+		if hide: self.hide()
+		self.setCursor(Qt.PointingHandCursor)
+	
+	def enterEvent(self, event: QHoverEvent):
+		self.setStyleSheet("background-color: rgba(12, 36, 255, 0.5)")
+		super(MoveBullet, self).enterEvent(event)
+	
+	def leaveEvent(self, event: QHoverEvent):
+		self.setStyleSheet("background-color: transparent")
+		super(MoveBullet, self).leaveEvent(event)
+	
+	def mousePressEvent(self, event: QMouseEvent):
+		if event.button() == Qt.LeftButton: self.piece.movePiece(self.pos(), index = self.index, capture = self.capture)
+		super(MoveBullet, self).mousePressEvent(event)
+
+class PromotionButton(QToolButton):
+	def __init__(self, parent_widget, piece, color):
+		super(PromotionButton, self).__init__(parent = parent_widget.parent().parent())
+		self.setFixedSize(100, 100)
+		self.setCursor(Qt.PointingHandCursor)
+		self.setStyleSheet("border-radius: 100%; background-color: rgba(12, 36, 255, 0.5);")
+		self.setIcon(QIcon(f"images/standard/{color}_{piece}.png"))
+		self.setIconSize(QSize(100, 100))
+		self.setToolButtonStyle(Qt.ToolButtonIconOnly)
+		self.piece, self.parent_widget = piece, parent_widget
+		self.hide()
+	
+	def mousePressEvent(self, event: QMouseEvent) -> None:
+		self.parent_widget.queen.hide()
+		self.parent_widget.rook.hide()
+		self.parent_widget.bishop.hide()
+		self.parent_widget.knight.hide()
+		super(PromotionButton, self).mousePressEvent(event)
+	
+class PromotionDialog(QWidget):
+	def __init__(self, parent, side):
+		super(PromotionDialog, self).__init__(parent = parent)
+		self.queen, self.rook, self.bishop, self.knight = PromotionButton(self, piece = "queen", color = side), PromotionButton(self, piece = "rook", color = side), PromotionButton(self, piece = "bishop", color = side), PromotionButton(self, piece = "knight", color = side)
+		self.queen.move(100, 0)
+		self.rook.move(100, 50)
+		self.bishop.move(100, 100)
+		self.knight.move(100, 150)
+		self.resize(QSize(1000, 1000))
+		self.hide()
+	
+	def paintEvent(self, event: QPaintEvent) -> None:
+		self.queen.move(self.parent().pos())
+		self.rook.move(self.parent().pos().x(), self.parent().pos().y() + 100)
+		self.bishop.move(self.parent().pos().x(), self.parent().pos().y() + 200)
+		self.knight.move(self.parent().pos().x(), self.parent().pos().y() + 300)
+		self.queen.raise_()
+		self.rook.raise_()
+		self.bishop.raise_()
+		self.knight.raise_()
+		super(PromotionDialog, self).paintEvent(event)
+	
+	def showEvent(self, event: QShowEvent) -> None:
+		self.queen.show()
+		self.rook.show()
+		self.bishop.show()
+		self.knight.show()
+		super(PromotionDialog, self).showEvent(event)
+
 class Piece(QLabel):
 	def __init__(self, parent, piece: str or None = None, index: list or None = None):
 		super(Piece, self).__init__(parent = parent)
-		self.parent, self.index = parent, index
+		self.parent, self.index, self.piece, self.showing_moves, self.moves, self.first_paint_run, self.animation, self.promotion_dialog = parent, index, piece, False, [], True, None, PromotionDialog(self, side = piece[:5])
 		if piece is not None: self.setPixmap(QPixmap("images/standard/" + piece))
 		self.setCursor(Qt.PointingHandCursor)
 	
-	def paintEvent(self, event: QPaintEvent):
+	def appendMoves(self):
+		if self.piece in ["white_pawn", "black_pawn"]:
+			found = False
+			for i in self.parent.pieces:
+				if i[1] == [self.index[0] - (1 if self.piece == "white_pawn" else -1), self.index[1]]: found = True
+			if not found:
+				self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] - (1 if self.piece == "white_pawn" else -1), self.index[1]]))
+				self.moves[-1].move(self.parent.squares[self.index[0] - (1 if self.piece == "white_pawn" else -1)][self.index[1]].pos())
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] - (2 if self.piece == "white_pawn" else -2), self.index[1]]: found = True
+				if not found:
+					if self.index[0] == 6 and self.piece == "white_pawn":
+						self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] - 2, self.index[1]]))
+						self.moves[-1].move(self.parent.squares[self.index[0] - 2][self.index[1]].pos())
+					elif self.index[0] == 1 and self.piece == "black_pawn":
+						self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] + 2, self.index[1]]))
+						self.moves[-1].move(self.parent.squares[self.index[0] + 2][self.index[1]].pos())
+			piece_found, position, index = False, None, None
+			if self.piece == "white_pawn":
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] - 1, self.index[1] - 1] and i[0].piece[:5] == "black": piece_found, position, index = True, i[0], i[1]
+				if piece_found:
+					self.moves.append(MoveBullet(self.parent, self, index = index, capture = True))
+					self.moves[-1].move(position.pos())
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] - 1, self.index[1] + 1] and i[0].piece[:5] == "black": piece_found, position, index = True, i[0], i[1]
+				if piece_found:
+					self.moves.append(MoveBullet(self.parent, self, index = index, capture = True))
+					self.moves[-1].move(position.pos())
+			else:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] + 1, self.index[1] - 1] and i[0].piece[:5] == "white": piece_found, position, index = True, i[0], i[1]
+				if piece_found:
+					self.moves.append(MoveBullet(self.parent, self, index = index, capture = True))
+					self.moves[-1].move(position.pos())
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] + 1, self.index[1] + 1] and i[0].piece[:5] == "white": piece_found, position, index = True, i[0], i[1]
+				if piece_found:
+					self.moves.append(MoveBullet(self.parent, self, index = index, capture = True))
+					self.moves[-1].move(position.pos())
+		elif self.piece in ["white_knight", "black_knight"]:
+			found, valid = False, True
+			if self.index[0] not in [0, 1] and self.index[1] != 0:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] - 2, self.index[1] - 1]:
+						if i[0].piece[:5] == self.piece[:5]: valid = False
+						found = True
+				if valid:
+					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] - 2, self.index[1] - 1], capture = found))
+					self.moves[-1].move(self.parent.squares[self.index[0] - 2][self.index[1] - 1].pos())
+			valid = True
+			if self.index[0] not in [0, 1] and self.index[1] != 7:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] - 2, self.index[1] + 1]:
+						if i[0].piece[:5] == self.piece[:5]: valid = False
+						found = True
+				if valid:
+					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] - 2, self.index[1] + 1], capture = found))
+					self.moves[-1].move(self.parent.squares[self.index[0] - 2][self.index[1] + 1].pos())
+			valid = True
+			if self.index[0] not in [6, 7] and self.index[1] != 0:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] + 2, self.index[1] - 1]:
+						if i[0].piece[:5] == self.piece[:5]: valid = False
+						found = True
+				if valid:
+					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] + 2, self.index[1] - 1], capture = found))
+					self.moves[-1].move(self.parent.squares[self.index[0] + 2][self.index[1] - 1].pos())
+			valid = True
+			if self.index[0] not in [6, 7] and self.index[1] != 7:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] + 2, self.index[1] + 1]:
+						if i[0].piece[:5] == self.piece[:5]: valid = False
+						found = True
+				if valid:
+					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] + 2, self.index[1] + 1], capture = found))
+					self.moves[-1].move(self.parent.squares[self.index[0] + 2][self.index[1] + 1].pos())
+			valid = True
+			if self.index[0] != 0 and self.index[1] not in [0, 1]:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] - 1, self.index[1] - 2]:
+						if i[0].piece[:5] == self.piece[:5]: valid = False
+						found = True
+				if valid:
+					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] - 1, self.index[1] - 2], capture = found))
+					self.moves[-1].move(self.parent.squares[self.index[0] - 1][self.index[1] - 2].pos())
+			valid = True
+			if self.index[0] != 7 and self.index[1] not in [0, 1]:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] + 1, self.index[1] - 2]:
+						if i[0].piece[:5] == self.piece[:5]: valid = False
+						found = True
+				if valid:
+					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] + 1, self.index[1] - 2], capture = found))
+					self.moves[-1].move(self.parent.squares[self.index[0] + 1][self.index[1] - 2].pos())
+			valid = True
+			if self.index[0] != 0 and self.index[1] not in [6, 7]:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] - 1, self.index[1] + 2]:
+						if i[0].piece[:5] == self.piece[:5]: valid = False
+						found = True
+				if valid:
+					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] - 1, self.index[1] + 2], capture = found))
+					self.moves[-1].move(self.parent.squares[self.index[0] - 1][self.index[1] + 2].pos())
+			valid = True
+			if self.index[0] != 7 and self.index[1] not in [6, 7]:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] + 1, self.index[1] + 2]:
+						if i[0].piece[:5] == self.piece[:5]: valid = False
+						found = True
+				if valid:
+					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] + 1, self.index[1] + 2], capture = found))
+					self.moves[-1].move(self.parent.squares[self.index[0] + 1][self.index[1] + 2].pos())
+	
+	def resizeEvent(self, event: QResizeEvent) -> None:
 		self.square = self.parent.squares[self.index[0]][self.index[1]]
-		super(Piece, self).paintEvent(event)
+		super(Piece, self).resizeEvent(event)
 	
 	def mousePressEvent(self, event: QMouseEvent):
 		if self.index is None: return
 		if event.button() == Qt.RightButton:
-			self.square.setStyleSheet(f"background-color: {self.square.original_color if self.square.highlighted else '#560CFF'}; border: none;")
+			if self.parent.piece_for_shown_moves is not None:
+				for i in self.parent.piece_for_shown_moves.moves: i.hide()
+				self.parent.piece_for_shown_moves.showing_moves = False
+				self.parent.piece_for_shown_moves = None
+			elif self.square.highlighted: self.square.highlight_mask.hide()
+			else: self.square.highlight_mask.show()
+			self.setStyleSheet("background-color: transparent;")
 			self.square.highlighted = not self.square.highlighted
 		elif event.button() == Qt.LeftButton:
+			if self.showing_moves:
+				for i in self.moves: i.hide()
+				self.setStyleSheet("background-color: transparent;")
+			else:
+				self.moves = []
+				if self.parent.piece_for_shown_moves is not None:
+					self.parent.piece_for_shown_moves.setStyleSheet("background-color: transparent;")
+					for i in self.parent.piece_for_shown_moves.moves: i.hide()
+					self.parent.piece_for_shown_moves.showing_moves = False
+				self.parent.piece_for_shown_moves = self
+				if self.piece[:5] == self.parent.turn:
+					self.appendMoves()
+					for i in self.moves: i.show()
 			for x in self.parent.squares:
-				for y in x: y.setStyleSheet(f"background-color: {y.original_color}; border: none;")
+				for y in x:
+					if self.parent.squares.index(x) == self.index[0] and x.index(y) == self.index[1] and not self.showing_moves: self.setStyleSheet("background-color: rgba(86, 12, 255, 0.5);")
+					y.highlight_mask.hide()
+			self.showing_moves = not self.showing_moves
 		super(Piece, self).mousePressEvent(event)
-
+	
+	def movePiece(self, position, index: list or tuple or set = (0, 0), capture: bool = False):
+		previous_position = self.index
+		if capture:
+			for i in self.parent.pieces:
+				if i[1] == index:
+					i[0].deleteLater()
+					self.parent.pieces.remove(i)
+		self.setStyleSheet("background-color: transparent;")
+		self.animation = QPropertyAnimation(self, B"pos")
+		self.animation.setEndValue(position)
+		self.animation.setDuration(100)
+		self.animation.start()
+		for i in self.moves: i.deleteLater()
+		self.index, self.moves = index, []
+		self.square = self.parent.squares[self.index[0]][self.index[1]]
+		self.showing_moves, self.parent.piece_for_shown_moves = False, None
+		self.raise_()
+		if index[0] == 0 and self.piece in ["white_pawn", "black_pawn"]:
+			self.promotion_dialog.show()
+			self.promotion_dialog.queen.pressed.connect(lambda: self.changePiece(self.piece[:6] + "queen"))
+			self.promotion_dialog.rook.pressed.connect(lambda: self.changePiece(self.piece[:6] + "rook"))
+			self.promotion_dialog.bishop.pressed.connect(lambda: self.changePiece(self.piece[:6] + "bishop"))
+			self.promotion_dialog.knight.pressed.connect(lambda: self.changePiece(self.piece[:6] + "knight"))
+		self.parent.turn = {"white": "black", "black": "white"}[self.parent.turn]
+		for i in range(len(self.parent.pieces)):
+			if self.parent.pieces[i][0] == self: self.parent.pieces[i][1] = self.index
+		self.parent.parent().addMove(self.piece, index, capture, previous_position)
+	
+	def changePiece(self, piece):
+		self.setPixmap(QPixmap(f"images/standard/{piece}.png"))
+		self.piece = piece
+	
 class Square(QPushButton):
 	def __init__(self, parent, color: str = "white"):
 		super(Square, self).__init__(parent = parent)
-		self.original_color, self.highlighted, self.parent = color, False, parent
+		self.original_color, self.highlighted, self.parent, self.highlight_mask = color, False, parent, QWidget(self)
+		self.highlight_mask.resize(100, 100)
+		self.highlight_mask.setStyleSheet("background-color: rgba(0, 174, 255, 0.5);")
+		self.highlight_mask.hide()
 		self.setStyleSheet(f"background-color: {color}; border: none;")
 	
 	def mousePressEvent(self, event: QMouseEvent):
+		if self.parent.piece_for_shown_moves is not None:
+			for i in self.parent.piece_for_shown_moves.moves: i.hide()
+			self.parent.piece_for_shown_moves.setStyleSheet("background-color: transparent;")
+			self.parent.piece_for_shown_moves.showing_moves = False
+			self.parent.piece_for_shown_moves = None
 		if event.button() == Qt.RightButton:
-			self.setStyleSheet(f"background-color: {self.original_color if self.highlighted else '#560CFF'}; border: none;")
+			if self.highlighted: self.highlight_mask.hide()
+			else: self.highlight_mask.show()
 			self.highlighted = not self.highlighted
 		elif event.button() == Qt.LeftButton:
 			for x in self.parent.squares:
-				for y in x: y.setStyleSheet(f"background-color: {y.original_color}; border: none;")
+				for y in x: y.highlight_mask.hide()
 	
 class Board(QWidget):
 	def __init__(self, parent):
 		super(Board, self).__init__(parent = parent)
-		self.squares, self.pieces = [], []
+		self.squares, self.pieces, self.showing_moves, self.piece_for_shown_moves, self.turn = [], [], False, None, "white"
 		for x in range(8):
 			row = []
 			for y in range(8):
@@ -63,3 +309,7 @@ class Board(QWidget):
 					self.pieces.append([Piece(self, piece = ("black" if x == 1 else "white") + "_pawn", index = [x, y]), [x, y]])
 					self.pieces[-1][0].move((y + 1) * 100, (x + 1) * 100)
 			self.squares.append(row)
+	
+	def resizeEvent(self, event: QResizeEvent) -> None:
+		self.move((self.parent().parent().width() // 2) - (event.size().width() // 2), (self.parent().parent().height() // 2) - (event.size().height() // 2))
+		self.parent().sidebar.move(self.pos().x() + event.size().width() + 10, self.pos().y())
