@@ -133,7 +133,7 @@ class Piece(QLabel):
 				if valid:
 					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] - 2, self.index[1] - 1], capture = found))
 					self.moves[-1].move(self.parent.squares[self.index[0] - 2][self.index[1] - 1].pos())
-			valid = True
+			found, valid = False, True
 			if self.index[0] not in [0, 1] and self.index[1] != 7:
 				for i in self.parent.pieces:
 					if i[1] == [self.index[0] - 2, self.index[1] + 1]:
@@ -142,7 +142,7 @@ class Piece(QLabel):
 				if valid:
 					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] - 2, self.index[1] + 1], capture = found))
 					self.moves[-1].move(self.parent.squares[self.index[0] - 2][self.index[1] + 1].pos())
-			valid = True
+			found, valid = False, True
 			if self.index[0] not in [6, 7] and self.index[1] != 0:
 				for i in self.parent.pieces:
 					if i[1] == [self.index[0] + 2, self.index[1] - 1]:
@@ -151,7 +151,7 @@ class Piece(QLabel):
 				if valid:
 					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] + 2, self.index[1] - 1], capture = found))
 					self.moves[-1].move(self.parent.squares[self.index[0] + 2][self.index[1] - 1].pos())
-			valid = True
+			found, valid = False, True
 			if self.index[0] not in [6, 7] and self.index[1] != 7:
 				for i in self.parent.pieces:
 					if i[1] == [self.index[0] + 2, self.index[1] + 1]:
@@ -160,7 +160,7 @@ class Piece(QLabel):
 				if valid:
 					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] + 2, self.index[1] + 1], capture = found))
 					self.moves[-1].move(self.parent.squares[self.index[0] + 2][self.index[1] + 1].pos())
-			valid = True
+			found, valid = False, True
 			if self.index[0] != 0 and self.index[1] not in [0, 1]:
 				for i in self.parent.pieces:
 					if i[1] == [self.index[0] - 1, self.index[1] - 2]:
@@ -169,7 +169,7 @@ class Piece(QLabel):
 				if valid:
 					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] - 1, self.index[1] - 2], capture = found))
 					self.moves[-1].move(self.parent.squares[self.index[0] - 1][self.index[1] - 2].pos())
-			valid = True
+			found, valid = False, True
 			if self.index[0] != 7 and self.index[1] not in [0, 1]:
 				for i in self.parent.pieces:
 					if i[1] == [self.index[0] + 1, self.index[1] - 2]:
@@ -178,7 +178,7 @@ class Piece(QLabel):
 				if valid:
 					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] + 1, self.index[1] - 2], capture = found))
 					self.moves[-1].move(self.parent.squares[self.index[0] + 1][self.index[1] - 2].pos())
-			valid = True
+			found, valid = False, True
 			if self.index[0] != 0 and self.index[1] not in [6, 7]:
 				for i in self.parent.pieces:
 					if i[1] == [self.index[0] - 1, self.index[1] + 2]:
@@ -187,7 +187,7 @@ class Piece(QLabel):
 				if valid:
 					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] - 1, self.index[1] + 2], capture = found))
 					self.moves[-1].move(self.parent.squares[self.index[0] - 1][self.index[1] + 2].pos())
-			valid = True
+			found, valid = False, True
 			if self.index[0] != 7 and self.index[1] not in [6, 7]:
 				for i in self.parent.pieces:
 					if i[1] == [self.index[0] + 1, self.index[1] + 2]:
@@ -196,6 +196,209 @@ class Piece(QLabel):
 				if valid:
 					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] + 1, self.index[1] + 2], capture = found))
 					self.moves[-1].move(self.parent.squares[self.index[0] + 1][self.index[1] + 2].pos())
+		elif self.piece in ["white_bishop", "black_bishop"]:
+			capture, pos1, pos2 = False, self.index[0], self.index[1]
+			while pos1 != 0 and pos2 != 0:
+				pos1, pos2 = pos1 - 1, pos2 - 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					self.moves.append(MoveBullet(self.parent, self, index = [pos1, pos2], capture = capture))
+					self.moves[-1].move(self.parent.squares[pos1][pos2].pos())
+					if capture: break
+					continue
+				break
+			capture, pos1, pos2 = False, self.index[0], self.index[1]
+			while pos1 != 7 and pos2 != 7:
+				pos1, pos2 = pos1 + 1, pos2 + 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					self.moves.append(MoveBullet(self.parent, self, index = [pos1, pos2], capture = capture))
+					self.moves[-1].move(self.parent.squares[pos1][pos2].pos())
+					if capture: break
+					continue
+				break
+			capture, pos1, pos2 = False, self.index[0], self.index[1]
+			while pos1 != 0 and pos2 != 7:
+				pos1, pos2 = pos1 - 1, pos2 + 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					self.moves.append(MoveBullet(self.parent, self, index = [pos1, pos2], capture = capture))
+					self.moves[-1].move(self.parent.squares[pos1][pos2].pos())
+					if capture: break
+					continue
+				break
+			capture, pos1, pos2 = False, self.index[0], self.index[1]
+			while pos1 != 7 and pos2 != 0:
+				pos1, pos2 = pos1 + 1, pos2 - 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					self.moves.append(MoveBullet(self.parent, self, index = [pos1, pos2], capture = capture))
+					self.moves[-1].move(self.parent.squares[pos1][pos2].pos())
+					if capture: break
+					continue
+				break
+		elif self.piece in ["white_rook", "black_rook"]:
+			capture = False
+			for x in reversed(range(self.index[0])):
+				for y in self.parent.pieces:
+					if y[1] == [x, self.index[1]]:
+						if y[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					self.moves.append(MoveBullet(self.parent, self, index = [x, self.index[1]], capture = capture))
+					self.moves[-1].move(self.parent.squares[x][self.index[1]].pos())
+					if capture: break
+					continue
+				break
+			capture = False
+			for x in reversed(range(self.index[1])):
+				for y in self.parent.pieces:
+					if y[1] == [self.index[0], x]:
+						if y[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0], x], capture = capture))
+					self.moves[-1].move(self.parent.squares[self.index[0]][x].pos())
+					if capture: break
+					continue
+				break
+			capture = False
+			for x in range(self.index[0] + 1, 8):
+				for y in self.parent.pieces:
+					if y[1] == [x, self.index[1]]:
+						if y[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					self.moves.append(MoveBullet(self.parent, self, index = [x, self.index[1]], capture = capture))
+					self.moves[-1].move(self.parent.squares[x][self.index[1]].pos())
+					if capture: break
+					continue
+				break
+			capture = False
+			for x in range(self.index[1] + 1, 8):
+				for y in self.parent.pieces:
+					if y[1] == [self.index[0], x]:
+						if y[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0], x], capture = capture))
+					self.moves[-1].move(self.parent.squares[self.index[0]][x].pos())
+					if capture: break
+					continue
+				break
+		elif self.piece in ["white_queen", "black_queen"]:
+			capture = False
+			for x in reversed(range(self.index[0])):
+				for y in self.parent.pieces:
+					if y[1] == [x, self.index[1]]:
+						if y[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					self.moves.append(MoveBullet(self.parent, self, index = [x, self.index[1]], capture = capture))
+					self.moves[-1].move(self.parent.squares[x][self.index[1]].pos())
+					if capture: break
+					continue
+				break
+			capture = False
+			for x in reversed(range(self.index[1])):
+				for y in self.parent.pieces:
+					if y[1] == [self.index[0], x]:
+						if y[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0], x], capture = capture))
+					self.moves[-1].move(self.parent.squares[self.index[0]][x].pos())
+					if capture: break
+					continue
+				break
+			capture = False
+			for x in range(self.index[0] + 1, 8):
+				for y in self.parent.pieces:
+					if y[1] == [x, self.index[1]]:
+						if y[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					self.moves.append(MoveBullet(self.parent, self, index = [x, self.index[1]], capture = capture))
+					self.moves[-1].move(self.parent.squares[x][self.index[1]].pos())
+					if capture: break
+					continue
+				break
+			capture = False
+			for x in range(self.index[1] + 1, 8):
+				for y in self.parent.pieces:
+					if y[1] == [self.index[0], x]:
+						if y[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0], x], capture = capture))
+					self.moves[-1].move(self.parent.squares[self.index[0]][x].pos())
+					if capture: break
+					continue
+				break
+			capture, pos1, pos2 = False, self.index[0], self.index[1]
+			while pos1 != 0 and pos2 != 0:
+				pos1, pos2 = pos1 - 1, pos2 - 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					self.moves.append(MoveBullet(self.parent, self, index = [pos1, pos2], capture = capture))
+					self.moves[-1].move(self.parent.squares[pos1][pos2].pos())
+					if capture: break
+					continue
+				break
+			capture, pos1, pos2 = False, self.index[0], self.index[1]
+			while pos1 != 7 and pos2 != 7:
+				pos1, pos2 = pos1 + 1, pos2 + 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					self.moves.append(MoveBullet(self.parent, self, index = [pos1, pos2], capture = capture))
+					self.moves[-1].move(self.parent.squares[pos1][pos2].pos())
+					if capture: break
+					continue
+				break
+			capture, pos1, pos2 = False, self.index[0], self.index[1]
+			while pos1 != 0 and pos2 != 7:
+				pos1, pos2 = pos1 - 1, pos2 + 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					self.moves.append(MoveBullet(self.parent, self, index = [pos1, pos2], capture = capture))
+					self.moves[-1].move(self.parent.squares[pos1][pos2].pos())
+					if capture: break
+					continue
+				break
+			capture, pos1, pos2 = False, self.index[0], self.index[1]
+			while pos1 != 7 and pos2 != 0:
+				pos1, pos2 = pos1 + 1, pos2 - 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					self.moves.append(MoveBullet(self.parent, self, index = [pos1, pos2], capture = capture))
+					self.moves[-1].move(self.parent.squares[pos1][pos2].pos())
+					if capture: break
+					continue
+				break
 	
 	def resizeEvent(self, event: QResizeEvent) -> None:
 		self.square = self.parent.squares[self.index[0]][self.index[1]]
@@ -206,9 +409,10 @@ class Piece(QLabel):
 		if event.button() == Qt.RightButton:
 			if self.parent.piece_for_shown_moves is not None:
 				for i in self.parent.piece_for_shown_moves.moves: i.hide()
+				self.parent.piece_for_shown_moves.setStyleSheet("background-color: transparent;")
 				self.parent.piece_for_shown_moves.showing_moves = False
 				self.parent.piece_for_shown_moves = None
-			elif self.square.highlighted: self.square.highlight_mask.hide()
+			if self.square.highlighted: self.square.highlight_mask.hide()
 			else: self.square.highlight_mask.show()
 			self.setStyleSheet("background-color: transparent;")
 			self.square.highlighted = not self.square.highlighted
