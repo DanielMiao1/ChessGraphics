@@ -86,13 +86,14 @@ class TwoPlayers(QWidget):
 	def absoluteValue(number: int) -> int:
 		return -(number if number < 0 else -number)
 	
-	def addMove(self, piece, index: list or set or tuple, capture: bool, previous_position: list or set or tuple) -> None:
+	def addMove(self, piece, index: list or set or tuple, capture: bool, previous_position: list or set or tuple, check: bool) -> None:
 		piece = piece[6:]
 		message = {"pawn": "", "knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[piece]
 		if capture:
 			if piece == "pawn": message += self.formatIndex(previous_position)[0] + "x" + self.formatIndex(index)
 			else: message += "x" + self.formatIndex(index)
 		else: message += self.formatIndex(index)
+		if check: message += "+"
 		self.move_buttons.append(MoveButton(self.moves, message))
 		self.moves_layout.addWidget(self.move_buttons[-1], self.getGridIndex()[0], self.getGridIndex()[1])
 		self.move_buttons[-1].show()

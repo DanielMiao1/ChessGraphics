@@ -510,6 +510,172 @@ class Piece(QLabel):
 			self.showing_moves = not self.showing_moves
 		super(Piece, self).mousePressEvent(event)
 	
+	def isCheck(self, index: list) -> bool:
+		if self.piece in ["white_pawn", "black_pawn"] and index[0] != 0:
+			if self.piece == "white_pawn":
+				for i in self.parent.pieces:
+					if i[1] in [[index[0] - 1, index[1] - 1], [index[0] - 1, index[1] + 1]] and i[0].piece == "black_king": return True
+			else:
+				for i in self.parent.pieces:
+					if i[1] in [[index[0] + 1, index[1] - 1], [index[0] + 1, index[1] + 1]] and i[0].piece == "white_king": return True
+		elif self.piece in ["white_knight", "black_knight"]:
+			if self.index[0] not in [0, 1] and self.index[1] != 0:
+				for i in self.parent.pieces:
+					if i[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king") and i[1] == [self.index[0] - 2, self.index[1] - 1]: return True
+			if self.index[0] not in [0, 1] and self.index[1] != 7:
+				for i in self.parent.pieces:
+					if i[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king") and i[1] == [self.index[0] - 2, self.index[1] + 1]: return True
+			if self.index[0] not in [6, 7] and self.index[1] != 0:
+				for i in self.parent.pieces:
+					if i[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king") and i[1] == [self.index[0] + 2, self.index[1] - 1]: return True
+			if self.index[0] not in [6, 7] and self.index[1] != 7:
+				for i in self.parent.pieces:
+					if i[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king") and i[1] == [self.index[0] + 2, self.index[1] + 1]: return True
+			if self.index[0] != 0 and self.index[1] not in [0, 1]:
+				for i in self.parent.pieces:
+					if i[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king") and i[1] == [self.index[0] - 1, self.index[1] - 2]: return True
+			if self.index[0] != 7 and self.index[1] not in [0, 1]:
+				for i in self.parent.pieces:
+					if i[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king") and i[1] == [self.index[0] + 1, self.index[1] - 2]: return True
+			if self.index[0] != 0 and self.index[1] not in [6, 7]:
+				for i in self.parent.pieces:
+					if i[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king") and i[1] == [self.index[0] - 1, self.index[1] + 2]: return True
+			if self.index[0] != 7 and self.index[1] not in [6, 7]:
+				for i in self.parent.pieces:
+					if i[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king") and i[1] == [self.index[0] + 1, self.index[1] + 2]: return True
+		elif self.piece in ["white_bishop", "black_bishop"]:
+			pos1, pos2 = self.index[0], self.index[1]
+			while pos1 != 0 and pos2 != 0:
+				pos1, pos2 = pos1 - 1, pos2 - 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king"): return True
+						break
+				else: continue
+				break
+			pos1, pos2 = self.index[0], self.index[1]
+			while pos1 != 7 and pos2 != 7:
+				pos1, pos2 = pos1 + 1, pos2 + 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king"): return True
+						break
+				else: continue
+				break
+			pos1, pos2 = self.index[0], self.index[1]
+			while pos1 != 0 and pos2 != 7:
+				pos1, pos2 = pos1 - 1, pos2 + 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king"): return True
+						break
+				else: continue
+				break
+			pos1, pos2 = self.index[0], self.index[1]
+			while pos1 != 7 and pos2 != 0:
+				pos1, pos2 = pos1 + 1, pos2 - 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king"): return True
+						break
+				else: continue
+				break
+		elif self.piece in ["white_rook", "black_rook"]:
+			for x in reversed(range(self.index[0])):
+				for y in self.parent.pieces:
+					if y[1] == [x, self.index[1]]:
+						if y[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king"): return True
+						break
+				else: continue
+				break
+			for x in reversed(range(self.index[1])):
+				for y in self.parent.pieces:
+					if y[1] == [self.index[0], x]:
+						if y[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king"): return True
+						break
+				else: continue
+				break
+			for x in range(self.index[0] + 1, 8):
+				for y in self.parent.pieces:
+					if y[1] == [x, self.index[1]]:
+						if y[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king"): return True
+						break
+				else: continue
+				break
+			for x in range(self.index[1] + 1, 8):
+				for y in self.parent.pieces:
+					if y[1] == [self.index[0], x]:
+						if y[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king"): return True
+						break
+				else: continue
+				break
+		elif self.piece in ["white_queen", "black_queen"]:
+			pos1, pos2 = self.index[0], self.index[1]
+			while pos1 != 0 and pos2 != 0:
+				pos1, pos2 = pos1 - 1, pos2 - 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king"): return True
+						break
+				else: continue
+				break
+			pos1, pos2 = self.index[0], self.index[1]
+			while pos1 != 7 and pos2 != 7:
+				pos1, pos2 = pos1 + 1, pos2 + 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king"): return True
+						break
+				else: continue
+				break
+			pos1, pos2 = self.index[0], self.index[1]
+			while pos1 != 0 and pos2 != 7:
+				pos1, pos2 = pos1 - 1, pos2 + 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king"): return True
+						break
+				else: continue
+				break
+			pos1, pos2 = self.index[0], self.index[1]
+			while pos1 != 7 and pos2 != 0:
+				pos1, pos2 = pos1 + 1, pos2 - 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king"): return True
+						break
+				else: continue
+				break
+			for x in reversed(range(self.index[0])):
+				for y in self.parent.pieces:
+					if y[1] == [x, self.index[1]]:
+						if y[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king"): return True
+						break
+				else: continue
+				break
+			for x in reversed(range(self.index[1])):
+				for y in self.parent.pieces:
+					if y[1] == [self.index[0], x]:
+						if y[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king"): return True
+						break
+				else: continue
+				break
+			for x in range(self.index[0] + 1, 8):
+				for y in self.parent.pieces:
+					if y[1] == [x, self.index[1]]:
+						if y[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king"): return True
+						break
+				else: continue
+				break
+			for x in range(self.index[1] + 1, 8):
+				for y in self.parent.pieces:
+					if y[1] == [self.index[0], x]:
+						if y[0].piece == ("black_king" if self.piece[:5] == "white" else "white_king"): return True
+						break
+				else: continue
+				break
+		return False
+	
 	def movePiece(self, position, index: list or tuple or set = (0, 0), capture: bool = False):
 		previous_position = self.index
 		if capture:
@@ -536,7 +702,7 @@ class Piece(QLabel):
 		self.parent.turn = {"white": "black", "black": "white"}[self.parent.turn]
 		for i in range(len(self.parent.pieces)):
 			if self.parent.pieces[i][0] == self: self.parent.pieces[i][1] = self.index
-		self.parent.parent().addMove(self.piece, index, capture, previous_position)
+		self.parent.parent().addMove(self.piece, index, capture, previous_position, self.isCheck(index))
 	
 	def changePiece(self, piece):
 		self.setPixmap(QPixmap(f"images/standard/{piece}.png"))
