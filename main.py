@@ -86,6 +86,11 @@ class Window(QMainWindow):
 		self.show()
 		self.setMinimumSize(QSize(self.width(), self.height() - 20))
 	
+	def resetTwoPlayerGame(self):
+		self.stacks["two-players"].deleteLater()
+		self.stacks["two-players"] = twoplayers.TwoPlayers(self)
+		self.stacked_pages.addWidget(self.stacks["two-players"])
+	
 	def resizeEvent(self, event: QResizeEvent) -> None:
 		self.move(0, 20)
 		self.stacks["main-page"].title.move((event.size().width() - self.stacks["main-page"].title.width()) // 2, 100)

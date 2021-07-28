@@ -693,20 +693,21 @@ class Piece(QLabel):
 		self.square = self.parent.squares[self.index[0]][self.index[1]]
 		self.showing_moves, self.parent.piece_for_shown_moves = False, None
 		self.raise_()
-		if index[0] == 0 and self.piece in ["white_pawn", "black_pawn"]:
-			self.promotion_dialog.show()
-			self.promotion_dialog.queen.pressed.connect(lambda: self.changePiece(self.piece[:6] + "queen"))
-			self.promotion_dialog.rook.pressed.connect(lambda: self.changePiece(self.piece[:6] + "rook"))
-			self.promotion_dialog.bishop.pressed.connect(lambda: self.changePiece(self.piece[:6] + "bishop"))
-			self.promotion_dialog.knight.pressed.connect(lambda: self.changePiece(self.piece[:6] + "knight"))
 		self.parent.turn = {"white": "black", "black": "white"}[self.parent.turn]
 		for i in range(len(self.parent.pieces)):
 			if self.parent.pieces[i][0] == self: self.parent.pieces[i][1] = self.index
-		self.parent.parent().addMove(self.piece, index, capture, previous_position, self.isCheck(index))
+		if index[0] in [0, 7] and self.piece in ["white_pawn", "black_pawn"]:
+			self.promotion_dialog.show()
+			self.promotion_dialog.queen.pressed.connect(lambda: self.changePiece(self.piece[:6] + "queen", capture, previous_position, "Q"))
+			self.promotion_dialog.rook.pressed.connect(lambda: self.changePiece(self.piece[:6] + "rook", capture, previous_position, "R"))
+			self.promotion_dialog.bishop.pressed.connect(lambda: self.changePiece(self.piece[:6] + "bishop", capture, previous_position, "B"))
+			self.promotion_dialog.knight.pressed.connect(lambda: self.changePiece(self.piece[:6] + "knight", capture, previous_position, "N"))
+		else: self.parent.parent().addMove(self.piece, index, capture, previous_position, self.isCheck(index))
 	
-	def changePiece(self, piece):
+	def changePiece(self, piece, capture, previous_position, piece_character):
 		self.setPixmap(QPixmap(f"images/standard/{piece}.png"))
 		self.piece = piece
+		self.parent.parent().addMove("", [], False, [], False, f"{self.parent.parent().formatIndex(self.index)}={piece_character}" if not capture else f"{str(self.parent.parent().formatIndex(previous_position))[0]}x{self.parent.parent().formatIndex(self.index)}={piece_character}")
 	
 class Square(QPushButton):
 	def __init__(self, parent, color: str = "white"):
