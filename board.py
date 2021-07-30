@@ -402,76 +402,84 @@ class Piece(QLabel):
 		else:
 			capture = False
 			if self.index[0] != 0:
-				for i in self.parent.pieces:
-					if i[1] == [self.index[0] - 1, self.index[1]]:
-						if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
-						capture = True
-				else:
-					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] - 1, self.index[1]], capture = capture))
-					self.moves[-1].move(self.parent.squares[self.index[0] - 1][self.index[1]].pos())
+				if self.squareValidForKing([self.index[0] - 1, self.index[1]]):
+					for i in self.parent.pieces:
+						if i[1] == [self.index[0] - 1, self.index[1]]:
+							if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
+							capture = True
+					else:
+						self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] - 1, self.index[1]], capture = capture))
+						self.moves[-1].move(self.parent.squares[self.index[0] - 1][self.index[1]].pos())
 			capture = False
 			if self.index[0] != 7:
-				for i in self.parent.pieces:
-					if i[1] == [self.index[0] + 1, self.index[1]]:
-						if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
-						capture = True
-				else:
-					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] + 1, self.index[1]], capture = capture))
-					self.moves[-1].move(self.parent.squares[self.index[0] + 1][self.index[1]].pos())
+				if self.squareValidForKing([self.index[0] + 1, self.index[1]]):
+					for i in self.parent.pieces:
+						if i[1] == [self.index[0] + 1, self.index[1]]:
+							if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
+							capture = True
+					else:
+						self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] + 1, self.index[1]], capture = capture))
+						self.moves[-1].move(self.parent.squares[self.index[0] + 1][self.index[1]].pos())
 			capture = False
 			if self.index[1] != 0:
-				for i in self.parent.pieces:
-					if i[1] == [self.index[0], self.index[1] - 1]:
-						if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
-						capture = True
-				else:
-					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0], self.index[1] - 1], capture = capture))
-					self.moves[-1].move(self.parent.squares[self.index[0]][self.index[1] - 1].pos())
+				if self.squareValidForKing([self.index[0], self.index[1] - 1]):
+					for i in self.parent.pieces:
+						if i[1] == [self.index[0], self.index[1] - 1]:
+							if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
+							capture = True
+					else:
+						self.moves.append(MoveBullet(self.parent, self, index = [self.index[0], self.index[1] - 1], capture = capture))
+						self.moves[-1].move(self.parent.squares[self.index[0]][self.index[1] - 1].pos())
 			capture = False
 			if self.index[1] != 7:
-				for i in self.parent.pieces:
-					if i[1] == [self.index[0], self.index[1] + 1]:
-						if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
-						capture = True
-				else:
-					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0], self.index[1] + 1], capture = capture))
-					self.moves[-1].move(self.parent.squares[self.index[0]][self.index[1] + 1].pos())
+				if self.squareValidForKing([self.index[0], self.index[1] + 1]):
+					for i in self.parent.pieces:
+						if i[1] == [self.index[0], self.index[1] + 1]:
+							if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
+							capture = True
+					else:
+						self.moves.append(MoveBullet(self.parent, self, index = [self.index[0], self.index[1] + 1], capture = capture))
+						self.moves[-1].move(self.parent.squares[self.index[0]][self.index[1] + 1].pos())
 			capture = False
 			if self.index[0] != 0 and self.index[1] != 0:
-				for i in self.parent.pieces:
-					if i[1] == [self.index[0] - 1, self.index[1] - 1]:
-						if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
-						capture = True
-				else:
-					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] - 1, self.index[1] - 1], capture = capture))
-					self.moves[-1].move(self.parent.squares[self.index[0] - 1][self.index[1] - 1].pos())
+				if self.squareValidForKing([self.index[0] - 1, self.index[1] - 1]):
+					for i in self.parent.pieces:
+						if i[1] == [self.index[0] - 1, self.index[1] - 1]:
+							if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
+							capture = True
+					else:
+						self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] - 1, self.index[1] - 1], capture = capture))
+						self.moves[-1].move(self.parent.squares[self.index[0] - 1][self.index[1] - 1].pos())
 			capture = False
 			if self.index[0] != 7 and self.index[1] != 7:
-				for i in self.parent.pieces:
-					if i[1] == [self.index[0] + 1, self.index[1] + 1]:
-						if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
-						capture = True
-				else:
-					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] + 1, self.index[1] + 1], capture = capture))
-					self.moves[-1].move(self.parent.squares[self.index[0] + 1][self.index[1] + 1].pos())
+				if self.squareValidForKing([self.index[0] + 1, self.index[1] + 1]):
+					for i in self.parent.pieces:
+						if i[1] == [self.index[0] + 1, self.index[1] + 1]:
+							if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
+							capture = True
+					else:
+						self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] + 1, self.index[1] + 1], capture = capture))
+						self.moves[-1].move(self.parent.squares[self.index[0] + 1][self.index[1] + 1].pos())
 			capture = False
 			if self.index[0] != 0 and self.index[1] != 7:
-				for i in self.parent.pieces:
-					if i[1] == [self.index[0] - 1, self.index[1] + 1]:
-						if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
-						capture = True
-				else:
-					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] - 1, self.index[1] + 1], capture = capture))
-					self.moves[-1].move(self.parent.squares[self.index[0] - 1][self.index[1] + 1].pos())
+				if self.squareValidForKing([self.index[0] - 1, self.index[1] + 1]):
+					for i in self.parent.pieces:
+						if i[1] == [self.index[0] - 1, self.index[1] + 1]:
+							if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
+							capture = True
+					else:
+						self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] - 1, self.index[1] + 1], capture = capture))
+						self.moves[-1].move(self.parent.squares[self.index[0] - 1][self.index[1] + 1].pos())
 			capture = False
 			if self.index[0] != 7 and self.index[1] != 0:
-				for i in self.parent.pieces:
-					if i[1] == [self.index[0] + 1, self.index[1] - 1]:
-						if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
-						capture = True
-				else:
-					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] + 1, self.index[1] - 1], capture = capture))
-					self.moves[-1].move(self.parent.squares[self.index[0] + 1][self.index[1] - 1].pos())
+				if self.squareValidForKing([self.index[0] + 1, self.index[1] - 1]):
+					for i in self.parent.pieces:
+						if i[1] == [self.index[0] + 1, self.index[1] - 1]:
+							if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
+							capture = True
+					else:
+						self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] + 1, self.index[1] - 1], capture = capture))
+						self.moves[-1].move(self.parent.squares[self.index[0] + 1][self.index[1] - 1].pos())
 	
 	def resizeEvent(self, event: QResizeEvent) -> None:
 		self.square = self.parent.squares[self.index[0]][self.index[1]]
@@ -509,6 +517,353 @@ class Piece(QLabel):
 					y.highlight_mask.hide()
 			self.showing_moves = not self.showing_moves
 		super(Piece, self).mousePressEvent(event)
+	
+	def validMoves(self) -> list:
+		moves = []
+		if self.piece in ["white_pawn", "black_pawn"]:
+			found = False
+			for i in self.parent.pieces:
+				if i[1] == [self.index[0] - (1 if self.piece == "white_pawn" else -1), self.index[1]]: found = True
+			if not found:
+				moves.append([self.index[0] - (1 if self.piece == "white_pawn" else -1), self.index[1]])
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] - (2 if self.piece == "white_pawn" else -2), self.index[1]]: found = True
+				if not found:
+					if self.index[0] == 6 and self.piece == "white_pawn": moves.append([self.index[0] - 2, self.index[1]])
+					elif self.index[0] == 1 and self.piece == "black_pawn": moves.append([self.index[0] + 2, self.index[1]])
+			piece_found, position, index = False, None, None
+			if self.piece == "white_pawn":
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] - 1, self.index[1] - 1] and i[0].piece[:5] == "black": piece_found, position, index = True, i[0], i[1]
+				if piece_found: moves.append(index)
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] - 1, self.index[1] + 1] and i[0].piece[:5] == "black": piece_found, position, index = True, i[0], i[1]
+				if piece_found: moves.append(index)
+			else:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] + 1, self.index[1] - 1] and i[0].piece[:5] == "white": piece_found, position, index = True, i[0], i[1]
+				if piece_found: moves.append(index)
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] + 1, self.index[1] + 1] and i[0].piece[:5] == "white": piece_found, position, index = True, i[0], i[1]
+				if piece_found: moves.append(index)
+		elif self.piece in ["white_knight", "black_knight"]:
+			found, valid = False, True
+			if self.index[0] not in [0, 1] and self.index[1] != 0:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] - 2, self.index[1] - 1]:
+						if i[0].piece[:5] == self.piece[:5]: valid = False
+				if valid: moves.append([self.index[0] - 2, self.index[1] - 1])
+			found, valid = False, True
+			if self.index[0] not in [0, 1] and self.index[1] != 7:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] - 2, self.index[1] + 1]:
+						if i[0].piece[:5] == self.piece[:5]: valid = False
+				if valid: moves.append([self.index[0] - 2, self.index[1] + 1])
+			found, valid = False, True
+			if self.index[0] not in [6, 7] and self.index[1] != 0:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] + 2, self.index[1] - 1]:
+						if i[0].piece[:5] == self.piece[:5]: valid = False
+				if valid: moves.append([self.index[0] + 2, self.index[1] - 1])
+			found, valid = False, True
+			if self.index[0] not in [6, 7] and self.index[1] != 7:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] + 2, self.index[1] + 1]:
+						if i[0].piece[:5] == self.piece[:5]: valid = False
+				if valid: moves.append([self.index[0] + 2, self.index[1] + 1])
+			found, valid = False, True
+			if self.index[0] != 0 and self.index[1] not in [0, 1]:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] - 1, self.index[1] - 2]:
+						if i[0].piece[:5] == self.piece[:5]: valid = False
+				if valid: moves.append([self.index[0] - 1, self.index[1] - 2])
+			found, valid = False, True
+			if self.index[0] != 7 and self.index[1] not in [0, 1]:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] + 1, self.index[1] - 2]:
+						if i[0].piece[:5] == self.piece[:5]: valid = False
+				if valid: moves.append([self.index[0] + 1, self.index[1] - 2])
+			found, valid = False, True
+			if self.index[0] != 0 and self.index[1] not in [6, 7]:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] - 1, self.index[1] + 2]:
+						if i[0].piece[:5] == self.piece[:5]: valid = False
+				if valid: moves.append([self.index[0] - 1, self.index[1] + 2])
+			found, valid = False, True
+			if self.index[0] != 7 and self.index[1] not in [6, 7]:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] + 1, self.index[1] + 2]:
+						if i[0].piece[:5] == self.piece[:5]: valid = False
+				if valid: moves.append([self.index[0] + 1, self.index[1] + 2])
+		elif self.piece in ["white_bishop", "black_bishop"]:
+			capture, pos1, pos2 = False, self.index[0], self.index[1]
+			while pos1 != 0 and pos2 != 0:
+				pos1, pos2 = pos1 - 1, pos2 - 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					moves.append([pos1, pos2])
+					if capture: break
+					continue
+				break
+			capture, pos1, pos2 = False, self.index[0], self.index[1]
+			while pos1 != 7 and pos2 != 7:
+				pos1, pos2 = pos1 + 1, pos2 + 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					moves.append([pos1, pos2])
+					if capture: break
+					continue
+				break
+			capture, pos1, pos2 = False, self.index[0], self.index[1]
+			while pos1 != 0 and pos2 != 7:
+				pos1, pos2 = pos1 - 1, pos2 + 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					moves.append([pos1, pos2])
+					if capture: break
+					continue
+				break
+			capture, pos1, pos2 = False, self.index[0], self.index[1]
+			while pos1 != 7 and pos2 != 0:
+				pos1, pos2 = pos1 + 1, pos2 - 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					moves.append([pos1, pos2])
+					if capture: break
+					continue
+				break
+		elif self.piece in ["white_rook", "black_rook"]:
+			capture = False
+			for x in reversed(range(self.index[0])):
+				for y in self.parent.pieces:
+					if y[1] == [x, self.index[1]]:
+						if y[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					moves.append([x, self.index[1]])
+					if capture: break
+					continue
+				break
+			capture = False
+			for x in reversed(range(self.index[1])):
+				for y in self.parent.pieces:
+					if y[1] == [self.index[0], x]:
+						if y[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					moves.append([self.index[0], x])
+					if capture: break
+					continue
+				break
+			capture = False
+			for x in range(self.index[0] + 1, 8):
+				for y in self.parent.pieces:
+					if y[1] == [x, self.index[1]]:
+						if y[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					moves.append([x, self.index[1]])
+					if capture: break
+					continue
+				break
+			capture = False
+			for x in range(self.index[1] + 1, 8):
+				for y in self.parent.pieces:
+					if y[1] == [self.index[0], x]:
+						if y[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					moves.append([x, self.index[1]])
+					if capture: break
+					continue
+				break
+		elif self.piece in ["white_queen", "black_queen"]:
+			capture = False
+			for x in reversed(range(self.index[0])):
+				for y in self.parent.pieces:
+					if y[1] == [x, self.index[1]]:
+						if y[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					moves.append([x, self.index[1]])
+					if capture: break
+					continue
+				break
+			capture = False
+			for x in reversed(range(self.index[1])):
+				for y in self.parent.pieces:
+					if y[1] == [self.index[0], x]:
+						if y[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					moves.append([self.index[0], x])
+					if capture: break
+					continue
+				break
+			capture = False
+			for x in range(self.index[0] + 1, 8):
+				for y in self.parent.pieces:
+					if y[1] == [x, self.index[1]]:
+						if y[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					moves.append([x, self.index[1]])
+					if capture: break
+					continue
+				break
+			capture = False
+			for x in range(self.index[1] + 1, 8):
+				for y in self.parent.pieces:
+					if y[1] == [self.index[0], x]:
+						if y[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					moves.append([x, self.index[1]])
+					if capture: break
+					continue
+				break
+			capture, pos1, pos2 = False, self.index[0], self.index[1]
+			while pos1 != 0 and pos2 != 0:
+				pos1, pos2 = pos1 - 1, pos2 - 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					moves.append([pos1, pos2])
+					if capture: break
+					continue
+				break
+			capture, pos1, pos2 = False, self.index[0], self.index[1]
+			while pos1 != 7 and pos2 != 7:
+				pos1, pos2 = pos1 + 1, pos2 + 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					moves.append([pos1, pos2])
+					if capture: break
+					continue
+				break
+			capture, pos1, pos2 = False, self.index[0], self.index[1]
+			while pos1 != 0 and pos2 != 7:
+				pos1, pos2 = pos1 - 1, pos2 + 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					moves.append([pos1, pos2])
+					if capture: break
+					continue
+				break
+			capture, pos1, pos2 = False, self.index[0], self.index[1]
+			while pos1 != 7 and pos2 != 0:
+				pos1, pos2 = pos1 + 1, pos2 - 1
+				for i in self.parent.pieces:
+					if i[1] == [pos1, pos2]:
+						if i[0].piece[:5] == self.piece[:5]: break
+						capture = True
+				else:
+					moves.append([pos1, pos2])
+					if capture: break
+					continue
+				break
+		else:
+			if self.index[0] != 0:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] - 1, self.index[1]]:
+						if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
+						for y in self.parent.pieces:
+							if y[0].piece[:5] == ("white" if self.piece[:5] == "black" else "black"):
+								if [self.index[0] - 1, self.index[1]] in y[0].validMoves(): break
+				else: moves.append([self.index[0] - 1, self.index[1]])
+			if self.index[0] != 7:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] + 1, self.index[1]]:
+						if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
+						for y in self.parent.pieces:
+							if y[0].piece[:5] == ("white" if self.piece[:5] == "black" else "black"):
+								if [self.index[0] + 1, self.index[1]] in y[0].validMoves(): break
+				else: moves.append([self.index[0] + 1, self.index[1]])
+			if self.index[1] != 0:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0], self.index[1] - 1]:
+						if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
+						for y in self.parent.pieces:
+							if y[0].piece[:5] == ("white" if self.piece[:5] == "black" else "black"):
+								if [self.index[0], self.index[1] - 1] in y[0].validMoves(): break
+				else: moves.append([self.index[0], self.index[1] - 1])
+			if self.index[1] != 7:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0], self.index[1] + 1]:
+						if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
+						for y in self.parent.pieces:
+							if y[0].piece[:5] == ("white" if self.piece[:5] == "black" else "black"):
+								if [self.index[0], self.index[1] + 1] in y[0].validMoves(): break
+				else: moves.append([self.index[0], self.index[1] + 1])
+			if self.index[0] != 0 and self.index[1] != 0:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] - 1, self.index[1] - 1]:
+						if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
+						for y in self.parent.pieces:
+							if y[0].piece[:5] == ("white" if self.piece[:5] == "black" else "black"):
+								if [self.index[0] - 1, self.index[1] - 1] in y[0].validMoves(): break
+				else: moves.append([self.index[0] - 1, self.index[1] - 1])
+			if self.index[0] != 7 and self.index[1] != 7:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] + 1, self.index[1] + 1]:
+						if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
+						for y in self.parent.pieces:
+							if y[0].piece[:5] == ("white" if self.piece[:5] == "black" else "black"):
+								if [self.index[0] + 1, self.index[1] + 1] in y[0].validMoves(): break
+				else: moves.append([self.index[0] + 1, self.index[1] + 1])
+			if self.index[0] != 0 and self.index[1] != 7:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] - 1, self.index[1] + 1]:
+						if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
+						for y in self.parent.pieces:
+							if y[0].piece[:5] == ("white" if self.piece[:5] == "black" else "black"):
+								if [self.index[0] - 1, self.index[1] + 1] in y[0].validMoves(): break
+				else: moves.append([self.index[0] - 1, self.index[1] + 1])
+			if self.index[0] != 7 and self.index[1] != 0:
+				for i in self.parent.pieces:
+					if i[1] == [self.index[0] + 1, self.index[1] - 1]:
+						if i[0].piece[:5] == self.piece[:5] or i[0].piece[6:] == "king": break
+						for y in self.parent.pieces:
+							if y[0].piece[:5] == ("white" if self.piece[:5] == "black" else "black"):
+								if [self.index[0] + 1, self.index[1] - 1] in y[0].validMoves(): break
+				else: moves.append([self.index[0] + 1, self.index[1] - 1])
+		return moves
+	
+	def squareValidForKing(self, index: list) -> bool:
+		for x in self.parent.pieces:
+			if x[0].piece == ("white_king" if self.piece == "black_king" else "black_king"):
+				if index in x[0].validMoves():
+					return False
+		for x in self.parent.pieces:
+			if x[0].piece in ["white_king", "black_king"] or x[0].piece[:5] == self.piece[:5]: continue
+			x[0].appendMoves()
+			if x[0].piece in ["white_pawn", "black_pawn"]:
+				if self.piece[:5] == "white" and x[0].index in [[index[0] - 1, index[1] - 1], [index[0] - 1, index[1] + 1]]: return False
+				elif self.piece[:5] == "black" and x[0].index in [[index[0] + 1, index[1] + 1], [index[0] + 1, index[1] - 1]]: return False
+			else:
+				for y in x[0].moves:
+					if y.index == index: return False
+		return True
 	
 	def isCheck(self, index: list) -> bool:
 		if self.piece in ["white_pawn", "black_pawn"] and index[0] != 0:
@@ -684,7 +1039,7 @@ class Piece(QLabel):
 					i[0].deleteLater()
 					self.parent.pieces.remove(i)
 		self.setStyleSheet("background-color: transparent;")
-		self.animation = QPropertyAnimation(self, B"pos")
+		self.animation = QPropertyAnimation(self, b"pos")
 		self.animation.setEndValue(position)
 		self.animation.setDuration(100)
 		self.animation.start()
