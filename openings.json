@@ -8221,7 +8221,7 @@
   },
   {
     "eco": "C21",
-    "name": "Center Game: Accepted Line",
+    "name": "Center Game: Accepted",
     "moves": "1. e4 e5 2. d4 exd4"
   },
   {
@@ -8336,162 +8336,162 @@
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening",
+    "name": "Bishop's Game",
     "moves": "1. e4 e5 2. Bc4"
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening: Anderssen Gambit",
+    "name": "Bishop's Game: Anderssen Gambit",
     "moves": "1. e4 e5 2. Bc4 b5 3. Bxb5 c6"
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening: Boi Variation",
+    "name": "Bishop's Game: Boi Variation",
     "moves": "1. e4 e5 2. Bc4 Bc5"
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening: Calabrese Countergambit",
+    "name": "Bishop's Game: Calabrese Countergambit",
     "moves": "1. e4 e5 2. Bc4 f5"
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening: Calabrese, Jaenisch Variation",
+    "name": "Bishop's Game: Calabrese, Jaenisch Variation",
     "moves": "1. e4 e5 2. Bc4 f5 3. d3"
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening: Four Pawns Gambit",
+    "name": "Bishop's Game: Four Pawns Gambit",
     "moves": "1. e4 e5 2. Bc4 Bc5 3. b4 Bxb4 4. f4 exf4 5. Nf3 Be7 6. d4 Bh4+ 7. g3 fxg3 8. O-O gxh2+ 9. Kh1"
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening: Khan Gambit",
+    "name": "Bishop's Game: Khan Gambit",
     "moves": "1. e4 e5 2. Bc4 d5"
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening: Lewis Countergambit",
+    "name": "Bishop's Game: Lewis Countergambit",
     "moves": "1. e4 e5 2. Bc4 Bc5 3. c3 d5"
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening: Lewis, Walker Variation",
+    "name": "Bishop's Game: Lewis, Walker Variation",
     "moves": "1. e4 e5 2. Bc4 Bc5 3. c3 d5 4. Bxd5 Nf6 5. d4"
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening: Lewis Gambit",
+    "name": "Bishop's Game: Lewis Gambit",
     "moves": "1. e4 e5 2. Bc4 Bc5 3. d4"
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening: Lisitsyn Variation",
+    "name": "Bishop's Game: Lisitsyn Variation",
     "moves": "1. e4 e5 2. Bc4 c6 3. d4 d5 4. exd5 cxd5 5. Bb5+ Bd7 6. Bxd7+ Nxd7 7. dxe5 Nxe5 8. Ne2"
   },
 	{
     "eco": "C23",
-    "name": "Bishop's Opening: Lopez Variation",
+    "name": "Bishop's Game: Lopez Variation",
     "moves": "1. e4 e5 2. Bc4 Bc5 3. Qe2"
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening: Lopez Gambit",
+    "name": "Bishop's Game: Lopez Gambit",
     "moves": "1. e4 e5 2. Bc4 Bc5 3. Qe2 Nc6 4. c3 Nf6 5. f4"
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening: Lopez, Lopez Gambit",
+    "name": "Bishop's Game: Lopez, Lopez Gambit",
     "moves": "1. e4 e5 2. Bc4 Bc5 3. Qe2 Nf6 4. f4"
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening: McDonnell Gambit",
+    "name": "Bishop's Game: McDonnell Gambit",
     "moves": "1. e4 e5 2. Bc4 Bc5 3. b4"
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening: McDonnell, La Bourdonnais-Denker Gambit",
+    "name": "Bishop's Game: McDonnell, La Bourdonnais-Denker Gambit",
     "moves": "1. e4 e5 2. Bc4 Bc5 3. b4 Bxb4 4. c3"
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening: McDonnell, McDonnell Double Gambit",
+    "name": "Bishop's Game: McDonnell, McDonnell Double Gambit",
     "moves": "1. e4 e5 2. Bc4 Bc5 3. b4 Bxb4 4. f4"
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening: Philidor Counterattack",
+    "name": "Bishop's Game: Philidor Counterattack",
     "moves": "1. e4 e5 2. Bc4 c6"
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening: Philidor Variation",
+    "name": "Bishop's Game: Philidor Variation",
     "moves": "1. e4 e5 2. Bc4 Bc5 3. c3"
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening: Pratt Variation",
+    "name": "Bishop's Game: Pratt Variation",
     "moves": "1. e4 e5 2. Bc4 Bc5 3. c3 Nf6 4. d4 exd4 5. e5 d5 6. exf6 dxc4 7. Qh5 O-O"
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening: Stein Gambit",
+    "name": "Bishop's Game: Stein Gambit",
     "moves": "1. e4 e5 2. Bc4 Bc5 3. f4"
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening: Thorold Gambit",
+    "name": "Bishop's Game: Thorold Gambit",
     "moves": "1. e4 e5 2. Bc4 b5 3. Bxb5 f5"
   },
   {
     "eco": "C23",
-    "name": "Bishop's Opening: Del Rio Variation",
+    "name": "Bishop's Game: Del Rio Variation",
     "moves": "1. e4 e5 2. Bc4 Bc5 3. c3 Qg5"
   },
   {
     "eco": "C24",
-    "name": "Bishop's Opening: Berlin Defense",
+    "name": "Bishop's Game: Berlin Defense",
     "moves": "1. e4 e5 2. Bc4 Nf6"
   },
   {
     "eco": "C24",
-    "name": "Bishop's Opening: Berlin, Greco Gambit",
+    "name": "Bishop's Game: Berlin, Greco Gambit",
     "moves": "1. e4 e5 2. Bc4 Nf6 3. f4"
   },
   {
     "eco": "C24",
-    "name": "Bishop's Opening: Kitchener Folly",
+    "name": "Bishop's Game: Kitchener Folly",
     "moves": "1. e4 e5 2. Bc4 Nf6 3. d3 Be7 4. Nf3 O-O"
   },
   {
     "eco": "C24",
-    "name": "Bishop's Opening: Krejcik Gambit",
+    "name": "Bishop's Game: Krejcik Gambit",
     "moves": "1. e4 e5 2. Bc4 Nf6 3. f3 Bc5 4. Ne2 Nc6 5. b4"
   },
   {
     "eco": "C24",
-    "name": "Bishop's Opening: Pachman Gambit",
+    "name": "Bishop's Game: Pachman Gambit",
     "moves": "1. e4 e5 2. Bc4 Nf6 3. Ne2 Nxe4 4. Nec3"
   },
   {
     "eco": "C24",
-    "name": "Bishop's Opening: Ponziani Gambit",
+    "name": "Bishop's Game: Ponziani Gambit",
     "moves": "1. e4 e5 2. Bc4 Nf6 3. d4"
   },
   {
     "eco": "C24",
-    "name": "Bishop's Opening: Urusov, Panov Variation",
+    "name": "Bishop's Game: Urusov, Panov Variation",
     "moves": "1. e4 e5 2. Bc4 Nf6 3. d4 exd4 4. Nf3 d5 5. exd5 Bb4+ 6. c3 Qe7+"
   },
   {
     "eco": "C24",
-    "name": "Bishop's Opening: Vienna Hybrid",
+    "name": "Bishop's Game: Vienna Hybrid",
     "moves": "1. e4 e5 2. Bc4 Nf6 3. d3 Nc6 4. Nc3"
   },
   {
     "eco": "C24",
-    "name": "Bishop's Opening: Warsaw Gambit",
+    "name": "Bishop's Game: Warsaw Gambit",
     "moves": "1. e4 e5 2. Bc4 Nf6 3. d4 exd4 4. c3"
   },
   {
@@ -10151,192 +10151,167 @@
   },
   {
     "eco": "C42",
-    "name": "Russian Game",
+    "name": "Petrov's Defense",
     "moves": "1. e4 e5 2. Nf3 Nf6"
   },
   {
     "eco": "C42",
-    "name": "Russian Game",
-    "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5"
-  },
-  {
-    "eco": "C42",
-    "name": "Russian Game",
-    "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6"
-  },
-  {
-    "eco": "C42",
-    "name": "Russian Game",
-    "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3"
-  },
-  {
-    "eco": "C42",
-    "name": "Russian Game",
-    "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4"
-  },
-  {
-    "eco": "C42",
-    "name": "Russian Game: Classical Attack",
+    "name": "Petrov's Defense: Classical Attack",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. d4"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Classical Attack, Berger Variation",
+    "name": "Petrov's Defense: Classical, Berger Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. d4 d5 6. Bd3 Be7 7. O-O Nc6 8. Re1 Bg4 9. c3 f5 10. Nbd2"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Classical Attack, Chigorin Variation",
+    "name": "Petrov's Defense: Classical, Chigorin Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. d4 d5 6. Bd3 Be7 7. O-O Nc6 8. Re1"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Classical Attack, Chigorin Variation, Browne Attack",
+    "name": "Petrov's Defense: Classical, Chigorin, Browne Attack",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. d4 d5 6. Bd3 Nc6 7. O-O Be7 8. c4 Nb4 9. cxd5"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Classical Attack, Chigorin Variation, Main Line",
+    "name": "Petrov's Defense: Classical, Chigorin, Main Line",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. d4 d5 6. Bd3 Nc6 7. O-O Be7 8. c4 Nb4 9. Be2"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Classical Attack, Closed Variation",
+    "name": "Petrov's Defense: Classical, Closed Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. d4 Nf6"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Classical Attack, Jaenisch Variation",
+    "name": "Petrov's Defense: Classical, Jaenisch Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. d4 d5 6. Bd3 Nc6 7. O-O Be7 8. c4"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Classical Attack, Krause Variation",
+    "name": "Petrov's Defense: Classical, Krause Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. d4 d5 6. Bd3 Nc6 7. O-O Be7 8. Re1 Bg4 9. c3 f5 10. c4"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Classical Attack, Marshall Trap",
+    "name": "Petrov's Defense: Classical, Marshall Trap",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. d4 d5 6. Bd3 Bd6 7. O-O O-O 8. c4 Bg4 9. cxd5 f5 10. Re1 Bxh2+"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Classical Attack, Marshall Variation",
+    "name": "Petrov's Defense: Classical, Marshall Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. d4 d5 6. Bd3 Bd6"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Classical Attack, Marshall Variation, Chinese Gambit",
+    "name": "Petrov's Defense: Classical, Marshall Variation, Chinese Gambit",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. d4 d5 6. Bd3 Bd6 7. O-O O-O 8. c4 c6 9. Re1 Bg4"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Classical Attack, Maróczy Variation",
+    "name": "Petrov's Defense: Classical, Maróczy Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. d4 d5 6. Bd3 Be7 7. O-O Nc6 8. Re1 Bg4 9. c3 f5 10. c4 Bh4"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Classical Attack, Mason Variation",
+    "name": "Petrov's Defense: Classical, Mason Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. d4 d5 6. Bd3 Be7 7. O-O O-O"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Classical Attack, Mason-Showalter Variation",
+    "name": "Petrov's Defense: Classical, Mason-Showalter Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. d4 d5 6. Bd3 Nc6"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Classical Attack, Staunton Variation",
+    "name": "Petrov's Defense: Classical, Staunton Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. d4 d5 6. Bd3 Bd6 7. O-O O-O 8. c4 c6"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Classical Attack, Tarrasch Variation",
+    "name": "Petrov's Defense: Classical, Tarrasch Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. d4 d5 6. Bd3 Bd6 7. O-O O-O 8. c4 Bg4"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Cochrane Gambit",
+    "name": "Petrov's Defense: Cochrane Gambit",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nxf7"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Cochrane Gambit, Bishop Check Line",
+    "name": "Petrov's Defense: Cochrane, Bishop Check Line",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nxf7 Kxf7 5. Bc4+"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Cochrane Gambit, Center Variation",
+    "name": "Petrov's Defense: Cochrane, Center Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nxf7 Kxf7 5. d4"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Cozio Attack",
+    "name": "Petrov's Defense: Cozio Attack",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. Qe2"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Damiano Variation",
+    "name": "Petrov's Defense: Damiano Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 Nxe4"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Damiano Variation, Kholmov Gambit",
+    "name": "Petrov's Defense: Damiano, Kholmov Gambit",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 Nxe4 4. Qe2 Qe7"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: French Attack",
+    "name": "Petrov's Defense: French Attack",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. d3"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Italian Variation",
+    "name": "Petrov's Defense: Italian Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Bc4"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Karklins-Martinovsky Variation",
+    "name": "Petrov's Defense: Karklins-Martinovsky Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nd3"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Kaufmann Attack",
+    "name": "Petrov's Defense: Kaufmann Attack",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. c4"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Millennium Attack",
+    "name": "Petrov's Defense: Millennium Attack",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. Bd3"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Moody Gambit",
+    "name": "Petrov's Defense: Moody Gambit",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Qe2 Nc6 4. d4"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Nimzowitsch Attack",
+    "name": "Petrov's Defense: Nimzowitsch Attack",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nf3 Nxe4 5. Nc3"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Paulsen Attack",
+    "name": "Petrov's Defense: Paulsen Attack",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 d6 4. Nc4"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Stafford Gambit",
+    "name": "Petrov's Defense: Stafford Gambit",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 Nc6"
   },
   {
     "eco": "C42",
-    "name": "Russian Game: Stafford Gambit",
-    "moves": "1. e4 e5 2. Nf3 Nf6 3. Nxe5 Nc6 4. Nxc6 dxc6"
-  },
-  {
-    "eco": "C42",
-    "name": "Russian Game: Three Knights Game",
+    "name": "Petrov's Defense: Three Knights Game",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. Nc3"
   },
   {
@@ -10346,62 +10321,62 @@
   },
   {
     "eco": "C43",
-    "name": "Bishop's Opening: Urusov Gambit, Keidansky Gambit",
+    "name": "Bishop's Opening: Urusov, Keidansky Gambit",
     "moves": "1. e4 e5 2. Bc4 Nf6 3. d4 exd4 4. Nf3 Nxe4 5. Qxd4"
   },
   {
     "eco": "C43",
-    "name": "Russian Game: Modern Attack",
+    "name": "Petrov's Defense: Modern Attack",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. d4"
   },
   {
     "eco": "C43",
-    "name": "Russian Game: Modern Attack",
+    "name": "Petrov's Defense: Attack",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. d4 exd4"
   },
   {
     "eco": "C43",
-    "name": "Russian Game: Modern Attack, Bardeleben Variation",
+    "name": "Petrov's Defense: Attack, Bardeleben Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. d4 exd4 4. e5 Ne4 5. Qe2 Nc5 6. Nxd4 Nc6"
   },
   {
     "eco": "C43",
-    "name": "Russian Game: Modern Attack, Center Attack",
+    "name": "Petrov's Defense: Modern, Center Attack",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. d4 exd4 4. e5 Ne4 5. Qxd4"
   },
   {
     "eco": "C43",
-    "name": "Russian Game: Modern Attack, Center Variation",
+    "name": "Petrov's Defense: Modern, Center Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. d4 Nxe4 4. Bd3"
   },
   {
     "eco": "C43",
-    "name": "Russian Game: Modern Attack, Murrey Variation",
+    "name": "Petrov's Defense: Modern, Murrey Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. d4 Nxe4 4. Bd3 Nc6"
   },
   {
     "eco": "C43",
-    "name": "Russian Game: Modern Attack, Steinitz Variation",
+    "name": "Petrov's Defense: Modern, Steinitz Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. d4 exd4 4. e5 Ne4 5. Qe2"
   },
   {
     "eco": "C43",
-    "name": "Russian Game: Modern Attack, Symmetrical Variation",
+    "name": "Petrov's Defense: Modern, Symmetrical Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. d4 d5"
   },
   {
     "eco": "C43",
-    "name": "Russian Game: Modern Attack, Symmetrical Variation",
+    "name": "Petrov's Defense: Modern, Symmetrical Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. d4 Nxe4"
   },
   {
     "eco": "C43",
-    "name": "Russian Game: Modern Attack, Tal Gambit",
+    "name": "Petrov's Defense: Modern, Tal Gambit",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. d4 exd4 4. e5 Ne4 5. Bb5"
   },
   {
     "eco": "C43",
-    "name": "Russian Game: Modern Attack, Trifunovic Variation",
+    "name": "Petrov's Defense: Modern, Trifunovic Variation",
     "moves": "1. e4 e5 2. Nf3 Nf6 3. d4 Nxe4 4. Bd3 d5 5. Nxe5 Bd6 6. O-O O-O 7. c4 Bxe5"
   },
   {
@@ -10416,7 +10391,7 @@
   },
   {
     "eco": "C44",
-    "name": "King's Knight Opening: Konstantinopolsky",
+    "name": "Konstantinopolsky Opening",
     "moves": "1. e4 e5 2. Nf3 Nc6 3. g3"
   },
   {
@@ -15491,8 +15466,68 @@
 	},
 	{
     "eco": "E01",
-    "name": "Tennison Gambit: Intercontinental Ballistic Missile Gambit",
+    "name": "Scandinavian Defense: Tennison, Intercontinental Ballistic Missile Gambit",
     "moves": "1. e4 d5 2. Nf3 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8"
+  },
+	{
+    "eco": "E01",
+    "name": "Scandinavian Defense: Tennison, Intercontinental Ballistic Missile, Ultimate Counterattack",
+    "moves": "1. e4 d5 2. Nf3 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e6"
+  },
+	{
+    "eco": "E01",
+    "name": "Scandinavian Defense: Tennison, Intercontinental Ballistic Missile, Ultimate Counterattack",
+    "moves": "1. e4 d5 2. Nf3 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e5"
+  },
+	{
+    "eco": "E01",
+    "name": "Scandinavian Defense: Tennison, Intercontinental Ballistic Missile, Ultimate, Knight's Defense",
+    "moves": "1. e4 d5 2. Nf3 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e6 9. Nc3"
+  },
+	{
+    "eco": "E01",
+    "name": "Scandinavian Defense: Tennison, Intercontinental Ballistic Missile, Ultimate, Knight's Defense",
+    "moves": "1. e4 d5 2. Nf3 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e5 9. Nc3"
+  },
+	{
+    "eco": "E01",
+    "name": "Scandinavian Defense: Tennison, Intercontinental Ballistic Missile, Ultimate, Castle's Defense",
+    "moves": "1. e4 d5 2. Nf3 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e6 9. O-O"
+  },
+	{
+    "eco": "E01",
+    "name": "Scandinavian Defense: Tennison, Intercontinental Ballistic Missile, Ultimate, Castle's Defense",
+    "moves": "1. e4 d5 2. Nf3 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e5 9. O-O"
+  },
+	{
+    "eco": "E01",
+    "name": "Scandinavian Defense: Tennison, Intercontinental Ballistic Missile, Ultimate, Main Line",
+    "moves": "1. e4 d5 2. Nf3 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e5 9. Qxc7"
+  },
+	{
+    "eco": "E01",
+    "name": "Scandinavian Defense: Tennison, Intercontinental Ballistic Missile, Ultimate, Main Line",
+    "moves": "1. e4 d5 2. Nf3 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e6 9. Qxc7"
+  },
+	{
+    "eco": "E01",
+    "name": "Scandinavian Defense: Tennison, Intercontinental Ballistic Missile, Ultimate, Accepted Line",
+    "moves": "1. e4 d5 2. Nf3 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e5 9. Qxc8"
+  },
+	{
+    "eco": "E01",
+    "name": "Scandinavian Defense: Tennison, Intercontinental Ballistic Missile, Ultimate, Accepted Line",
+    "moves": "1. e4 d5 2. Nf3 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e6 9. Qxc8"
+  },
+	{
+    "eco": "E01",
+    "name": "Scandinavian Defense: Tennison, Intercontinental Ballistic Missile, Ultimate, Accepted, Main Line",
+    "moves": "1. e4 d5 2. Nf3 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e5 9. Qxc8 Bb4+"
+  },
+	{
+    "eco": "E01",
+    "name": "Scandinavian Defense: Tennison, Intercontinental Ballistic Missile, Ultimate, Accepted, Main Line",
+    "moves": "1. e4 d5 2. Nf3 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e6 9. Qxc8 Bb4+"
   },
 	{
 		"eco": "E02",
@@ -15513,5 +15548,90 @@
 		"eco": "E02",
 		"name": "Zukertort Opening: Black Mustang, Center, Center, Main Line, Reversed Alekhine's Defense",
 		"moves": "1. Nf3 Nc6 2. d4 Nxd4 3. Nxd4 e5 4. Nf3"
+	},
+	{
+		"eco": "E03",
+		"name": "Alekhine's Defense: Blunder Variation",
+		"moves": "1. e4 Nf6 2. e5 e6"
+	},
+	{
+		"eco": "E04",
+		"name": "Zukertort Opening: Tennison Gambit",
+		"moves": "1. Nf3 d5 2. e4"
+	},
+	{
+		"eco": "E04",
+		"name": "Zukertort Opening: Tennison, Intercontinental Ballistic Missile Gambit",
+		"moves": "1. Nf3 d5 2. e4 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8"
+	},
+	{
+		"eco": "E04",
+		"name": "Zukertort Opening: Tennison, Intercontinental Ballistic Missile, Ultimate Counterattack",
+		"moves": "1. Nf3 d5 2. e4 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e6"
+	},
+	{
+		"eco": "E04",
+		"name": "Zukertort Opening: Tennison, Intercontinental Ballistic Missile, Ultimate Counterattack",
+		"moves": "1. Nf3 d5 2. e4 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e5"
+	},
+	{
+		"eco": "E04",
+		"name": "Zukertort Opening: Tennison, Intercontinental Ballistic Missile, Ultimate, Knight's Defense",
+		"moves": "1. Nf3 d5 2. e4 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e6 9. Nc3"
+	},
+	{
+		"eco": "E04",
+		"name": "Zukertort Opening: Tennison, Intercontinental Ballistic Missile, Ultimate, Castle's Defense",
+		"moves": "1. Nf3 d5 2. e4 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e6 9. O-O"
+	},
+	{
+		"eco": "E04",
+		"name": "Zukertort Opening: Tennison, Intercontinental Ballistic Missile, Ultimate, Knight's Defense",
+		"moves": "1. Nf3 d5 2. e4 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e5 9. Nc3"
+	},
+	{
+		"eco": "E04",
+		"name": "Zukertort Opening: Tennison, Intercontinental Ballistic Missile, Ultimate, Castle's Defense",
+		"moves": "1. Nf3 d5 2. e4 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e5 9. O-O"
+	},
+	{
+		"eco": "E04",
+		"name": "Zukertort Opening: Tennison, Intercontinental Ballistic Missile, Ultimate, Main Line",
+		"moves": "1. Nf3 d5 2. e4 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e5 9. Qxc7"
+	},
+	{
+		"eco": "E04",
+		"name": "Zukertort Opening: Tennison, Intercontinental Ballistic Missile, Ultimate, Main Line",
+		"moves": "1. Nf3 d5 2. e4 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e6 9. Qxc7"
+	},
+	{
+		"eco": "E04",
+		"name": "Zukertort Opening: Tennison, Intercontinental Ballistic Missile, Ultimate, Accepted Line",
+		"moves": "1. Nf3 d5 2. e4 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e5 9. Qxc8"
+	},
+	{
+		"eco": "E04",
+		"name": "Zukertort Opening: Tennison, Intercontinental Ballistic Missile, Ultimate, Accepted Line",
+		"moves": "1. Nf3 d5 2. e4 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e6 9. Qxc8"
+	},
+	{
+		"eco": "E04",
+		"name": "Zukertort Opening: Tennison, Intercontinental Ballistic Missile, Ultimate, Accepted, Main Line",
+		"moves": "1. Nf3 d5 2. e4 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e5 9. Qxc8 Bb4+"
+	},
+	{
+		"eco": "E04",
+		"name": "Zukertort Opening: Tennison, Intercontinental Ballistic Missile, Ultimate, Accepted, Main Line",
+		"moves": "1. Nf3 d5 2. e4 dxe4 3. Ng5 Nf6 4. d3 exd3 5. Bxd3 h6 6. Nxf7 Kxf7 7. Bg6+ Kxg6 8. Qxd8 e6 9. Qxc8 Bb4+"
+	},
+	{
+		"eco": "E05",
+		"name": "Scholar's Mate",
+		"moves": "1. e4 e5 2. Bc4 Nc6 3. Qh5"
+	},
+	{
+		"eco": "E05",
+		"name": "Scholar's Mate",
+		"moves": "1. e4 e5 2. Qh5 Nc6 3. Bc4"
 	}
 ]

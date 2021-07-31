@@ -8,10 +8,10 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 class MoveBullet(QLabel):
-	def __init__(self, parent, piece, index: list or tuple or set = (0, 0), hide: bool = True, capture: bool = False):
+	def __init__(self, parent, piece, index: list or tuple or set = (0, 0), hide: bool = True, capture: bool = False, castle: 0 or 1 or False = False, castle_rook = None):
 		super(MoveBullet, self).__init__(parent = parent)
 		self.setPixmap(QPixmap("images/bullet.png"))
-		self.piece, self.index, self.capture = piece, index, capture
+		self.piece, self.index, self.capture, self.castle, self.castle_rook = piece, index, capture, castle, castle_rook
 		self.resize(100, 100)
 		if hide: self.hide()
 		self.setCursor(Qt.PointingHandCursor)
@@ -25,7 +25,8 @@ class MoveBullet(QLabel):
 		super(MoveBullet, self).leaveEvent(event)
 	
 	def mousePressEvent(self, event: QMouseEvent):
-		if event.button() == Qt.LeftButton: self.piece.movePiece(self.pos(), index = self.index, capture = self.capture)
+		if event.button() == Qt.LeftButton: self.piece.movePiece(self.pos(), index = self.index, capture = self.capture, castle = self.castle, castle_rook = self.castle_rook)
+		else: self.parent().mousePressEvent(event)
 		super(MoveBullet, self).mousePressEvent(event)
 
 class PromotionButton(QToolButton):
@@ -79,7 +80,7 @@ class PromotionDialog(QWidget):
 class Piece(QLabel):
 	def __init__(self, parent, piece: str or None = None, index: list or None = None):
 		super(Piece, self).__init__(parent = parent)
-		self.parent, self.index, self.piece, self.showing_moves, self.moves, self.first_paint_run, self.animation, self.promotion_dialog = parent, index, piece, False, [], True, None, PromotionDialog(self, side = piece[:5])
+		self.parent, self.index, self.piece, self.showing_moves, self.moves, self.first_paint_run, self.animation, self.promotion_dialog, self.moved = parent, index, piece, False, [], True, None, PromotionDialog(self, side = piece[:5]), False
 		if piece is not None: self.setPixmap(QPixmap("images/standard/" + piece))
 		self.setCursor(Qt.PointingHandCursor)
 	
@@ -480,6 +481,25 @@ class Piece(QLabel):
 					else:
 						self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] + 1, self.index[1] - 1], capture = capture))
 						self.moves[-1].move(self.parent.squares[self.index[0] + 1][self.index[1] - 1].pos())
+			if not self.moved:
+				for x in self.parent.pieces:
+					if x[0].piece == self.piece[:5] + "_rook" and not x[0].moved:
+						if x[0].index == [7, 7]:
+							for y in self.parent.pieces:
+								if y[0].index in [[7, 5], [7, 6]]: break
+							else:
+								self.moves.append(MoveBullet(self.parent, self, index = [7, 7], castle = 0, castle_rook = x[0]))
+								self.moves[-1].move(self.parent.squares[7][7].pos())
+								self.moves.append(MoveBullet(self.parent, self, index = [7, 6], castle = 0, castle_rook = x[0]))
+								self.moves[-1].move(self.parent.squares[7][6].pos())
+						elif x[0].index == [7, 0]:
+							for y in self.parent.pieces:
+								if y[0].index in [[7, 1], [7, 2], [7, 3]]: break
+							else:
+								self.moves.append(MoveBullet(self.parent, self, index = [7, 0], castle = 1, castle_rook = x[0]))
+								self.moves[-1].move(self.parent.squares[7][0].pos())
+								self.moves.append(MoveBullet(self.parent, self, index = [7, 2], castle = 1, castle_rook = x[0]))
+								self.moves[-1].move(self.parent.squares[7][2].pos())
 	
 	def resizeEvent(self, event: QResizeEvent) -> None:
 		self.square = self.parent.squares[self.index[0]][self.index[1]]
@@ -1031,7 +1051,8 @@ class Piece(QLabel):
 				break
 		return False
 	
-	def movePiece(self, position, index: list or tuple or set = (0, 0), capture: bool = False):
+	def movePiece(self, position, index: list or tuple or set = (0, 0), capture: bool = False, castle: 0 or 1 or False = False, castle_rook = None, add_move: bool = True):
+		self.moved = True
 		previous_position = self.index
 		if capture:
 			for i in self.parent.pieces:
@@ -1039,10 +1060,25 @@ class Piece(QLabel):
 					i[0].deleteLater()
 					self.parent.pieces.remove(i)
 		self.setStyleSheet("background-color: transparent;")
-		self.animation = QPropertyAnimation(self, b"pos")
-		self.animation.setEndValue(position)
-		self.animation.setDuration(100)
-		self.animation.start()
+		if str(castle) == "0" and castle_rook is not None:
+			self.animation = QPropertyAnimation(self, b"pos")
+			self.animation.setEndValue(self.parent.squares[7][6].pos() if self.piece[:5] == "white" else self.parent.squares[0][6].pos())
+			self.animation.setDuration(100)
+			self.animation.start()
+			castle_rook.movePiece(self.parent.squares[7][5].pos() if self.piece[:5] == "white" else self.parent.squares[0][5].pos(), [7, 5] if self.piece[:5] == "white" else [0, 5], add_move = False)
+			self.parent.turn = {"white": "black", "black": "white"}[self.parent.turn]
+		elif str(castle) == "1" and castle_rook is not None:
+			self.animation = QPropertyAnimation(self, b"pos")
+			self.animation.setEndValue(self.parent.squares[7][2].pos() if self.piece[:5] == "white" else self.parent.squares[0][2].pos())
+			self.animation.setDuration(100)
+			self.animation.start()
+			castle_rook.movePiece(self.parent.squares[7][3].pos() if self.piece[:5] == "white" else self.parent.squares[0][3].pos(), [7, 3] if self.piece[:5] == "white" else [0, 3], add_move = False)
+			self.parent.turn = {"white": "black", "black": "white"}[self.parent.turn]
+		else:
+			self.animation = QPropertyAnimation(self, b"pos")
+			self.animation.setEndValue(position)
+			self.animation.setDuration(100)
+			self.animation.start()
 		for i in self.moves: i.deleteLater()
 		self.index, self.moves = index, []
 		self.square = self.parent.squares[self.index[0]][self.index[1]]
@@ -1051,13 +1087,14 @@ class Piece(QLabel):
 		self.parent.turn = {"white": "black", "black": "white"}[self.parent.turn]
 		for i in range(len(self.parent.pieces)):
 			if self.parent.pieces[i][0] == self: self.parent.pieces[i][1] = self.index
-		if index[0] in [0, 7] and self.piece in ["white_pawn", "black_pawn"]:
+		if self.piece in ["white_pawn", "black_pawn"] and index[0] in [0, 7] and add_move:
 			self.promotion_dialog.show()
 			self.promotion_dialog.queen.pressed.connect(lambda: self.changePiece(self.piece[:6] + "queen", capture, previous_position, "Q"))
 			self.promotion_dialog.rook.pressed.connect(lambda: self.changePiece(self.piece[:6] + "rook", capture, previous_position, "R"))
 			self.promotion_dialog.bishop.pressed.connect(lambda: self.changePiece(self.piece[:6] + "bishop", capture, previous_position, "B"))
 			self.promotion_dialog.knight.pressed.connect(lambda: self.changePiece(self.piece[:6] + "knight", capture, previous_position, "N"))
-		else: self.parent.parent().addMove(self.piece, index, capture, previous_position, self.isCheck(index))
+		elif str(castle) == "False" and add_move: self.parent.parent().addMove(self.piece, index, capture, previous_position, self.isCheck(index))
+		elif add_move: self.parent.parent().addMove("", [], False, [], False, "O-O" if castle == 0 else "O-O-O")
 	
 	def changePiece(self, piece, capture, previous_position, piece_character):
 		self.setPixmap(QPixmap(f"images/standard/{piece}.png"))

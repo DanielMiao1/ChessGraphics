@@ -16,26 +16,26 @@ class PushButton(QPushButton):
 		self.setText(text)
 		self.clicked = clicked
 		self.setCursor(Qt.CursorShape.PointingHandCursor)
-		self.setStyleSheet("color: transparent; background-color: transparent; border: 4px solid transparent;")
+		self.setStyleSheet("color: transparent; background-color: transparent; border: 10px solid transparent;")
 	
 	def enterEvent(self, event: QEvent) -> None:
-		self.setStyleSheet("color: white; background-color: #6400CF; border: 4px solid #6400CF;")
+		self.setStyleSheet("color: white; background-color: #6400CF; border: 10px solid #6400CF;")
 		super(PushButton, self).enterEvent(event)
 	
 	def leaveEvent(self, event: QEvent) -> None:
-		self.setStyleSheet("color: white; background-color: #8400FF; border: 4px solid #8400FF;")
+		self.setStyleSheet("color: white; background-color: #8400FF; border: 10px solid #8400FF;")
 		super(PushButton, self).leaveEvent(event)
 	
 	def mousePressEvent(self, event: QMouseEvent) -> None:
-		self.setStyleSheet("color: white; background-color: #4F00A6; border: 4px solid #4F00A6;")
+		self.setStyleSheet("color: white; background-color: #4F00A6; border: 10px solid #4F00A6;")
 		super(PushButton, self).mousePressEvent(event)
 		if self.clicked is not None: self.clicked()
 	
 	def mouseReleaseEvent(self, event: QMouseEvent) -> None:
-		self.setStyleSheet("color: white; background-color: #6400CF; border: 4px solid #6400CF;")
+		self.setStyleSheet("color: white; background-color: #6400CF; border: 10px solid #6400CF;")
 		super(PushButton, self).mouseReleaseEvent(event)
 	
-	def animationFinished(self): self.setStyleSheet("color: white; background-color: #8400FF; border: 4px solid #8400FF;")
+	def animationFinished(self): self.setStyleSheet("color: white; background-color: #8400FF; border: 10px solid #8400FF;")
 	
 	def setColor(self, color: QColor):
 		if color.getRgb() in [(0, 0, 0, 0), (0, 0, 1, 1), (1, 0, 2, 2), (1, 0, 3, 3), (2, 0, 4, 4), (2, 0, 4, 4), (2, 0, 5, 5), (3, 0, 6, 6), (3, 0, 7, 7), (4, 0, 8, 8), (4, 0, 9, 9), (5, 0, 9, 9)]: return
@@ -88,22 +88,29 @@ class MainPage(QWidget):
 		self.title = Label(self, text = "Chess")
 		self.title_animation = QPropertyAnimation(self.title, b"color")
 		self.title_animation.setLoopCount(1)
-		self.title_animation.setDuration(10000)
+		self.title_animation.setDuration(20000)
 		self.title_animation.setStartValue(QColor("#1B00FF"))
 		self.title_animation.setEndValue(QColor("#CC00FF"))
-		self.title_animation.finished.connect(self.changeAnimationDirection)
+		self.title_animation.finished.connect(lambda: self.changeAnimationDirection(self.title_animation))
 		self.title_animation.start()
 		self.title_opening_animation = QPropertyAnimation(self.title, b"size")
-		self.title_opening_animation.setDuration(1250)
+		self.title_opening_animation.setDuration(750)
 		self.title_opening_animation.finished.connect(self.titleAnimationFinished)
 		self.select_mode_label = Label(self, text = "Select a mode")
-		self.select_mode_label.setFont(QFont("Impact", 20))
+		self.select_mode_label.setFont(QFont("Impact", 30))
+		self.select_mode_animation = QPropertyAnimation(self.select_mode_label, b"color")
+		self.select_mode_animation.setLoopCount(1)
+		self.select_mode_animation.setDuration(20000)
+		self.select_mode_animation.setStartValue(QColor("#CC00FF"))
+		self.select_mode_animation.setEndValue(QColor("#1B00FF"))
+		self.select_mode_animation.finished.connect(lambda: self.changeAnimationDirection(self.select_mode_animation))
 		self.two_player_mode_button = PushButton(self, text = "2 Player Mode", clicked = two_player_mode_function)
 		self.select_mode_label.setColor(QColor("transparent"))
 	
-	def changeAnimationDirection(self):
-		self.title_animation.setDirection(int(not self.title_animation.direction()))
-		self.title_animation.start()
+	@staticmethod
+	def changeAnimationDirection(animation):
+		animation.setDirection(int(not animation.direction()))
+		animation.start()
 	
 	def resizeEvent(self, event: QResizeEvent) -> None:
 		self.title.setFont(QFont("Impact", self.width() // 15, italic = True))
@@ -116,19 +123,20 @@ class MainPage(QWidget):
 	def titleAnimationFinished(self):
 		self.quit_button.show()
 		self.quit_button.raise_()
-		QTest.qWait(1000)
+		QTest.qWait(250)
 		self.select_mode_label.move(QPoint(self.select_mode_label.pos().x(), self.select_mode_label.pos().y() + 100))
 		self.select_mode_label_animation = QPropertyAnimation(self.select_mode_label, b"color")
-		self.select_mode_label_animation.setDuration(500)
+		self.select_mode_label_animation.setDuration(250)
 		self.select_mode_label_animation.setStartValue(QColor("transparent"))
-		self.select_mode_label_animation.setEndValue(QColor("black"))
+		self.select_mode_label_animation.setEndValue(QColor("#CC00FF"))
 		self.select_mode_label_animation.start()
 		self.select_mode_label_animation.finished.connect(self.twoPlayerModeAnimation)
 	
 	def twoPlayerModeAnimation(self):
+		self.select_mode_animation.start()
 		self.two_player_mode_button.move(QPoint(self.two_player_mode_button.pos().x(), self.two_player_mode_button.pos().y() + 100))
 		self.two_player_mode_animation = QPropertyAnimation(self.two_player_mode_button, b"color")
-		self.two_player_mode_animation.setDuration(500)
+		self.two_player_mode_animation.setDuration(250)
 		self.two_player_mode_animation.setStartValue(QColor("transparent"))
 		self.two_player_mode_animation.setEndValue(QColor("#8400FF"))
 		self.two_player_mode_animation.start()
@@ -138,6 +146,7 @@ class Window(QMainWindow):
 	"""Main Window"""
 	def __init__(self) -> None:
 		super(Window, self).__init__()
+		self.setWindowTitle("Chess")
 		self.stacked_pages, self.stacks = QStackedWidget(self), {"main-page": MainPage(self, two_player_mode_function = lambda: self.stacked_pages.setCurrentIndex(1)), "two-players": twoplayers.TwoPlayers(self)}
 		self.stacked_pages.addWidget(self.stacks["main-page"])
 		self.stacked_pages.addWidget(self.stacks["two-players"])
