@@ -104,17 +104,18 @@ class NewButton(QPushButton):
 class TwoPlayers(QWidget):
 	def __init__(self, parent):
 		super(TwoPlayers, self).__init__(parent = parent)
+		self.animation = QPropertyAnimation(self, b"pos")
+		self.animation.setEndValue(QPoint())
+		self.animation.setDuration(250)
 		self.moves_string, self.moves_count = "", 1
 		self.board = board.Board(self)
 		self.sidebar = QGroupBox(self)
-		self.sidebar.resize(750, 500)
 		self.sidebar.setStyleSheet("border: none;")
 		self.sidebar_layout = QGridLayout()
 		self.opening = QLabel("", self)
 		self.opening.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Light.ttf"))[0], 15))
 		self.opening.resize(200, 10)
 		self.moves = QWidget()
-		self.moves.resize(200, 200)
 		self.moves_layout = QGridLayout()
 		self.moves_layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
 		self.moves_layout.setSpacing(0)
@@ -174,3 +175,8 @@ class TwoPlayers(QWidget):
 					self.opening.setText(i["eco"] + " " + i["name"])
 					break
 		self.moves_count += 0.5
+	
+	def resizeEvent(self, event: QResizeEvent) -> None:
+		self.sidebar.resize(event.size().width() // 4, event.size().height())
+		self.animation.setStartValue(QPoint(event.size().width(), 0))
+		super(TwoPlayers, self).resizeEvent(event)

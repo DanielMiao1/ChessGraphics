@@ -155,7 +155,7 @@ class Window(QMainWindow):
 	def __init__(self) -> None:
 		super(Window, self).__init__()
 		self.setWindowTitle("Chess")
-		self.stacked_pages, self.stacks = QStackedWidget(self), {"main-page": MainPage(self, two_player_mode_function = lambda: self.stacked_pages.setCurrentIndex(1)), "two-players": twoplayers.TwoPlayers(self)}
+		self.stacked_pages, self.stacks = QStackedWidget(self), {"main-page": MainPage(self, two_player_mode_function = lambda: self.setIndex(1, self.stacks["two-players"])), "two-players": twoplayers.TwoPlayers(self)}
 		self.stacked_pages.addWidget(self.stacks["main-page"])
 		self.stacked_pages.addWidget(self.stacks["two-players"])
 		self.showFullScreen()
@@ -168,6 +168,10 @@ class Window(QMainWindow):
 		self.stacks["two-players"].deleteLater()
 		self.stacks["two-players"] = twoplayers.TwoPlayers(self)
 		self.stacked_pages.addWidget(self.stacks["two-players"])
+	
+	def setIndex(self, index, widget):
+		self.stacked_pages.setCurrentIndex(index)
+		widget.animation.start()
 	
 	def resizeEvent(self, event: QResizeEvent) -> None:
 		self.move(0, 20)
