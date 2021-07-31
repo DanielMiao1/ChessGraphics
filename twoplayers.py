@@ -111,6 +111,7 @@ class TwoPlayers(QWidget):
 		self.sidebar.setStyleSheet("border: none;")
 		self.sidebar_layout = QGridLayout()
 		self.opening = QLabel("", self)
+		self.opening.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Light.ttf"))[0], 15))
 		self.opening.resize(200, 10)
 		self.moves = QWidget()
 		self.moves.resize(200, 200)
