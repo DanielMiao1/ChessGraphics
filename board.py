@@ -500,6 +500,22 @@ class Piece(QLabel):
 								self.moves[-1].move(self.parent.squares[7][0].pos())
 								self.moves.append(MoveBullet(self.parent, self, index = [7, 2], castle = 1, castle_rook = x[0]))
 								self.moves[-1].move(self.parent.squares[7][2].pos())
+						elif x[0].index == [0, 0]:
+							for y in self.parent.pieces:
+								if y[0].index in [[0, 1], [0, 2], [0, 3]]: break
+							else:
+								self.moves.append(MoveBullet(self.parent, self, index = [0, 0], castle = 1, castle_rook = x[0]))
+								self.moves[-1].move(self.parent.squares[0][0].pos())
+								self.moves.append(MoveBullet(self.parent, self, index = [0, 2], castle = 1, castle_rook = x[0]))
+								self.moves[-1].move(self.parent.squares[0][2].pos())
+						elif x[0].index == [0, 7]:
+							for y in self.parent.pieces:
+								if y[0].index in [[0, 5], [0, 6]]: break
+							else:
+								self.moves.append(MoveBullet(self.parent, self, index = [0, 7], castle = 0, castle_rook = x[0]))
+								self.moves[-1].move(self.parent.squares[0][6].pos())
+								self.moves.append(MoveBullet(self.parent, self, index = [0, 6], castle = 0, castle_rook = x[0]))
+								self.moves[-1].move(self.parent.squares[0][7].pos())
 	
 	def resizeEvent(self, event: QResizeEvent) -> None:
 		self.square = self.parent.squares[self.index[0]][self.index[1]]
@@ -872,8 +888,7 @@ class Piece(QLabel):
 	def squareValidForKing(self, index: list) -> bool:
 		for x in self.parent.pieces:
 			if x[0].piece == ("white_king" if self.piece == "black_king" else "black_king"):
-				if index in x[0].validMoves():
-					return False
+				if index in x[0].validMoves(): return False
 		for x in self.parent.pieces:
 			if x[0].piece in ["white_king", "black_king"] or x[0].piece[:5] == self.piece[:5]: continue
 			x[0].appendMoves()
