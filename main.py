@@ -14,30 +14,38 @@ class PushButton(QPushButton):
 	def __init__(self, parent, text = "", clicked = None):
 		super(PushButton, self).__init__(parent)
 		self.setText(text)
-		self.clicked = clicked
+		self.clicked, self.setting_color = clicked, False
 		self.setCursor(Qt.CursorShape.PointingHandCursor)
-		self.setStyleSheet("color: transparent; background-color: transparent; border: 10px solid transparent;")
+		self.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-SemiBold.ttf"))[0], 15))
+		self.setStyleSheet("color: transparent; background-color: transparent; border: 15px solid transparent;")
 	
 	def enterEvent(self, event: QEvent) -> None:
-		self.setStyleSheet("color: white; background-color: #6400CF; border: 10px solid #6400CF;")
+		if self.setting_color: return
+		self.setStyleSheet("color: white; background-color: #6400CF; border: 15px solid #6400CF;")
 		super(PushButton, self).enterEvent(event)
 	
 	def leaveEvent(self, event: QEvent) -> None:
-		self.setStyleSheet("color: white; background-color: #8400FF; border: 10px solid #8400FF;")
+		if self.setting_color: return
+		self.setStyleSheet("color: white; background-color: #8400FF; border: 15px solid #8400FF;")
 		super(PushButton, self).leaveEvent(event)
 	
 	def mousePressEvent(self, event: QMouseEvent) -> None:
-		self.setStyleSheet("color: white; background-color: #4F00A6; border: 10px solid #4F00A6;")
+		if self.setting_color: return
+		self.setStyleSheet("color: white; background-color: #4F00A6; border: 15px solid #4F00A6;")
 		super(PushButton, self).mousePressEvent(event)
 		if self.clicked is not None: self.clicked()
 	
 	def mouseReleaseEvent(self, event: QMouseEvent) -> None:
-		self.setStyleSheet("color: white; background-color: #6400CF; border: 10px solid #6400CF;")
+		if self.setting_color: return
+		self.setStyleSheet("color: white; background-color: #6400CF; border: 15px solid #6400CF;")
 		super(PushButton, self).mouseReleaseEvent(event)
 	
-	def animationFinished(self): self.setStyleSheet("color: white; background-color: #8400FF; border: 10px solid #8400FF;")
+	def animationFinished(self):
+		self.setting_color = False
+		self.setStyleSheet("color: white; background-color: #8400FF; border: 15px solid #8400FF;")
 	
 	def setColor(self, color: QColor):
+		self.setting_color = True
 		if color.getRgb() in [(0, 0, 0, 0), (0, 0, 1, 1), (1, 0, 2, 2), (1, 0, 3, 3), (2, 0, 4, 4), (2, 0, 4, 4), (2, 0, 5, 5), (3, 0, 6, 6), (3, 0, 7, 7), (4, 0, 8, 8), (4, 0, 9, 9), (5, 0, 9, 9)]: return
 		self.setStyleSheet(f"color: white; background-color: rgba({color.getRgb()[0]}, {color.getRgb()[1]}, {color.getRgb()[2]}, {color.getRgb()[3]});")
 	
@@ -97,7 +105,7 @@ class MainPage(QWidget):
 		self.title_opening_animation.setDuration(750)
 		self.title_opening_animation.finished.connect(self.titleAnimationFinished)
 		self.select_mode_label = Label(self, text = "Select a mode")
-		self.select_mode_label.setFont(QFont("Impact", 30))
+		self.select_mode_label.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Bold.ttf"))[0], 30))
 		self.select_mode_animation = QPropertyAnimation(self.select_mode_label, b"color")
 		self.select_mode_animation.setLoopCount(1)
 		self.select_mode_animation.setDuration(20000)

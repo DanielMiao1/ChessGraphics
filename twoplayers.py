@@ -107,10 +107,11 @@ class TwoPlayers(QWidget):
 		self.moves_string, self.moves_count = "", 1
 		self.board = board.Board(self)
 		self.sidebar = QGroupBox(self)
-		self.sidebar.resize(750, 500)
+		self.sidebar.resize(750, self.height())
 		self.sidebar.setStyleSheet("border: none;")
 		self.sidebar_layout = QGridLayout()
 		self.opening = QLabel("", self)
+		self.opening.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Light.ttf"))[0], 15))
 		self.opening.resize(200, 10)
 		self.moves = QWidget()
 		self.moves.resize(200, 200)
@@ -173,3 +174,7 @@ class TwoPlayers(QWidget):
 					self.opening.setText(i["eco"] + " " + i["name"])
 					break
 		self.moves_count += 0.5
+	
+	def resizeEvent(self, event: QResizeEvent) -> None:
+		self.sidebar.resize(750, event.size().height())
+		super(TwoPlayers, self).resizeEvent(event)
