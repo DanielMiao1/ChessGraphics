@@ -8,10 +8,10 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 class MoveBullet(QLabel):
-	def __init__(self, parent, piece, index: list or tuple or set = (0, 0), hide: bool = True, capture: bool = False, castle: 0 or 1 or False = False, castle_rook = None):
+	def __init__(self, parent, piece, index: list or tuple or set = (0, 0), hide: bool = True, capture: bool = False, castle: 0 or 1 or False = False, castle_rook = None, double_pawn_move: bool = False, en_passant_pawn = False):
 		super(MoveBullet, self).__init__(parent = parent)
 		self.setPixmap(QPixmap("images/bullet.png"))
-		self.piece, self.index, self.capture, self.castle, self.castle_rook = piece, index, capture, castle, castle_rook
+		self.piece, self.index, self.capture, self.castle, self.castle_rook, self.double_pawn_move, self.en_passant_pawn = piece, index, capture, castle, castle_rook, double_pawn_move, en_passant_pawn
 		self.resize(100, 100)
 		if hide: self.hide()
 		self.setCursor(Qt.PointingHandCursor)
@@ -25,7 +25,7 @@ class MoveBullet(QLabel):
 		super(MoveBullet, self).leaveEvent(event)
 	
 	def mousePressEvent(self, event: QMouseEvent):
-		if event.button() == Qt.LeftButton: self.piece.movePiece(self.pos(), index = self.index, capture = self.capture, castle = self.castle, castle_rook = self.castle_rook)
+		if event.button() == Qt.LeftButton: self.piece.movePiece(self.pos(), index = self.index, capture = self.capture, castle = self.castle, castle_rook = self.castle_rook, double_pawn_move = self.double_pawn_move, en_passant_pawn = self.en_passant_pawn)
 		else: self.parent().mousePressEvent(event)
 		super(MoveBullet, self).mousePressEvent(event)
 
@@ -80,12 +80,19 @@ class PromotionDialog(QWidget):
 class Piece(QLabel):
 	def __init__(self, parent, piece: str or None = None, index: list or None = None):
 		super(Piece, self).__init__(parent = parent)
-		self.parent, self.index, self.piece, self.showing_moves, self.moves, self.first_paint_run, self.animation, self.promotion_dialog, self.moved = parent, index, piece, False, [], True, None, PromotionDialog(self, side = piece[:5]), False
+		self.parent, self.index, self.piece, self.showing_moves, self.moves, self.first_paint_run, self.animation, self.promotion_dialog, self.moved, self.allow_en_passant = parent, index, piece, False, [], True, None, PromotionDialog(self, side = piece[:5]), False, False
 		if piece is not None: self.setPixmap(QPixmap("images/standard/" + piece))
 		self.setCursor(Qt.PointingHandCursor)
 	
 	def appendMoves(self):
 		if self.piece in ["white_pawn", "black_pawn"]:
+			for i in self.parent.pieces:
+				if i[1] == [self.index[0], self.index[1] + 1] and i[0].allow_en_passant:
+					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] - (1 if self.piece[:5] == "white" else -1), self.index[1] + 1], en_passant_pawn = i[0]))
+					self.moves[-1].move(self.parent.squares[self.index[0] - (1 if self.piece[:5] == "white" else -1)][self.index[1] + 1].pos())
+				elif i[1] == [self.index[0], self.index[1] - 1] and i[0].allow_en_passant:
+					self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] - (1 if self.piece[:5] == "white" else -1), self.index[1] - 1], en_passant_pawn = i[0]))
+					self.moves[-1].move(self.parent.squares[self.index[0] - (1 if self.piece[:5] == "white" else -1)][self.index[1] - 1].pos())
 			found = False
 			for i in self.parent.pieces:
 				if i[1] == [self.index[0] - (1 if self.piece == "white_pawn" else -1), self.index[1]]: found = True
@@ -96,10 +103,10 @@ class Piece(QLabel):
 					if i[1] == [self.index[0] - (2 if self.piece == "white_pawn" else -2), self.index[1]]: found = True
 				if not found:
 					if self.index[0] == 6 and self.piece == "white_pawn":
-						self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] - 2, self.index[1]]))
+						self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] - 2, self.index[1]], double_pawn_move = True))
 						self.moves[-1].move(self.parent.squares[self.index[0] - 2][self.index[1]].pos())
 					elif self.index[0] == 1 and self.piece == "black_pawn":
-						self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] + 2, self.index[1]]))
+						self.moves.append(MoveBullet(self.parent, self, index = [self.index[0] + 2, self.index[1]], double_pawn_move = True))
 						self.moves[-1].move(self.parent.squares[self.index[0] + 2][self.index[1]].pos())
 			piece_found, position, index = False, None, None
 			if self.piece == "white_pawn":
@@ -484,7 +491,7 @@ class Piece(QLabel):
 			if not self.moved:
 				for x in self.parent.pieces:
 					if x[0].piece == self.piece[:5] + "_rook" and not x[0].moved:
-						if x[0].index == [7, 7]:
+						if x[0].index == [7, 7] and not self.inCheck():
 							for y in self.parent.pieces:
 								if y[0].index in [[7, 5], [7, 6]]: break
 							else:
@@ -492,7 +499,7 @@ class Piece(QLabel):
 								self.moves[-1].move(self.parent.squares[7][7].pos())
 								self.moves.append(MoveBullet(self.parent, self, index = [7, 6], castle = 0, castle_rook = x[0]))
 								self.moves[-1].move(self.parent.squares[7][6].pos())
-						elif x[0].index == [7, 0]:
+						elif x[0].index == [7, 0] and not self.inCheck():
 							for y in self.parent.pieces:
 								if y[0].index in [[7, 1], [7, 2], [7, 3]]: break
 							else:
@@ -500,7 +507,7 @@ class Piece(QLabel):
 								self.moves[-1].move(self.parent.squares[7][0].pos())
 								self.moves.append(MoveBullet(self.parent, self, index = [7, 2], castle = 1, castle_rook = x[0]))
 								self.moves[-1].move(self.parent.squares[7][2].pos())
-						elif x[0].index == [0, 0]:
+						elif x[0].index == [0, 0] and not self.inCheck():
 							for y in self.parent.pieces:
 								if y[0].index in [[0, 1], [0, 2], [0, 3]]: break
 							else:
@@ -508,7 +515,7 @@ class Piece(QLabel):
 								self.moves[-1].move(self.parent.squares[0][0].pos())
 								self.moves.append(MoveBullet(self.parent, self, index = [0, 2], castle = 1, castle_rook = x[0]))
 								self.moves[-1].move(self.parent.squares[0][2].pos())
-						elif x[0].index == [0, 7]:
+						elif x[0].index == [0, 7] and not self.inCheck():
 							for y in self.parent.pieces:
 								if y[0].index in [[0, 5], [0, 6]]: break
 							else:
@@ -516,6 +523,8 @@ class Piece(QLabel):
 								self.moves[-1].move(self.parent.squares[0][6].pos())
 								self.moves.append(MoveBullet(self.parent, self, index = [0, 6], castle = 0, castle_rook = x[0]))
 								self.moves[-1].move(self.parent.squares[0][7].pos())
+	
+	def inCheck(self): return self.parent.parent().move_buttons[-1].text().endswith("+") if self.parent.parent().move_buttons else False
 	
 	def resizeEvent(self, event: QResizeEvent) -> None:
 		self.square = self.parent.squares[self.index[0]][self.index[1]]
@@ -1066,12 +1075,20 @@ class Piece(QLabel):
 				break
 		return False
 	
-	def movePiece(self, position, index: list or tuple or set = (0, 0), capture: bool = False, castle: 0 or 1 or False = False, castle_rook = None, add_move: bool = True):
+	def movePiece(self, position, index: list or tuple or set = (0, 0), capture: bool = False, castle: 0 or 1 or False = False, castle_rook = None, add_move: bool = True, double_pawn_move: bool = False, en_passant_pawn = False):
 		self.moved = True
-		previous_position = self.index
+		previous_position, self.allow_en_passant = self.index, double_pawn_move
+		for i in self.parent.pieces:
+			if i[0] == self: continue
+			i[0].allow_en_passant = False
 		if capture:
 			for i in self.parent.pieces:
 				if i[1] == index:
+					i[0].deleteLater()
+					self.parent.pieces.remove(i)
+		elif en_passant_pawn:
+			for i in self.parent.pieces:
+				if i[0] == en_passant_pawn:
 					i[0].deleteLater()
 					self.parent.pieces.remove(i)
 		self.setStyleSheet("background-color: transparent;")
@@ -1095,7 +1112,7 @@ class Piece(QLabel):
 			self.animation.setDuration(100)
 			self.animation.start()
 		for i in self.moves: i.deleteLater()
-		self.index, self.moves = index, []
+		self.index, self.moves = index if str(castle) == "False" else [0 if self.piece[:5] == "black" else 7, 2 if str(castle) == "1" else 6], []
 		self.square = self.parent.squares[self.index[0]][self.index[1]]
 		self.showing_moves, self.parent.piece_for_shown_moves = False, None
 		self.raise_()

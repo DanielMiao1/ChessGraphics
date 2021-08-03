@@ -15,6 +15,7 @@ class MoveButton(QPushButton):
 	def __init__(self, parent, text = ""):
 		super(MoveButton, self).__init__(parent = parent)
 		self.setCursor(Qt.PointingHandCursor)
+		self.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Regular.ttf"))[0], 15, weight = 40))
 		self.setText(text)
 		self.setFixedSize(100, 30)
 	
@@ -113,7 +114,8 @@ class TwoPlayers(QWidget):
 		self.sidebar.setStyleSheet("border: none;")
 		self.sidebar_layout = QGridLayout()
 		self.opening = QLabel("", self)
-		self.opening.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Light.ttf"))[0], 15))
+		self.opening.setWordWrap(True)
+		self.opening.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Light.ttf"))[0], 15, italic = True))
 		self.opening.resize(200, 10)
 		self.moves = QWidget()
 		self.moves_layout = QGridLayout()

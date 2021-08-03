@@ -10826,32 +10826,27 @@
   },
   {
     "eco": "C46",
-    "name": "Three Knights Opening",
+    "name": "Three Knights Game",
     "moves": "1. e4 e5 2. Nf3 Nc6 3. Nc3"
   },
   {
     "eco": "C46",
-    "name": "Three Knights Opening",
-    "moves": "1. e4 e5 2. Nf3 Nc6 3. Nc3 Bb4"
-  },
-  {
-    "eco": "C46",
-    "name": "Three Knights Opening: Schlechter Variation",
+    "name": "Three Knights Game: Schlechter Variation",
     "moves": "1. e4 e5 2. Nf3 Nc6 3. Nc3 Bb4 4. Nd5 Nf6"
   },
   {
     "eco": "C46",
-    "name": "Three Knights Opening: Steinitz Defense",
+    "name": "Three Knights Game: Steinitz Defense",
     "moves": "1. e4 e5 2. Nf3 Nc6 3. Nc3 g6"
   },
   {
     "eco": "C46",
-    "name": "Three Knights Opening: Steinitz-Rosenthal Variation",
+    "name": "Three Knights Game: Steinitz-Rosenthal Variation",
     "moves": "1. e4 e5 2. Nf3 Nc6 3. Nc3 g6 4. d4 exd4 5. Nd5"
   },
   {
     "eco": "C46",
-    "name": "Three Knights Opening: Winawer Defense",
+    "name": "Three Knights Game: Winawer Defense",
     "moves": "1. e4 e5 2. Nf3 Nc6 3. Nc3 f5"
   },
   {
@@ -13836,7 +13831,7 @@
   },
   {
     "eco": "D19",
-    "name": "Slav Defense: Czech Variation, Dutch Variation, Sämisch Variation",
+    "name": "Slav Defense: Czech, Dutch, Sämisch Variation",
     "moves": "1. d4 d5 2. c4 c6 3. Nf3 Nf6 4. Nc3 dxc4 5. a4 Bf5 6. e3 e6 7. Bxc4 Bb4 8. O-O O-O 9. Qe2 Ne4 10. g4"
   },
   {
@@ -13851,37 +13846,37 @@
   },
   {
     "eco": "D20",
-    "name": "Queen's Gambit Accepted: Central Variation, Alekhine System",
+    "name": "Queen's Gambit Accepted: Central, Alekhine System",
     "moves": "1. d4 d5 2. c4 dxc4 3. e4 Nf6"
   },
   {
     "eco": "D20",
-    "name": "Queen's Gambit Accepted: Central Variation, Greco Variation",
+    "name": "Queen's Gambit Accepted: Central, Greco Variation",
     "moves": "1. d4 d5 2. c4 dxc4 3. e4 b5"
   },
   {
     "eco": "D20",
-    "name": "Queen's Gambit Accepted: Central Variation, McDonnell Defense",
+    "name": "Queen's Gambit Accepted: Central, McDonnell Defense",
     "moves": "1. d4 d5 2. c4 dxc4 3. e4 e5"
   },
   {
     "eco": "D20",
-    "name": "Queen's Gambit Accepted: Central Variation, McDonnell Defense, Somov Gambit",
+    "name": "Queen's Gambit Accepted: Central, McDonnell, Somov Gambit",
     "moves": "1. d4 d5 2. c4 dxc4 3. e4 e5 4. Bxc4"
   },
   {
     "eco": "D20",
-    "name": "Queen's Gambit Accepted: Central Variation, Modern Defense",
+    "name": "Queen's Gambit Accepted: Central, Modern Defense",
     "moves": "1. d4 d5 2. c4 dxc4 3. e4 Nc6"
   },
   {
     "eco": "D20",
-    "name": "Queen's Gambit Accepted: Central Variation, Rubinstein Defense",
+    "name": "Queen's Gambit Accepted: Central, Rubinstein Defense",
     "moves": "1. d4 d5 2. c4 dxc4 3. e4 c5"
   },
   {
     "eco": "D20",
-    "name": "Queen's Gambit Accepted: Central Variation, Rubinstein Defense, Yefimov Gambit",
+    "name": "Queen's Gambit Accepted: Central, Rubinstein, Yefimov Gambit",
     "moves": "1. d4 d5 2. c4 dxc4 3. e4 c5 4. d5 b5"
   },
   {
@@ -14016,17 +14011,17 @@
   },
   {
     "eco": "D26",
-    "name": "Queen's Gambit Accepted: Classical Defense, Normal Line",
+    "name": "Queen's Gambit Accepted: Classical, Normal Line",
     "moves": "1. d4 d5 2. c4 dxc4 3. Nf3 Nf6 4. e3 e6 5. Bxc4 c5 6. O-O"
   },
   {
     "eco": "D26",
-    "name": "Queen's Gambit Accepted: Classical Defense, Steinitz Variation, Development Variation",
+    "name": "Queen's Gambit Accepted: Classical, Steinitz, Development Variation",
     "moves": "1. d4 d5 2. c4 dxc4 3. Nf3 Nf6 4. e3 e6 5. Bxc4 c5 6. O-O Nc6"
   },
   {
     "eco": "D26",
-    "name": "Queen's Gambit Accepted: Classical Defense, Steinitz Variation, Exchange Variation",
+    "name": "Queen's Gambit Accepted: Classical, Steinitz, Exchange Variation",
     "moves": "1. d4 d5 2. c4 dxc4 3. Nf3 Nf6 4. e3 e6 5. Bxc4 c5 6. O-O cxd4"
   },
   {
@@ -14036,22 +14031,22 @@
   },
   {
     "eco": "D26",
-    "name": "Queen's Gambit Accepted: Normal Variation, Traditional System",
+    "name": "Queen's Gambit Accepted: Normal, Traditional System",
     "moves": "1. d4 d5 2. c4 dxc4 3. Nf3 Nf6 4. e3 e6"
   },
   {
     "eco": "D27",
-    "name": "Queen's Gambit Accepted: Classical Defense, Main Line",
+    "name": "Queen's Gambit Accepted: Classical, Main Line",
     "moves": "1. d4 d5 2. c4 dxc4 3. Nf3 Nf6 4. e3 e6 5. Bxc4 c5 6. O-O a6"
   },
   {
     "eco": "D27",
-    "name": "Queen's Gambit Accepted: Classical Defense, Rubinstein Variation",
+    "name": "Queen's Gambit Accepted: Classical, Rubinstein Variation",
     "moves": "1. d4 d5 2. c4 dxc4 3. Nf3 Nf6 4. e3 e6 5. Bxc4 c5 6. O-O a6 7. a4"
   },
   {
     "eco": "D27",
-    "name": "Queen's Gambit Accepted: Classical Defense, Russian Gambit",
+    "name": "Queen's Gambit Accepted: Classical, Russian Gambit",
     "moves": "1. d4 d5 2. c4 dxc4 3. e3 Nf6 4. Bxc4 e6 5. Nf3 c5 6. O-O a6 7. e4"
   },
   {
@@ -14061,12 +14056,12 @@
   },
   {
     "eco": "D28",
-    "name": "Queen's Gambit Accepted: Classical Defense, Alekhine System",
+    "name": "Queen's Gambit Accepted: Classical, Alekhine System",
     "moves": "1. d4 d5 2. c4 dxc4 3. Nf3 Nf6 4. e3 e6 5. Bxc4 c5 6. O-O a6 7. Qe2"
   },
   {
     "eco": "D28",
-    "name": "Queen's Gambit Accepted: Classical Defense, Alekhine System, No Main Line",
+    "name": "Queen's Gambit Accepted: Classical, Alekhine System, 7... b5",
     "moves": "1. d4 d5 2. c4 dxc4 3. Nf3 Nf6 4. e3 e6 5. Bxc4 c5 6. O-O a6 7. Qe2 b5"
   },
   {
@@ -14076,12 +14071,12 @@
   },
   {
     "eco": "D29",
-    "name": "Queen's Gambit Accepted: Classical Defense, Alekhine System, Main Line",
+    "name": "Queen's Gambit Accepted: Classical, Alekhine, Main Line",
     "moves": "1. d4 d5 2. c4 dxc4 3. Nf3 Nf6 4. e3 e6 5. Bxc4 c5 6. O-O a6 7. Qe2 b5 8. Bb3 Bb7"
   },
   {
     "eco": "D29",
-    "name": "Queen's Gambit Accepted: Classical Defense, Alekhine System, Smyslov Variation",
+    "name": "Queen's Gambit Accepted: Classical, Alekhine, Smyslov Variation",
     "moves": "1. d4 d5 2. c4 dxc4 3. Nf3 Nf6 4. e3 e6 5. Bxc4 c5 6. O-O a6 7. Qe2 b5 8. Bb3 Bb7 9. Rd1 Nbd7 10. Nc3 Bd6"
   },
   {
