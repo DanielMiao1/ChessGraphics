@@ -4,6 +4,7 @@ twoplayers.py
 """
 
 import json
+import chess
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -11,11 +12,12 @@ from PyQt5.QtWidgets import *
 
 import board
 
+
 class MoveButton(QPushButton):
-	def __init__(self, parent, text = ""):
-		super(MoveButton, self).__init__(parent = parent)
+	def __init__(self, parent, text=""):
+		super(MoveButton, self).__init__(parent=parent)
 		self.setCursor(Qt.PointingHandCursor)
-		self.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Regular.ttf"))[0], 15, weight = 40))
+		self.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Regular.ttf"))[0], 15, weight=40))
 		self.setText(text)
 		self.setFixedSize(100, 30)
 	
@@ -27,9 +29,10 @@ class MoveButton(QPushButton):
 		self.setStyleSheet("background-color: transparent; color: black;")
 		super(MoveButton, self).leaveEvent(event)
 
+
 class AbortButton(QPushButton):
 	def __init__(self, parent):
-		super(AbortButton, self).__init__(parent = parent)
+		super(AbortButton, self).__init__(parent=parent)
 		self.move(40, 0)
 		self.setText("–")
 		self.setFixedSize(QSize(40, 40))
@@ -52,9 +55,10 @@ class AbortButton(QPushButton):
 		self.setStyleSheet("color: black; background-color: white; border: none;")
 		super(AbortButton, self).leaveEvent(event)
 
+
 class BackButton(QPushButton):
 	def __init__(self, parent):
-		super(BackButton, self).__init__(parent = parent)
+		super(BackButton, self).__init__(parent=parent)
 		self.move(0, 0)
 		self.setText("←")
 		self.setFixedSize(QSize(40, 40))
@@ -77,9 +81,10 @@ class BackButton(QPushButton):
 		self.setStyleSheet("color: black; background-color: white; border: none;")
 		super(BackButton, self).leaveEvent(event)
 
+
 class NewButton(QPushButton):
 	def __init__(self, parent):
-		super(NewButton, self).__init__(parent = parent)
+		super(NewButton, self).__init__(parent=parent)
 		self.move(80, 0)
 		self.setText("+")
 		self.setFixedSize(QSize(40, 40))
@@ -102,20 +107,22 @@ class NewButton(QPushButton):
 		self.setStyleSheet("color: black; background-color: white; border: none;")
 		super(NewButton, self).leaveEvent(event)
 
+
 class TwoPlayers(QWidget):
 	def __init__(self, parent):
-		super(TwoPlayers, self).__init__(parent = parent)
+		super(TwoPlayers, self).__init__(parent=parent)
+		self.game = chess.Game()
 		self.animation = QPropertyAnimation(self, b"pos")
 		self.animation.setEndValue(QPoint())
 		self.animation.setDuration(250)
-		self.moves_string, self.moves_count = "", 1
-		self.board = board.Board(self)
+		self.moves_count = 1
+		self.board = board.Board(self, self.game)
 		self.sidebar = QGroupBox(self)
 		self.sidebar.setStyleSheet("border: none;")
 		self.sidebar_layout = QGridLayout()
-		self.opening = QLabel("", self)
+		self.opening = QLabel("Starting Position", self)
 		self.opening.setWordWrap(True)
-		self.opening.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Light.ttf"))[0], 15, italic = True))
+		self.opening.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Light.ttf"))[0], 15, italic=True))
 		self.opening.resize(200, 10)
 		self.moves = QWidget()
 		self.moves_layout = QGridLayout()
@@ -144,38 +151,17 @@ class TwoPlayers(QWidget):
 		self.parent().parent().resetTwoPlayerGame()
 		self.parent().setCurrentIndex(1)
 	
-	def formatIndex(self, index: list) -> str: return str(("a", "b", "c", "d", "e", "f", "g", "h")[index[1]]) + str(self.absoluteValue(index[0] - 8))
-	
 	def getGridIndex(self) -> list:
 		columns = 0
 		for i in range(len(self.move_buttons)):
 			if i % 2 == 0 and i != 0: columns += 1
 		return [columns, int(len(self.move_buttons) % 2 == 0)]
 	
-	@staticmethod
-	def absoluteValue(number: int) -> int:
-		return -(number if number < 0 else -number)
-	
-	def addMove(self, piece: str, index: list or set or tuple, capture: bool, previous_position: list or set or tuple, check: bool, message = None) -> None:
-		if message is None:
-			piece = piece[6:]
-			message = {"pawn": "", "knight": "N", "bishop": "B", "rook": "R", "queen": "Q", "king": "K"}[piece]
-			if capture:
-				if piece == "pawn": message += self.formatIndex(previous_position)[0] + "x" + self.formatIndex(index)
-				else: message += "x" + self.formatIndex(index)
-			else: message += self.formatIndex(index)
-			if check: message += "+"
-		self.move_buttons.append(MoveButton(self.moves, message))
+	def addMove(self, move) -> None:
+		self.move_buttons.append(MoveButton(self.moves, move))
 		self.moves_layout.addWidget(self.move_buttons[-1], self.getGridIndex()[0], self.getGridIndex()[1])
 		self.move_buttons[-1].show()
 		self.moves_wrapper.verticalScrollBar().setSliderPosition(self.moves_wrapper.verticalScrollBar().maximum())
-		if self.moves_count % 1 != 0: self.moves_string += " " + message
-		else: self.moves_string += f" {int(self.moves_count)}. {message}"
-		with open("openings.json", "r+") as file:
-			for i in json.load(file):
-				if i["moves"] == self.moves_string.lstrip():
-					self.opening.setText(i["eco"] + " " + i["name"])
-					break
 		self.moves_count += 0.5
 	
 	def resizeEvent(self, event: QResizeEvent) -> None:

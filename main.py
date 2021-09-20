@@ -3,21 +3,30 @@ main.py
 Chess Game Main File
 """
 
-try: import PyQt5
-except ModuleNotFoundError: __import__("os").system("pip3 install PyQt5")
+try: from PyQt5.QtGui import *
+except ModuleNotFoundError:
+	print("The PyQt5 library is not installed. Use the 'pip3 install PyQt5' bash command to install it.")
+	exit()
 
-from PyQt5.QtGui import *
+try:
+	import chess
+	chess.Game()
+except ModuleNotFoundError:
+	__import__("os").system("pip3 install git+https://github.com/DanielMiao1/PyChess")
+
+
 from PyQt5.QtCore import *
 from PyQt5.QtTest import *
 from PyQt5.QtWidgets import *
 
 import twoplayers
 
+
 class PushButton(QPushButton):
-	def __init__(self, parent, text = "", clicked = None):
+	def __init__(self, parent, text="", clicked=None):
 		super(PushButton, self).__init__(parent)
 		self.setText(text)
-		self.clicked, self.setting_color = clicked, False
+		self.clicked, self.setting_color = clicked, True
 		self.setCursor(Qt.CursorShape.PointingHandCursor)
 		self.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-SemiBold.ttf"))[0], 15))
 		self.setStyleSheet("color: transparent; background-color: transparent; border: 15px solid transparent;")
@@ -48,15 +57,15 @@ class PushButton(QPushButton):
 		self.setStyleSheet("color: white; background-color: #8400FF; border: 15px solid #8400FF;")
 
 	def setColor(self, color: QColor):
-		self.setting_color = True
 		if color.getRgb() in [(0, 0, 0, 0), (0, 0, 1, 1), (1, 0, 2, 2), (1, 0, 3, 3), (2, 0, 4, 4), (2, 0, 4, 4), (2, 0, 5, 5), (3, 0, 6, 6), (3, 0, 7, 7), (4, 0, 8, 8), (4, 0, 9, 9), (5, 0, 9, 9)]: return
 		self.setStyleSheet(f"color: white; background-color: rgba({color.getRgb()[0]}, {color.getRgb()[1]}, {color.getRgb()[2]}, {color.getRgb()[3]});")
 
-	color = pyqtProperty(QColor, fset = setColor)
+	color = pyqtProperty(QColor, fset=setColor)
+
 
 class Label(QLabel):
-	def __init__(self, parent, text = ""):
-		super(Label, self).__init__(parent = parent)
+	def __init__(self, parent, text=""):
+		super(Label, self).__init__(parent=parent)
 		self.setText(text)
 		self.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -65,16 +74,17 @@ class Label(QLabel):
 		palette.setColor(self.foregroundRole(), color)
 		self.setPalette(palette)
 
-	color = pyqtProperty(QColor, fset = setColor)
+	color = pyqtProperty(QColor, fset=setColor)
+
 
 class QuitButton(QPushButton):
 	def __init__(self, parent):
-		super(QuitButton, self).__init__(parent = parent)
+		super(QuitButton, self).__init__(parent=parent)
 		self.setText("×")
 		self.setFixedSize(QSize(40, 40))
 		self.setCursor(Qt.CursorShape.PointingHandCursor)
 		self.pressed.connect(QApplication.quit)
-		self.status_tip = Label(parent, text = "Quit")
+		self.status_tip = Label(parent, text="Quit")
 		self.status_tip.setFixedWidth(40)
 		self.status_tip.move(QPoint(self.pos().x(), self.pos().y() + 40))
 		self.status_tip.hide()
@@ -90,13 +100,14 @@ class QuitButton(QPushButton):
 		self.setStyleSheet("color: black; background-color: white; border: none;")
 		super(QuitButton, self).leaveEvent(event)
 
+
 class MainPage(QWidget):
-	def __init__(self, parent, two_player_mode_function = None):
-		super(MainPage, self).__init__(parent = parent)
+	def __init__(self, parent, two_player_mode_function=None):
+		super(MainPage, self).__init__(parent=parent)
 		self.select_mode_label_animation, self.two_player_mode_animation = None, None
 		self.quit_button = QuitButton(self)
 		self.quit_button.hide()
-		self.title = Label(self, text = "Chess")
+		self.title = Label(self, text="Chess")
 		self.title_animation = QPropertyAnimation(self.title, b"color")
 		self.title_animation.setLoopCount(1)
 		self.title_animation.setDuration(20000)
@@ -107,7 +118,7 @@ class MainPage(QWidget):
 		self.title_opening_animation = QPropertyAnimation(self.title, b"size")
 		self.title_opening_animation.setDuration(750)
 		self.title_opening_animation.finished.connect(self.titleAnimationFinished)
-		self.select_mode_label = Label(self, text = "Select a mode")
+		self.select_mode_label = Label(self, text="Select a mode")
 		self.select_mode_label.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Bold.ttf"))[0], 30))
 		self.select_mode_animation = QPropertyAnimation(self.select_mode_label, b"color")
 		self.select_mode_animation.setLoopCount(1)
@@ -115,7 +126,7 @@ class MainPage(QWidget):
 		self.select_mode_animation.setStartValue(QColor("#CC00FF"))
 		self.select_mode_animation.setEndValue(QColor("#1B00FF"))
 		self.select_mode_animation.finished.connect(lambda: self.changeAnimationDirection(self.select_mode_animation))
-		self.two_player_mode_button = PushButton(self, text = "2 Player Mode", clicked = two_player_mode_function)
+		self.two_player_mode_button = PushButton(self, text="2 Player Mode", clicked=two_player_mode_function)
 		self.select_mode_label.setColor(QColor("transparent"))
 
 	@staticmethod
@@ -124,7 +135,7 @@ class MainPage(QWidget):
 		animation.start()
 
 	def resizeEvent(self, event: QResizeEvent) -> None:
-		self.title.setFont(QFont("Impact", self.width() // 15, italic = True))
+		self.title.setFont(QFont("Impact", self.width() // 15, italic=True))
 		self.title.move(QPoint(self.title.pos().x(), 10))
 		self.title_opening_animation.setEndValue(QSize(self.title.maximumWidth(), 200))
 		self.title_opening_animation.setStartValue(QSize(self.title.maximumWidth(), 0))
@@ -153,19 +164,23 @@ class MainPage(QWidget):
 		self.two_player_mode_animation.start()
 		self.two_player_mode_animation.finished.connect(self.two_player_mode_button.animationFinished)
 
+
 class Window(QMainWindow):
 	"""Main Window"""
 	def __init__(self) -> None:
 		super(Window, self).__init__()
 		self.setWindowTitle("Chess")
-		self.stacked_pages, self.stacks = QStackedWidget(self), {"main-page": MainPage(self, two_player_mode_function = lambda: self.setIndex(1, self.stacks["two-players"])), "two-players": twoplayers.TwoPlayers(self)}
+		self.stacked_pages, self.stacks = QStackedWidget(self), {"main-page": MainPage(self, two_player_mode_function=self.twoPlayerMode), "two-players": twoplayers.TwoPlayers(self)}
 		self.stacked_pages.addWidget(self.stacks["main-page"])
 		self.stacked_pages.addWidget(self.stacks["two-players"])
 		self.showFullScreen()
 		self.stacked_pages.move(0, 0)
 		self.stacked_pages.setFixedSize(self.size())
-		self.show()
 		self.setMinimumSize(QSize(self.width(), self.height() - 20))
+	
+	def twoPlayerMode(self):
+		self.setIndex(1, self.stacks["two-players"])
+		self.setWindowTitle("2-Player Chess Game: White to move")
 
 	def resetTwoPlayerGame(self):
 		self.stacks["two-players"].deleteLater()
