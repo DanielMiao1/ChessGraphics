@@ -20,22 +20,22 @@ class MoveBullet(QLabel):
 		self.setPixmap(QPixmap("images/bullet.png"))
 		self.move((coordinateToIndex(self.position)[1] + 1) * 100, (coordinateToIndex(self.position)[0] + 1) * 100)
 		self.move = move
-	
+
 	def enterEvent(self, event: QHoverEvent):
 		self.setStyleSheet("background-color: rgba(12, 36, 255, 0.5)")
 		super(MoveBullet, self).enterEvent(event)
-	
+
 	def leaveEvent(self, event: QHoverEvent):
 		self.setStyleSheet("background-color: transparent")
 		super(MoveBullet, self).leaveEvent(event)
-	
+
 	def mousePressEvent(self, event) -> None:
 		if event.button() == Qt.LeftButton:
 			self.piece.movePiece(self.move)
 		else:
 			self.piece.mousePressEvent(event)
 		super(MoveBullet, self).mousePressEvent(event)
-		
+
 
 class Piece(QLabel):
 	def __init__(self, parent, position, color, piece):
@@ -44,11 +44,11 @@ class Piece(QLabel):
 		self.position = position
 		self.move_animation = None
 		self.moves_loaded = True
-		self.moves = [MoveBullet(self.parent(), self, i, i.new_position) for i in self.parent().game.pieceAt(self.position).moves(show_data=True)]
+		self.moves = [MoveBullet(self.parent(), self, i, i.new_position) for i in self.parent().game.pieceAt(self.position).moves(show_data=True, evaluate_checks=False)]
 		self.showing_moves = False
 		self.setCursor(Qt.PointingHandCursor)
 		self.setPixmap(QPixmap("images/standard/" + color + "_" + piece))
-	
+
 	def mousePressEvent(self, event) -> None:
 		if self.showing_moves:
 			self.setStyleSheet("background-color: transparent;")
@@ -64,13 +64,13 @@ class Piece(QLabel):
 						y.hide()
 			if self.parent().game.turn == self.color:
 				if not self.moves_loaded:
-					self.moves = [MoveBullet(self.parent(), self, i, i.new_position) for i in self.parent().game.pieceAt(self.position).moves(show_data=True)]
+					self.moves = [MoveBullet(self.parent(), self, i, i.new_position) for i in self.parent().game.pieceAt(self.position).moves(show_data=True, evaluate_checks=False)]
 					self.moves_loaded = True
 				for i in self.moves:
 					i.show()
 		self.showing_moves = not self.showing_moves
 		super(Piece, self).mousePressEvent(event)
-	
+
 	def movePiece(self, move):
 		self.setStyleSheet("background-color: transparent;")
 		for i in self.parent().pieces:
@@ -82,7 +82,7 @@ class Piece(QLabel):
 		self.move_animation.setEndValue(QPoint((coordinateToIndex(self.position)[1] + 1) * 100, (coordinateToIndex(self.position)[0] + 1) * 100))
 		self.move_animation.setDuration(100)
 		self.move_animation.start()
-		self.parent().game.move(move.name)
+		self.parent().game.move(move.name, evaluate_move_checks=False)
 		for i in self.moves:
 			i.setParent(None)
 		self.parent().parent().opening.setText(self.parent().game.opening)
@@ -95,7 +95,7 @@ class Square(QPushButton):
 		super(Square, self).__init__(parent=parent)
 		self.setFixedSize(QSize(100, 100))
 		self.setStyleSheet(f"background-color: {color}; border: none;")
-	
+
 	def mousePressEvent(self, event) -> None:
 		for x in self.parent().pieces:
 			if x.showing_moves:
