@@ -1,6 +1,6 @@
 """
 board.py
-Graphical Chess Board, Pieces, and Squares
+Chess Board Graphics
 """
 
 from PyQt5.QtGui import *
@@ -82,6 +82,16 @@ class Piece(QLabel):
 		self.move_animation.setEndValue(QPoint((coordinateToIndex(self.position)[1] + 1) * 100, (coordinateToIndex(self.position)[0] + 1) * 100))
 		self.move_animation.setDuration(100)
 		self.move_animation.start()
+		if move.castle is not None:
+			self.parent().castle_rook_animation = QPropertyAnimation(self.parent().pieceAt(move.castle_rook.position), b"pos")
+			if move.castle == "kingside":
+				self.parent().pieceAt(move.castle_rook.position).position = "f" + move.old_position[1]
+				self.parent().castle_rook_animation.setEndValue(QPoint(600, (coordinateToIndex(move.castle_rook.position)[0] + 1) * 100))
+			else:
+				self.parent().pieceAt(move.castle_rook.position).position = "d" + move.old_position[1]
+				self.parent().castle_rook_animation.setEndValue(QPoint(400, (coordinateToIndex(move.castle_rook.position)[0] + 1) * 100))
+			self.parent().castle_rook_animation.setDuration(100)
+			self.parent().castle_rook_animation.start()
 		self.parent().game.move(move.name, evaluate_move_checks=False)
 		for i in self.moves:
 			i.setParent(None)
@@ -111,6 +121,7 @@ class Board(QWidget):
 		super(Board, self).__init__(parent=parent)
 		self.game = game
 		self.squares, self.pieces = [], []
+		self.castle_rook_animation = None
 		for x in self.game.squares:
 			for y in x:
 				self.squares.append(Square(self, "#FFFFDD" if y.color == "white" else "#86A666"))
@@ -118,6 +129,11 @@ class Board(QWidget):
 		for i in self.game.pieces:
 			self.pieces.append(Piece(self, i.position, i.color, i.piece_type))
 			self.pieces[-1].move((coordinateToIndex(i.position)[1] + 1) * 100, (coordinateToIndex(i.position)[0] + 1) * 100)
+
+	def pieceAt(self, position):
+		for i in self.pieces:
+			if i.position == position:
+				return i
 
 	def resizeEvent(self, event: QResizeEvent) -> None:
 		self.move((self.parent().parent().width() // 2) - (event.size().width() // 2), (self.parent().parent().height() // 2) - (event.size().height() // 2))

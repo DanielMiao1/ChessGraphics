@@ -11,8 +11,8 @@ except ModuleNotFoundError:
 try:
 	import chess
 	chess.Game()
-except ModuleNotFoundError:
-	__import__("os").system("pip3 install git+https://github.com/DanielMiao1/PyChess")
+except:
+	__import__("os").system("pip3 install git+https://github.com/DanielMiao1/chess")
 
 
 from PyQt5.QtCore import *
