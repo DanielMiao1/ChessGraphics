@@ -177,7 +177,7 @@ class Window(QMainWindow):
 		self.stacked_pages.move(0, 0)
 		self.stacked_pages.setFixedSize(self.size())
 		self.setMinimumSize(QSize(self.width(), self.height() - 20))
-	
+
 	def twoPlayerMode(self):
 		self.setIndex(1, self.stacks["two-players"])
 		self.setWindowTitle("2-Player Chess Game: White to move")
