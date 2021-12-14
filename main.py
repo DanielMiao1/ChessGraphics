@@ -81,7 +81,6 @@ class QuitButton(QPushButton):
 	def __init__(self, parent):
 		super(QuitButton, self).__init__(parent=parent)
 		self.setText("×")
-		self.setFixedSize(QSize(40, 40))
 		self.setCursor(Qt.CursorShape.PointingHandCursor)
 		self.pressed.connect(QApplication.quit)
 		self.status_tip = Label(parent, text="Quit")
@@ -107,6 +106,7 @@ class MainPage(QWidget):
 		self.select_mode_label_animation, self.two_player_mode_animation = None, None
 		self.quit_button = QuitButton(self)
 		self.quit_button.hide()
+		self.animated = False
 		self.title = Label(self, text="Chess")
 		self.title_animation = QPropertyAnimation(self.title, b"color")
 		self.title_animation.setLoopCount(1)
@@ -135,11 +135,26 @@ class MainPage(QWidget):
 		animation.start()
 
 	def resizeEvent(self, event: QResizeEvent) -> None:
-		self.title.setFont(QFont("Impact", self.width() // 15, italic=True))
-		self.title.move(QPoint(self.title.pos().x(), 10))
-		self.title_opening_animation.setEndValue(QSize(self.title.maximumWidth(), 200))
-		self.title_opening_animation.setStartValue(QSize(self.title.maximumWidth(), 0))
-		self.title_opening_animation.start()
+		if event.size().width() > event.size().height():
+			min_size = event.size().height()
+		else:
+			min_size = event.size().width()
+		if event.size().width() > 1500:
+			self.title.setFont(QFont("Impact", self.width() // 15, italic=True))
+		else:
+			self.title.setFont(QFont("Impact", 100, italic=True))
+		self.title.move((event.size().width() - self.title.width()) // 2, event.size().height() // 20)
+		self.select_mode_label.move((event.size().width() - self.select_mode_label.width()) // 2, (event.size().height() // 20) + 200)
+		self.two_player_mode_button.move((event.size().width() - self.two_player_mode_button.width()) // 2, (event.size().height() // 20) + 250)
+		if min_size > 720:
+			self.quit_button.resize(QSize(min_size // 20, min_size // 20))
+		else:
+			self.quit_button.resize(QSize(36, 36))
+		if not self.animated:
+			self.title_opening_animation.setEndValue(QSize(self.title.maximumWidth(), 200))
+			self.title_opening_animation.setStartValue(QSize(self.title.maximumWidth(), 0))
+			self.title_opening_animation.start()
+			self.animated = True
 		super(MainPage, self).resizeEvent(event)
 
 	def titleAnimationFinished(self):
@@ -170,13 +185,13 @@ class Window(QMainWindow):
 	def __init__(self) -> None:
 		super(Window, self).__init__()
 		self.setWindowTitle("Chess")
+		self.setMinimumSize(QSize(720, 405))
 		self.stacked_pages, self.stacks = QStackedWidget(self), {"main-page": MainPage(self, two_player_mode_function=self.twoPlayerMode), "two-players": twoplayers.TwoPlayers(self)}
 		self.stacked_pages.addWidget(self.stacks["main-page"])
 		self.stacked_pages.addWidget(self.stacks["two-players"])
 		self.showFullScreen()
 		self.stacked_pages.move(0, 0)
 		self.stacked_pages.setFixedSize(self.size())
-		self.setMinimumSize(QSize(self.width(), self.height() - 20))
 
 	def twoPlayerMode(self):
 		self.setIndex(1, self.stacks["two-players"])
@@ -192,10 +207,7 @@ class Window(QMainWindow):
 		widget.animation.start()
 
 	def resizeEvent(self, event: QResizeEvent) -> None:
-		self.move(0, 20)
-		self.stacks["main-page"].title.move((event.size().width() - self.stacks["main-page"].title.width()) // 2, 100)
-		self.stacks["main-page"].select_mode_label.move((event.size().width() - self.stacks["main-page"].select_mode_label.width()) // 2, 200)
-		self.stacks["main-page"].two_player_mode_button.move((event.size().width() - self.stacks["main-page"].two_player_mode_button.width()) // 2, 250)
+		self.stacks["main-page"].resize(event.size())
 		super(Window, self).resizeEvent(event)
 
 

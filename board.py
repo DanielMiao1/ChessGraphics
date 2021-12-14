@@ -81,13 +81,18 @@ class Piece(QLabel):
 
 	def mouseMoveEvent(self, event) -> None:
 		if event.buttons() == Qt.LeftButton:
+			if self.dragging == False:
+				self.dragging = True
+				self.parent().drag_square = Square(self.parent(), "rgba(86, 12, 255, 0.5);")
+				self.parent().drag_square.move(self.pos())
+				self.parent().drag_square.show()
+				self.raise_()
 			if self.showing_moves:
 				self.setStyleSheet("background-color: transparent;")
 			else:
 				self.showMoves(False)
 				self.showing_moves = True
 				self.raise_()
-			self.dragging = True
 			self.move(self.mapFromGlobal(self.mapToGlobal(self.pos()) + event.globalPos() - self.mouse_event_position))
 			self.mouse_event_position = event.globalPos()
 		super(Piece, self).mouseMoveEvent(event)
@@ -95,16 +100,19 @@ class Piece(QLabel):
 	def mouseReleaseEvent(self, event) -> None:
 		super(Piece, self).mousePressEvent(event)
 		if self.dragging:
+			self.parent().drag_square.deleteLater()
+			self.parent().drag_square = None
 			self.dragging = False
 			if (event.globalPos() - self.mouse_event_start).manhattanLength() < 50:
 				self.move(self.original_position)
 				self.showMoves()
 				self.showing_moves = True
-				event.ignore()
+				self.setStyleSheet("background-color: rgba(86, 12, 255, 0.5);")
 				return
 			for i in self.moves:
 				if event.globalPos() in QRect(self.parent().mapToGlobal(i.pos()), i.size()):
-					self.movePiece(i.move, animate=False)
+					if i.move.name in self.parent().game.legal_moves():
+						self.movePiece(i.move, animate=False)
 			self.showing_moves = False
 			for i in self.moves:
 				i.hide()
@@ -151,7 +159,7 @@ class Piece(QLabel):
 			if animate:
 				self.parent().castle_rook_animation.setDuration(100)
 				self.parent().castle_rook_animation.start()
-		self.parent().game.move(move.name, evaluate_move_checks=False)
+		self.parent().game.move(move)
 		for i in self.moves:
 			i.setParent(None)
 		self.parent().parent().opening.setText(self.parent().game.opening)
@@ -180,6 +188,7 @@ class Board(QWidget):
 		super(Board, self).__init__(parent=parent)
 		self.game = game
 		self.squares, self.pieces = [], []
+		self.drag_square = None
 		self.castle_rook_animation = None
 		for x in self.game.squares:
 			for y in x:
