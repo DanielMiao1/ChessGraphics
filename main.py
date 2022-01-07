@@ -2,8 +2,10 @@
 main.py
 Chess Game Main File
 """
+import math
 
-try: from PyQt5.QtGui import *
+try:
+	from PyQt5.QtGui import *
 except ModuleNotFoundError:
 	print("The PyQt5 library is not installed. Use the 'pip3 install PyQt5' bash command to install it.")
 	exit()
@@ -32,23 +34,28 @@ class PushButton(QPushButton):
 		self.setStyleSheet("color: transparent; background-color: transparent; border: 15px solid transparent;")
 
 	def enterEvent(self, event: QEvent) -> None:
-		if self.setting_color: return
+		if self.setting_color:
+			return
 		self.setStyleSheet("color: white; background-color: #6400CF; border: 15px solid #6400CF;")
 		super(PushButton, self).enterEvent(event)
 
 	def leaveEvent(self, event: QEvent) -> None:
-		if self.setting_color: return
+		if self.setting_color:
+			return
 		self.setStyleSheet("color: white; background-color: #8400FF; border: 15px solid #8400FF;")
 		super(PushButton, self).leaveEvent(event)
 
 	def mousePressEvent(self, event: QMouseEvent) -> None:
-		if self.setting_color: return
+		if self.setting_color:
+			return
 		self.setStyleSheet("color: white; background-color: #4F00A6; border: 15px solid #4F00A6;")
 		super(PushButton, self).mousePressEvent(event)
-		if self.clicked is not None: self.clicked()
+		if self.clicked is not None:
+			self.clicked()
 
 	def mouseReleaseEvent(self, event: QMouseEvent) -> None:
-		if self.setting_color: return
+		if self.setting_color:
+			return
 		self.setStyleSheet("color: white; background-color: #6400CF; border: 15px solid #6400CF;")
 		super(PushButton, self).mouseReleaseEvent(event)
 
@@ -57,7 +64,8 @@ class PushButton(QPushButton):
 		self.setStyleSheet("color: white; background-color: #8400FF; border: 15px solid #8400FF;")
 
 	def setColor(self, color: QColor):
-		if color.getRgb() in [(0, 0, 0, 0), (0, 0, 1, 1), (1, 0, 2, 2), (1, 0, 3, 3), (2, 0, 4, 4), (2, 0, 4, 4), (2, 0, 5, 5), (3, 0, 6, 6), (3, 0, 7, 7), (4, 0, 8, 8), (4, 0, 9, 9), (5, 0, 9, 9)]: return
+		if color.getRgb() in [(0, 0, 0, 0), (0, 0, 1, 1), (1, 0, 2, 2), (1, 0, 3, 3), (2, 0, 4, 4), (2, 0, 4, 4), (2, 0, 5, 5), (3, 0, 6, 6), (3, 0, 7, 7), (4, 0, 8, 8), (4, 0, 9, 9), (5, 0, 9, 9)]:
+			return
 		self.setStyleSheet(f"color: white; background-color: rgba({color.getRgb()[0]}, {color.getRgb()[1]}, {color.getRgb()[2]}, {color.getRgb()[3]});")
 
 	color = pyqtProperty(QColor, fset=setColor)
@@ -100,13 +108,73 @@ class QuitButton(QPushButton):
 		super(QuitButton, self).leaveEvent(event)
 
 
+class TimeControlButton(QPushButton):
+	def __init__(self, text, parent, pressed_function=None):
+		super(TimeControlButton, self).__init__(parent=parent)
+		self.pressed_function = pressed_function
+		self.text = Label(self, text)
+		self.text.resize(self.size())
+		self.text.setWordWrap(True)
+		self.setCursor(Qt.CursorShape.PointingHandCursor)
+		self.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+	
+	def resizeEvent(self, event):
+		self.text.resize(event.size())
+		super(TimeControlButton, self).resizeEvent(event)
+	
+	def enterEvent(self, event) -> None:
+		if self.styleSheet().split()[1] == "white;":
+			self.setStyleSheet("background-color: #EEEEEE; border: 12px solid #EEEEEE; color: black")
+		super(TimeControlButton, self).enterEvent(event)
+	
+	def leaveEvent(self, event) -> None:
+		if self.styleSheet().split()[1] == "#EEEEEE;":
+			self.setStyleSheet("background-color: white; border: 12px solid white; color: black")
+		super(TimeControlButton, self).leaveEvent(event)
+	
+	def mousePressEvent(self, event) -> None:
+		if self.pressed_function is not None:
+			self.pressed_function(self.text.text())
+		super(TimeControlButton, self).mousePressEvent(event)
+	
+
+class StartGame(QPushButton):
+	def __init__(self, parent, text, pressed_function=None):
+		super(StartGame, self).__init__(parent=parent)
+		self.pressed_function = pressed_function
+		self.setText(text)
+		self.setStyleSheet("background-color: white; border: 5px solid white; color: black;")
+		self.setCursor(Qt.CursorShape.PointingHandCursor)
+	
+	def enterEvent(self, event) -> None:
+		self.setStyleSheet("background-color: #EEEEEE; border: 5px solid #EEEEEE; color: black;")
+		super(StartGame, self).enterEvent(event)
+
+	def leaveEvent(self, event) -> None:
+		self.setStyleSheet("background-color: white; border: 5px solid white; color: black;")
+		super(StartGame, self).leaveEvent(event)
+	
+	def mousePressEvent(self, event) -> None:
+		self.setStyleSheet("background-color: black; border: 5px solid black; color: white;")
+		if self.pressed_function is not None:
+			self.pressed_function()
+		super(StartGame, self).mousePressEvent(event)
+	
+	def mouseReleaseEvent(self, event) -> None:
+		self.setStyleSheet("background-color: white; border: 5px solid white; color: black;")
+		super(StartGame, self).mouseReleaseEvent(event)
+
+
 class MainPage(QWidget):
 	def __init__(self, parent, two_player_mode_function=None):
 		super(MainPage, self).__init__(parent=parent)
 		self.select_mode_label_animation, self.two_player_mode_animation = None, None
+		self.two_player_mode_function = two_player_mode_function
 		self.quit_button = QuitButton(self)
 		self.quit_button.hide()
 		self.animated = False
+		self.options = None
+		self.options_widgets = None
 		self.title = Label(self, text="Chess")
 		self.title_animation = QPropertyAnimation(self.title, b"color")
 		self.title_animation.setLoopCount(1)
@@ -126,13 +194,116 @@ class MainPage(QWidget):
 		self.select_mode_animation.setStartValue(QColor("#CC00FF"))
 		self.select_mode_animation.setEndValue(QColor("#1B00FF"))
 		self.select_mode_animation.finished.connect(lambda: self.changeAnimationDirection(self.select_mode_animation))
-		self.two_player_mode_button = PushButton(self, text="2 Player Mode", clicked=two_player_mode_function)
+		self.two_player_mode_button = PushButton(self, text="2 Player Mode", clicked=self.twoPlayers)
 		self.select_mode_label.setColor(QColor("transparent"))
 
 	@staticmethod
 	def changeAnimationDirection(animation):
 		animation.setDirection(int(not animation.direction()))
 		animation.start()
+	
+	def twoPlayers(self):
+		def styleButtons(text):
+			nonlocal time_control_total, time_control_total_increment, time_control_move, time_control_selected, time_control_widget_total, time_control_widget_total_increment, time_control_widget_move
+			time_control_total.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+			time_control_total_increment.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+			time_control_move.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+			time_control_selected = text
+			if text == "Total Time":
+				time_control_widget_total_increment.hide()
+				time_control_widget_move.hide()
+				time_control_widget_total.show()
+				time_control_total.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+			elif text == "Total Time + Increment Per Move":
+				time_control_widget_total.hide()
+				time_control_widget_move.hide()
+				time_control_widget_total_increment.show()
+				time_control_total_increment.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+			else:
+				time_control_widget_total.hide()
+				time_control_widget_total_increment.hide()
+				time_control_widget_move.show()
+				time_control_move.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+
+		def changeTimeDisplay(slider, value):
+			nonlocal time_control_display, time_control_widget_total_increment_total, time_control_widget_total_increment_increment
+			if slider == "total":
+				time_control_display.setText(str(value / 10) + "m" + "+0s")
+			elif slider == "inc_total":
+				if "+" not in time_control_display.text():
+					time_control_display.setText(str(time_control_widget_total_increment_total.value()) + "+" + str(time_control_widget_total_increment_increment.value()))
+				time_control_display.setText(str(value / 10) + "m+" + str(time_control_widget_total_increment_increment.value()) + "s")
+			elif slider == "inc_inc":
+				if "+" not in time_control_display.text():
+					time_control_display.setText(str(time_control_widget_total_increment_total.value()) + "+" + str(time_control_widget_total_increment_increment.value()))
+				time_control_display.setText(str(time_control_widget_total_increment_total.value() / 10) + "m+" + str(value) + "s")
+			else:
+				time_control_display.setText(str(value) + "s")
+
+		def startGame():
+			nonlocal time_control_display
+			self.two_player_mode_function(time_control_display.text())
+			self.options.deleteLater()
+			self.options = self.options_widgets = None
+
+		self.options = QGroupBox(self)
+		options_layout = QGridLayout()
+		title = Label(self.options, "New 2 Player Game")
+		title.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Bold.ttf"))[0], 20))
+		time_control_label = Label(self.options, "Time Control")
+		time_control_display = Label(self.options, "10m+0s")
+		time_control_selected = "Total Time"
+		time_control_buttons = QGroupBox(self.options)
+		time_control_buttons_layout = QHBoxLayout()
+		time_control_total = TimeControlButton("Total Time", time_control_buttons, styleButtons)
+		time_control_total.setFixedSize(QSize(self.width() // 10, self.height() // 12))
+		time_control_total.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+		time_control_total_increment = TimeControlButton("Total Time + Increment Per Move", time_control_buttons, styleButtons)
+		time_control_total_increment.setFixedSize(QSize(self.width() // 10, self.height() // 12))
+		time_control_move = TimeControlButton("Time Per Move", time_control_buttons, styleButtons)
+		time_control_move.setFixedSize(QSize(self.width() // 10, self.height() // 12))
+		time_control_buttons_layout.addWidget(time_control_total)
+		time_control_buttons_layout.addWidget(time_control_total_increment)
+		time_control_buttons_layout.addWidget(time_control_move)
+		time_control_buttons.setLayout(time_control_buttons_layout)
+		time_control_widget = QGroupBox(self.options)
+		time_control_widget_layout = QVBoxLayout()
+		time_control_widget_total = QSlider(Qt.Orientation.Horizontal, time_control_widget)
+		time_control_widget_total.setRange(1, 750)
+		time_control_widget_total.setValue(100)
+		time_control_widget_total.valueChanged.connect(lambda value: changeTimeDisplay("total", value))
+		time_control_widget_total_increment = QGroupBox()
+		time_control_widget_total_increment_layout = QVBoxLayout()
+		time_control_widget_total_increment_total = QSlider(Qt.Orientation.Horizontal, time_control_widget_total_increment)
+		time_control_widget_total_increment_total.valueChanged.connect(lambda value: changeTimeDisplay("inc_total", value))
+		time_control_widget_total_increment_total.setRange(0, 500)
+		time_control_widget_total_increment_increment = QSlider(Qt.Orientation.Horizontal, time_control_widget_total_increment)
+		time_control_widget_total_increment_increment.valueChanged.connect(lambda value: changeTimeDisplay("inc_inc", value))
+		time_control_widget_total_increment_increment.setRange(0, 100)
+		time_control_widget_total_increment_layout.addWidget(time_control_widget_total_increment_total)
+		time_control_widget_total_increment_layout.addWidget(time_control_widget_total_increment_increment)
+		time_control_widget_total_increment.setLayout(time_control_widget_total_increment_layout)
+		time_control_widget_total_increment.hide()
+		time_control_widget_move = QSlider(Qt.Orientation.Horizontal, time_control_widget)
+		time_control_widget_move.valueChanged.connect(lambda value: changeTimeDisplay("move", value))
+		time_control_widget_move.hide()
+		time_control_widget_layout.addWidget(time_control_widget_total)
+		time_control_widget_layout.addWidget(time_control_widget_total_increment)
+		time_control_widget_layout.addWidget(time_control_widget_move)
+		time_control_widget.setLayout(time_control_widget_layout)
+		start_game = StartGame(self, "Start Game", startGame)
+		options_layout.addWidget(title, 1, 1)
+		options_layout.addWidget(time_control_label, 2, 1)
+		options_layout.addWidget(time_control_display, 3, 1)
+		options_layout.addWidget(time_control_buttons, 4, 1)
+		options_layout.addWidget(time_control_widget, 5, 1)
+		options_layout.addWidget(start_game, 6, 1)
+		self.options.setLayout(options_layout)
+		self.options.setStyleSheet("background-color: white; border: none;")
+		self.options.setFixedSize(QSize(math.floor(self.width() / 1.5), math.floor(self.height() / 1.5)))
+		self.options.move(QPoint((self.width() - self.options.width()) // 2, (self.height() - self.options.height()) // 2))
+		self.options.show()
+		self.options_widgets = {"tc_total": time_control_total, "tc_total_increment": time_control_total_increment, "tc_move": time_control_move}
 
 	def resizeEvent(self, event: QResizeEvent) -> None:
 		if event.size().width() > event.size().height():
@@ -146,6 +317,17 @@ class MainPage(QWidget):
 		self.title.move((event.size().width() - self.title.width()) // 2, event.size().height() // 20)
 		self.select_mode_label.move((event.size().width() - self.select_mode_label.width()) // 2, (event.size().height() // 20) + 200)
 		self.two_player_mode_button.move((event.size().width() - self.two_player_mode_button.width()) // 2, (event.size().height() // 20) + 250)
+		if self.options is not None:
+			self.options.setFixedSize(QSize(math.floor(self.width() / 1.5), math.floor(self.height() / 1.5)))
+			self.options.move(QPoint((self.width() - self.options.width()) // 2, (self.height() - self.options.height()) // 2))
+			if event.size().width() < 970 or event.size().height() < 612:
+				self.options_widgets["tc_total"].setFixedSize(QSize(97, 51))
+				self.options_widgets["tc_total_increment"].setFixedSize(QSize(97, 51))
+				self.options_widgets["tc_move"].setFixedSize(QSize(97, 51))
+			else:
+				self.options_widgets["tc_total"].setFixedSize(QSize(event.size().width() // 10, event.size().height() // 12))
+				self.options_widgets["tc_total_increment"].setFixedSize(QSize(event.size().width() // 10, event.size().height() // 12))
+				self.options_widgets["tc_move"].setFixedSize(QSize(event.size().width() // 10, event.size().height() // 12))
 		if min_size > 720:
 			self.quit_button.resize(QSize(min_size // 20, min_size // 20))
 		else:
@@ -185,7 +367,7 @@ class Window(QMainWindow):
 	def __init__(self) -> None:
 		super(Window, self).__init__()
 		self.setWindowTitle("Chess")
-		self.setMinimumSize(QSize(720, 405))
+		self.setMinimumSize(QSize(720, 500))
 		self.stacked_pages, self.stacks = QStackedWidget(self), {"main-page": MainPage(self, two_player_mode_function=self.twoPlayerMode), "two-players": twoplayers.TwoPlayers(self)}
 		self.stacked_pages.addWidget(self.stacks["main-page"])
 		self.stacked_pages.addWidget(self.stacks["two-players"])
@@ -193,7 +375,7 @@ class Window(QMainWindow):
 		self.stacked_pages.move(0, 0)
 		self.stacked_pages.setFixedSize(self.size())
 
-	def twoPlayerMode(self):
+	def twoPlayerMode(self, time_control):
 		self.setIndex(1, self.stacks["two-players"])
 		self.setWindowTitle("2-Player Chess Game: White to move")
 

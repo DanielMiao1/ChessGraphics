@@ -3,7 +3,6 @@ twoplayers.py
 2 Player Chess Mode
 """
 
-import json
 import chess
 
 from PyQt5.QtGui import *
@@ -16,7 +15,7 @@ import board
 class MoveButton(QPushButton):
 	def __init__(self, parent, text=""):
 		super(MoveButton, self).__init__(parent=parent)
-		self.setCursor(Qt.PointingHandCursor)
+		self.setCursor(Qt.CursorShape.PointingHandCursor)
 		self.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Regular.ttf"))[0], 15, weight=40))
 		self.setText(text)
 		self.setFixedSize(100, 30)
