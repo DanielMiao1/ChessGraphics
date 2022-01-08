@@ -12,6 +12,12 @@ from PyQt5.QtWidgets import *
 import board
 
 
+def getMinutesSeconds(seconds):
+	if seconds < 60:
+		return 0, seconds
+	return seconds // 60, seconds - (seconds // 60 * 60)
+
+
 class MoveButton(QPushButton):
 	def __init__(self, parent, text=""):
 		super(MoveButton, self).__init__(parent=parent)
@@ -19,11 +25,11 @@ class MoveButton(QPushButton):
 		self.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Regular.ttf"))[0], 15, weight=40))
 		self.setText(text)
 		self.setFixedSize(100, 30)
-	
+
 	def enterEvent(self, event: QHoverEvent) -> None:
 		self.setStyleSheet("background-color: rgba(100, 0, 255, 0.75); color: white;")
 		super(MoveButton, self).enterEvent(event)
-		
+
 	def leaveEvent(self, event: QHoverEvent) -> None:
 		self.setStyleSheet("background-color: transparent; color: black;")
 		super(MoveButton, self).leaveEvent(event)
@@ -43,12 +49,12 @@ class AbortButton(QPushButton):
 		self.status_tip.move(QPoint(self.pos().x(), self.pos().y() + 40))
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
-	
+
 	def enterEvent(self, event: QEvent) -> None:
 		self.status_tip.show()
 		self.setStyleSheet("color: black; background-color: yellow; border: none;")
 		super(AbortButton, self).enterEvent(event)
-	
+
 	def leaveEvent(self, event: QEvent) -> None:
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
@@ -69,12 +75,12 @@ class BackButton(QPushButton):
 		self.status_tip.move(QPoint(self.pos().x(), self.pos().y() + 40))
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
-	
+
 	def enterEvent(self, event: QEvent) -> None:
 		self.status_tip.show()
 		self.setStyleSheet("color: black; background-color: limegreen; border: none;")
 		super(BackButton, self).enterEvent(event)
-	
+
 	def leaveEvent(self, event: QEvent) -> None:
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
@@ -95,22 +101,76 @@ class NewButton(QPushButton):
 		self.status_tip.move(QPoint(self.pos().x(), self.pos().y() + 40))
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
-	
+
 	def enterEvent(self, event: QEvent) -> None:
 		self.status_tip.show()
 		self.setStyleSheet("color: black; background-color: green; border: none;")
 		super(NewButton, self).enterEvent(event)
-	
+
 	def leaveEvent(self, event: QEvent) -> None:
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
 		super(NewButton, self).leaveEvent(event)
 
 
+class Clock(QPushButton):
+	def __init__(self, parent, time_control, timeup_function=None):
+		super(Clock, self).__init__(parent=parent)
+		self.timeup_function = timeup_function
+		self.time_control = time_control
+		if time_control.endswith("+0s"):
+			self.clock_minutes = int(time_control[:time_control.index(".")])
+			self.clock_seconds = round(6 * float(time_control[time_control.index(".") + 1:time_control.index("+") - 1]))
+		elif "+" in time_control:
+			self.clock_minutes = int(float(time_control[:time_control.index("+") - 1]))
+			self.clock_seconds = round(6 * float(time_control[time_control.index(".") + 1:time_control.index("+") - 1]))
+		else:
+			self.clock_minutes = getMinutesSeconds(int(time_control[:-1]))[0]
+			self.clock_seconds = getMinutesSeconds(int(time_control[:-1]))[1]
+		self.updateText()
+		self.running = False
+		self.timer = QTimer()
+		self.timer.timeout.connect(self.updateClock)
+		self.setStyleSheet("background-color: #EEE; border: none;")
+		self.setFont(QFont("Arial", 30))
+
+	def updateText(self):
+		self.setText(str(self.clock_minutes) + ":" + str(self.clock_seconds).rjust(2, "0"))
+
+	def start(self):
+		self.timer.start(1000)
+		self.running = True
+
+	def pause(self):
+		self.timer.stop()
+		self.running = False
+
+	def updateClock(self):
+		if self.clock_seconds == 0:
+			if self.clock_minutes == 0:
+				if self.timeup_function is not None:
+					self.timeup_function(self)
+				self.pause()
+				return
+			self.clock_seconds = 59
+			self.clock_minutes -= 1
+		else:
+			self.clock_seconds -= 1
+		self.updateText()
+
+	def resetClock(self):
+		if "+" not in self.time_control:
+			self.clock_minutes = getMinutesSeconds(int(self.time_control[:-1]) + 1)[0]
+			self.clock_seconds = getMinutesSeconds(int(self.time_control[:-1]) + 1)[1]
+			self.updateClock()
+
+
 class TwoPlayers(QWidget):
 	def __init__(self, parent):
 		super(TwoPlayers, self).__init__(parent=parent)
 		self.game = chess.Game()
+		self.time_control = None
+		self.game_over = False
 		self.animation = QPropertyAnimation(self, b"pos")
 		self.animation.setEndValue(QPoint())
 		self.animation.setDuration(250)
@@ -139,31 +199,97 @@ class TwoPlayers(QWidget):
 		self.back_button = BackButton(self)
 		self.abort_button = AbortButton(self)
 		self.new_button = NewButton(self)
-	
-	def back(self): self.parent().setCurrentIndex(0)
-	
+		self.clocks = []
+		self.sidebar.move(QPoint((self.width() // 2) + 400, 100))
+
+	def setTimeControl(self, time_control):
+		if time_control == "unlimited":
+			return
+		self.time_control = time_control
+		self.clocks.append(Clock(self, self.time_control, self.timeout))
+		self.clocks[0].move(QPoint(self.width() - self.clocks[0].width(), self.height() - self.clocks[0].height()))
+		self.clocks.append(Clock(self, self.time_control, self.timeout))
+		self.clocks[1].move(QPoint(self.width() - self.clocks[1].width(), 20))
+
+	def startClocks(self):
+		if self.clocks:
+			self.clocks[0].start()
+
+	def back(self):
+		if self.clocks:
+			if self.clocks[0].running:
+				self.clocks[0].pause()
+			if self.clocks[1].running:
+				self.clocks[1].pause()
+		self.parent().setCurrentIndex(0)
+
 	def abort(self):
 		self.parent().parent().resetTwoPlayerGame()
 		self.parent().setCurrentIndex(0)
-	
+
 	def new(self):
 		self.parent().parent().resetTwoPlayerGame()
 		self.parent().setCurrentIndex(1)
-	
+
 	def getGridIndex(self) -> list:
 		columns = 0
 		for i in range(len(self.move_buttons)):
-			if i % 2 == 0 and i != 0: columns += 1
+			if i % 2 == 0 and i != 0:
+				columns += 1
 		return [columns, int(len(self.move_buttons) % 2 == 0)]
-	
+
+	def timeout(self, clock):
+		if self.clocks[0].running:
+			self.clocks[0].pause()
+		else:
+			self.clocks[1].pause()
+		self.game_over = True
+		self.parent().parent().setWindowTitle("2-Player Chess Game: " + ("Black", "White")[self.clocks.index(clock)] + " wins")
+
 	def addMove(self, move) -> None:
 		self.move_buttons.append(MoveButton(self.moves, move))
 		self.moves_layout.addWidget(self.move_buttons[-1], self.getGridIndex()[0], self.getGridIndex()[1])
 		self.move_buttons[-1].show()
 		self.moves_wrapper.verticalScrollBar().setSliderPosition(self.moves_wrapper.verticalScrollBar().maximum())
 		self.moves_count += 0.5
-	
+		if self.game.game_over:
+			self.parent().parent().setWindowTitle("2-Player Chess Game: " + {"white": "Black", "black": "White"}[self.game.turn] + " wins")
+			if self.clocks:
+				if self.clocks[0].running:
+					self.clocks[0].pause()
+				if self.clocks[1].running:
+					self.clocks[1].pause()
+			self.game_over = True
+			return
+		if self.clocks:
+			if not self.time_control.endswith("+0") and "+" in self.time_control:
+				if self.clocks[1].running:
+					self.clocks[1].clock_seconds += int(self.time_control[self.time_control.index("+") + 1:-1])
+					if self.clocks[1].clock_seconds > 59:
+						self.clocks[1].clock_minutes += 1
+						self.clocks[1].clock_seconds -= 60
+					self.clocks[1].updateText()
+				if self.clocks[0].running:
+					self.clocks[0].clock_seconds += int(self.time_control[self.time_control.index("+") + 1:-1])
+					if self.clocks[0].clock_seconds > 59:
+						self.clocks[0].clock_minutes += 1
+						self.clocks[0].clock_seconds -= 60
+					self.clocks[0].updateText()
+			if "+" not in self.time_control:
+				self.clocks[0].resetClock()
+				self.clocks[1].resetClock()
+			if self.clocks[0].running:
+				self.clocks[0].pause()
+				self.clocks[1].start()
+			elif self.clocks[1].running:
+				self.clocks[1].pause()
+				self.clocks[0].start()
+
 	def resizeEvent(self, event: QResizeEvent) -> None:
-		self.sidebar.resize(event.size().width() // 4, event.size().height())
+		self.sidebar.resize(QSize(event.size().width() - (self.width() // 2) + 400, event.size().height() - 200))
+		self.sidebar.move(QPoint((self.width() // 2) + 400, 100))
 		self.animation.setStartValue(QPoint(event.size().width(), 0))
+		if self.clocks:
+			self.clocks[0].move(QPoint(event.size().width() - self.clocks[0].width() - 10, event.size().height() - self.clocks[0].height() - 20))
+			self.clocks[1].move(QPoint(event.size().width() - self.clocks[0].width() - 10, 20))
 		super(TwoPlayers, self).resizeEvent(event)

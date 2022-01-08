@@ -51,6 +51,8 @@ class Piece(QLabel):
 		self.setPixmap(QPixmap("images/standard/" + color + "_" + piece))
 
 	def showMoves(self, change_background=True):
+		if self.parent().parent().game_over:
+			return
 		if change_background:
 			self.setStyleSheet("background-color: rgba(86, 12, 255, 0.5);")
 		for x in self.parent().pieces:
@@ -80,7 +82,7 @@ class Piece(QLabel):
 		super(Piece, self).mousePressEvent(event)
 
 	def mouseMoveEvent(self, event) -> None:
-		if event.buttons() == Qt.LeftButton:
+		if event.buttons() == Qt.LeftButton and not self.parent().parent().game_over:
 			if self.dragging == False:
 				self.dragging = True
 				self.parent().drag_square = Square(self.parent(), "rgba(86, 12, 255, 0.5);")
@@ -128,6 +130,8 @@ class Piece(QLabel):
 			self.showing_moves = not self.showing_moves
 
 	def movePiece(self, move, animate=True) -> None:
+		if self.parent().parent().game_over:
+			return
 		self.setStyleSheet("background-color: transparent;")
 		for i in self.parent().pieces:
 			i.moves_loaded = False
@@ -163,8 +167,8 @@ class Piece(QLabel):
 		for i in self.moves:
 			i.setParent(None)
 		self.parent().parent().opening.setText(self.parent().game.opening)
-		self.parent().parent().addMove(move.name)
 		self.parent().parent().parent().parent().setWindowTitle("2-Player Chess Game: " + self.parent().game.turn.title() + " to move")
+		self.parent().parent().addMove(move.name)
 
 
 class Square(QPushButton):
@@ -206,4 +210,3 @@ class Board(QWidget):
 
 	def resizeEvent(self, event: QResizeEvent) -> None:
 		self.move((self.parent().parent().width() // 2) - (event.size().width() // 2), (self.parent().parent().height() // 2) - (event.size().height() // 2))
-		self.parent().sidebar.move(self.pos().x() + event.size().width() + 10, self.pos().y())

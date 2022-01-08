@@ -204,11 +204,13 @@ class MainPage(QWidget):
 	
 	def twoPlayers(self):
 		def styleButtons(text):
-			nonlocal time_control_total, time_control_total_increment, time_control_move, time_control_selected, time_control_widget_total, time_control_widget_total_increment, time_control_widget_move
+			nonlocal time_control_total, time_control_total_increment, time_control_move, time_control_selected, time_control_widget_total, time_control_widget_total_increment, time_control_widget_move, time_control_display
 			time_control_total.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
 			time_control_total_increment.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
 			time_control_move.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+			time_control_unlimited.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
 			time_control_selected = text
+			time_control_display.setText("10.0m+0s")
 			if text == "Total Time":
 				time_control_widget_total_increment.hide()
 				time_control_widget_move.hide()
@@ -219,6 +221,12 @@ class MainPage(QWidget):
 				time_control_widget_move.hide()
 				time_control_widget_total_increment.show()
 				time_control_total_increment.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+			elif text == "Unlimited":
+				time_control_display.setText("unlimited")
+				time_control_widget_total.hide()
+				time_control_widget_move.hide()
+				time_control_widget_total_increment.hide()
+				time_control_unlimited.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
 			else:
 				time_control_widget_total.hide()
 				time_control_widget_total_increment.hide()
@@ -251,7 +259,7 @@ class MainPage(QWidget):
 		title = Label(self.options, "New 2 Player Game")
 		title.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Bold.ttf"))[0], 20))
 		time_control_label = Label(self.options, "Time Control")
-		time_control_display = Label(self.options, "10m+0s")
+		time_control_display = Label(self.options, "10.0m+0s")
 		time_control_selected = "Total Time"
 		time_control_buttons = QGroupBox(self.options)
 		time_control_buttons_layout = QHBoxLayout()
@@ -262,9 +270,12 @@ class MainPage(QWidget):
 		time_control_total_increment.setFixedSize(QSize(self.width() // 10, self.height() // 12))
 		time_control_move = TimeControlButton("Time Per Move", time_control_buttons, styleButtons)
 		time_control_move.setFixedSize(QSize(self.width() // 10, self.height() // 12))
+		time_control_unlimited = TimeControlButton("Unlimited", time_control_buttons, styleButtons)
+		time_control_unlimited.setFixedSize(QSize(self.width() // 10, self.height() // 12))
 		time_control_buttons_layout.addWidget(time_control_total)
 		time_control_buttons_layout.addWidget(time_control_total_increment)
 		time_control_buttons_layout.addWidget(time_control_move)
+		time_control_buttons_layout.addWidget(time_control_unlimited)
 		time_control_buttons.setLayout(time_control_buttons_layout)
 		time_control_widget = QGroupBox(self.options)
 		time_control_widget_layout = QVBoxLayout()
@@ -303,7 +314,7 @@ class MainPage(QWidget):
 		self.options.setFixedSize(QSize(math.floor(self.width() / 1.5), math.floor(self.height() / 1.5)))
 		self.options.move(QPoint((self.width() - self.options.width()) // 2, (self.height() - self.options.height()) // 2))
 		self.options.show()
-		self.options_widgets = {"tc_total": time_control_total, "tc_total_increment": time_control_total_increment, "tc_move": time_control_move}
+		self.options_widgets = {"tc_total": time_control_total, "tc_total_increment": time_control_total_increment, "tc_move": time_control_move, "tc_unlimited": time_control_unlimited}
 
 	def resizeEvent(self, event: QResizeEvent) -> None:
 		if event.size().width() > event.size().height():
@@ -324,10 +335,12 @@ class MainPage(QWidget):
 				self.options_widgets["tc_total"].setFixedSize(QSize(97, 51))
 				self.options_widgets["tc_total_increment"].setFixedSize(QSize(97, 51))
 				self.options_widgets["tc_move"].setFixedSize(QSize(97, 51))
+				self.options_widgets["tc_unlimited"].setFixedSize(QSize(97, 51))
 			else:
 				self.options_widgets["tc_total"].setFixedSize(QSize(event.size().width() // 10, event.size().height() // 12))
 				self.options_widgets["tc_total_increment"].setFixedSize(QSize(event.size().width() // 10, event.size().height() // 12))
 				self.options_widgets["tc_move"].setFixedSize(QSize(event.size().width() // 10, event.size().height() // 12))
+				self.options_widgets["tc_unlimited"].setFixedSize(QSize(event.size().width() // 10, event.size().height() // 12))
 		if min_size > 720:
 			self.quit_button.resize(QSize(min_size // 20, min_size // 20))
 		else:
@@ -376,7 +389,9 @@ class Window(QMainWindow):
 		self.stacked_pages.setFixedSize(self.size())
 
 	def twoPlayerMode(self, time_control):
+		self.stacks["two-players"].setTimeControl(time_control)
 		self.setIndex(1, self.stacks["two-players"])
+		self.stacks["two-players"].startClocks()
 		self.setWindowTitle("2-Player Chess Game: White to move")
 
 	def resetTwoPlayerGame(self):
