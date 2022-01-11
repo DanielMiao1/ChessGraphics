@@ -169,14 +169,14 @@ class Clock(QPushButton):
 class TwoPlayers(QWidget):
 	def __init__(self, parent):
 		super(TwoPlayers, self).__init__(parent=parent)
-		self.game = chess.Game()
+		self.game = None
 		self.time_control = None
 		self.game_over = False
 		self.animation = QPropertyAnimation(self, b"pos")
 		self.animation.setEndValue(QPoint())
 		self.animation.setDuration(250)
 		self.moves_count = 1
-		self.board = board.Board(self, self.game)
+		self.board = None
 		self.sidebar = QGroupBox(self)
 		self.sidebar.setStyleSheet("border: none;")
 		self.sidebar_layout = QGridLayout()
@@ -211,6 +211,16 @@ class TwoPlayers(QWidget):
 		self.clocks[0].move(QPoint(self.width() - self.clocks[0].width(), self.height() - self.clocks[0].height()))
 		self.clocks.append(Clock(self, self.time_control, self.timeout))
 		self.clocks[1].move(QPoint(self.width() - self.clocks[1].width(), 20))
+
+	def setVariant(self, variant):
+		if variant == "Standard":
+			self.game = chess.Game()
+		elif variant == "Antichess":
+			self.game = chess.Antichess()
+		elif variant == "Three Check":
+			self.game = chess.ThreeCheck()
+		self.board = board.Board(self, self.game)
+		self.sidebar.raise_()
 
 	def startClocks(self):
 		if self.clocks:
