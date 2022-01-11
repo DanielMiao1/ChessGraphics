@@ -4,6 +4,7 @@ twoplayers.py
 """
 
 import chess
+import asyncio
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -252,6 +253,7 @@ class TwoPlayers(QWidget):
 		self.move_buttons[-1].show()
 		self.moves_wrapper.verticalScrollBar().setSliderPosition(self.moves_wrapper.verticalScrollBar().maximum())
 		self.moves_count += 0.5
+		asyncio.get_event_loop().run_until_complete(self.updateOpening())
 		if self.game.game_over:
 			self.parent().parent().setWindowTitle("2-Player Chess Game: " + {"white": "Black", "black": "White"}[self.game.turn] + " wins")
 			if self.clocks:
@@ -284,6 +286,13 @@ class TwoPlayers(QWidget):
 			elif self.clocks[1].running:
 				self.clocks[1].pause()
 				self.clocks[0].start()
+				
+	async def updateOpening(self):
+		position = self.game.FEN().split()[0]
+		for i in chess.openings.openings:
+			if i["position"] == position:
+				self.opening.setText(i["eco"] + " " + i["name"])
+				return
 
 	def resizeEvent(self, event: QResizeEvent) -> None:
 		self.sidebar.resize(QSize(event.size().width() - (self.width() // 2) + 400, event.size().height() - 200))

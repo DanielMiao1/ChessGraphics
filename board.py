@@ -166,7 +166,6 @@ class Piece(QLabel):
 		self.parent().game.move(move)
 		for i in self.moves:
 			i.setParent(None)
-		self.parent().parent().opening.setText(self.parent().game.opening)
 		self.parent().parent().parent().parent().setWindowTitle("2-Player Chess Game: " + self.parent().game.turn.title() + " to move")
 		self.parent().parent().addMove(move.name)
 
