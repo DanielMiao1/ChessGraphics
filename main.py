@@ -15,6 +15,7 @@ try:
 	chess.Game()
 except:
 	__import__("os").system("pip3 install git+https://github.com/DanielMiao1/chess")
+	import chess
 
 
 from PyQt5.QtCore import *
@@ -23,6 +24,17 @@ from PyQt5.QtWidgets import *
 
 import twoplayers
 
+
+def PGNValid(PGN):
+	contains_moves = False
+	for i in PGN.splitlines():
+		if i.strip() == "" or (i.startswith("[") and i.endswith("]") and " " in i):
+			continue
+		if i.startswith("1."):
+			contains_moves = True
+			continue
+		return False
+	return contains_moves
 
 class PushButton(QPushButton):
 	def __init__(self, parent, text="", clicked=None):
@@ -227,6 +239,7 @@ class MainPage(QWidget):
 		self.animated = False
 		self.options = None
 		self.options_widgets = None
+		self.options_close = None
 		self.title = Label(self, text="Chess")
 		self.title_animation = QPropertyAnimation(self.title, b"color")
 		self.title_animation.setLoopCount(1)
@@ -316,8 +329,16 @@ class MainPage(QWidget):
 			nonlocal position_widget_fen, position_widget_pgn, selected_position, position_text
 			if selected_position == "FEN":
 				position_text = position_widget_fen.text()
+				if position_text.strip() == "" or chess.functions.FENvalid(position_text.strip()):
+					position_widget_fen.setStyleSheet("background-color: #999; border: 3px solid #999;")
+				else:
+					position_widget_fen.setStyleSheet("background-color: #ff7e7e; border: 3px solid #ff7e7e;")
 			else:
 				position_text = position_widget_pgn.toPlainText()
+				if position_text.strip() == "" or PGNValid(position_text):
+					position_widget_pgn.setStyleSheet("background-color: #999; border: 3px solid #999;")
+				else:
+					position_widget_pgn.setStyleSheet("background-color: #ff7e7e; border: 3px solid #ff7e7e;")
 
 		def changeTimeDisplay(slider, value):
 			nonlocal time_control_display, time_control_widget_total_increment_total, time_control_widget_total_increment_increment
@@ -337,16 +358,29 @@ class MainPage(QWidget):
 		def startGame():
 			nonlocal time_control_display, variant_selected, selected_position, position_text
 			updatePositionText()
-			self.two_player_mode_function(time_control_display.text(), variant_selected, selected_position, position_text)
+			if selected_position == "FEN" and position_text.strip() == "":
+				position_text = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+			self.two_player_mode_function(time_control_display.text(), variant_selected, selected_position, position_text.strip())
 			self.options.deleteLater()
+			self.options_close.deleteLater()
 			self.options = self.options_widgets = None
+
+		def close_dialog():
+			self.options.deleteLater()
+			self.options_close.deleteLater()
+			self.options = self.options_widgets = self.options_close = None
 
 		# Options scroll area
 		self.options = QGroupBox(self)
 		options_layout = QVBoxLayout()
-		# Title
+		# Title and close button
 		title = Label(self.options, "New 2 Player Game")
 		title.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Bold.ttf"))[0], 20))
+		self.options_close = QPushButton("×", self)
+		self.options_close.pressed.connect(close_dialog)
+		self.options_close.setCursor(Qt.CursorShape.PointingHandCursor)
+		self.options_close.setStyleSheet("QPushButton { background-color: white; border: 12px solid white; } QPushButton:hover { background-color: #EEE; border: 12px solid #EEE; }")
+		self.options_close.show()
 		# Add space
 		spacing = QWidget(self.options)
 		spacing.setFixedSize(QSize(1, 30))
@@ -393,17 +427,18 @@ class MainPage(QWidget):
 		time_control_widget_total_increment_layout = QVBoxLayout()
 		time_control_widget_total_increment_layout.setSpacing(0)
 		time_control_widget_total_increment_total = QSlider(Qt.Orientation.Horizontal, time_control_widget_total_increment)
-		time_control_widget_total_increment_total.valueChanged.connect(lambda value: changeTimeDisplay("inc_total", value))
 		time_control_widget_total_increment_total.setRange(0, 500)
+		time_control_widget_total_increment_total.valueChanged.connect(lambda value: changeTimeDisplay("inc_total", value))
 		time_control_widget_total_increment_increment = QSlider(Qt.Orientation.Horizontal, time_control_widget_total_increment)
+		time_control_widget_total_increment_increment.setRange(1, 100)
 		time_control_widget_total_increment_increment.valueChanged.connect(lambda value: changeTimeDisplay("inc_inc", value))
-		time_control_widget_total_increment_increment.setRange(0, 100)
 		time_control_widget_total_increment_layout.addWidget(time_control_widget_total_increment_total)
 		time_control_widget_total_increment_layout.addWidget(time_control_widget_total_increment_increment)
 		time_control_widget_total_increment_layout.addStretch()
 		time_control_widget_total_increment.setLayout(time_control_widget_total_increment_layout)
 		time_control_widget_total_increment.hide()
 		time_control_widget_move = QSlider(Qt.Orientation.Horizontal, time_control_widget)
+		time_control_widget_move.setRange(1, 100)
 		time_control_widget_move.valueChanged.connect(lambda value: changeTimeDisplay("move", value))
 		time_control_widget_move.hide()
 		time_control_widget_layout.addWidget(time_control_widget_total)
@@ -421,7 +456,7 @@ class MainPage(QWidget):
 		variant_group = QGroupBox(self.options)
 		variant_group.setStyleSheet("background-color: #AAA;")
 		variant_button.pressed.connect(lambda variant_group=variant_group: variant_group.show() if variant_group.isHidden() else variant_group.hide())
-		variant_group.setFixedHeight(math.floor(self.height() / 15))
+		variant_group.setFixedHeight(math.floor(self.height() / 10))
 		variant_group_layout = QGridLayout()
 		variant_group_layout.setSpacing(5)
 		variant_standard = OptionsButton("Standard", variant_group, styleVariantButtons)
@@ -458,8 +493,10 @@ class MainPage(QWidget):
 		position_widget_fen = FENInput(self, key_press_function=updatePositionText)
 		position_widget_fen.setAttribute(Qt.WA_MacShowFocusRect, 0)
 		position_widget_fen.setStyleSheet("background-color: #999; border: 3px solid #999;")
+		position_widget_fen.textChanged.connect(updatePositionText)
 		position_widget_pgn = PGNInput(self, key_press_function=updatePositionText)
 		position_widget_pgn.setStyleSheet("background-color: #999; border: 3px solid #999;")
+		position_widget_pgn.textChanged.connect(updatePositionText)
 		position_widget_pgn.hide()
 		position_widget_layout.addWidget(position_widget_fen)
 		position_widget_layout.addWidget(position_widget_pgn)
@@ -487,7 +524,34 @@ class MainPage(QWidget):
 		self.options.setFixedSize(QSize(math.floor(self.width() / 1.5), math.floor(self.height() / 1.5)))
 		self.options.move(QPoint((self.width() - self.options.width()) // 2, (self.height() - self.options.height()) // 2))
 		self.options.show()
-		self.options_widgets = {"tc_total": time_control_total, "tc_total_increment": time_control_total_increment, "tc_move": time_control_move, "tc_unlimited": time_control_unlimited}
+		self.options_close.move(self.options.pos())
+		self.options_widgets = {"tc_total": time_control_total, "tc_total_increment": time_control_total_increment, "tc_move": time_control_move, "tc_unlimited": time_control_unlimited, "time_control_group": time_control_group, "variant_group": variant_group, "position_group": position_group, "time_control_button": time_control_button, "variant_button": variant_button, "position_button": position_button}
+		if self.width() <= 1440 or self.height() <= 1080:
+			self.options.setFixedSize(self.size())
+			self.options.move(QPoint())
+			self.options_close.move(QPoint())
+			if not time_control_button.isHidden():
+				time_control_button.hide()
+				variant_button.hide()
+				position_button.hide()
+			if time_control_group.isHidden():
+				time_control_group.show()
+			if variant_group.isHidden():
+				variant_group.show()
+			if position_group.isHidden():
+				position_group.show()
+			if options_layout.spacing() == 0:
+				options_layout.setSpacing(5)
+			time_control_group.setFixedHeight(math.floor(self.height() / 3))
+			time_control_group.setStyleSheet("background-color: #DDD")
+			variant_group.setFixedHeight(math.floor(self.height() / 6))
+			variant_group.setStyleSheet("background-color: #DDD")
+			position_group.setFixedHeight(math.floor(self.height() / 4))
+			position_group.setStyleSheet("background-color: #DDD")
+			time_control_total.setFixedSize(QSize(self.width() // 6, self.height() // 10))
+			time_control_total_increment.setFixedSize(QSize(self.width() // 6, self.height() // 10))
+			time_control_move.setFixedSize(QSize(self.width() // 6, self.height() // 10))
+			time_control_unlimited.setFixedSize(QSize(self.width() // 6, self.height() // 10))
 
 	def resizeEvent(self, event: QResizeEvent) -> None:
 		if event.size().width() > event.size().height():
@@ -502,18 +566,49 @@ class MainPage(QWidget):
 		self.select_mode_label.move((event.size().width() - self.select_mode_label.width()) // 2, (event.size().height() // 20) + 200)
 		self.two_player_mode_button.move((event.size().width() - self.two_player_mode_button.width()) // 2, (event.size().height() // 20) + 250)
 		if self.options is not None:
-			self.options.setFixedSize(QSize(math.floor(self.width() / 1.5), math.floor(self.height() / 1.5)))
-			self.options.move(QPoint((self.width() - self.options.width()) // 2, (self.height() - self.options.height()) // 2))
-			if event.size().width() < 970 or event.size().height() < 612:
-				self.options_widgets["tc_total"].setFixedSize(QSize(97, 51))
-				self.options_widgets["tc_total_increment"].setFixedSize(QSize(97, 51))
-				self.options_widgets["tc_move"].setFixedSize(QSize(97, 51))
-				self.options_widgets["tc_unlimited"].setFixedSize(QSize(97, 51))
+			if event.size().width() <= 1440 or event.size().height() <= 1080:
+				self.options.setFixedSize(event.size())
+				self.options.move(QPoint())
+				self.options_close.move(QPoint())
+				if not self.options_widgets["time_control_button"].isHidden():
+					self.options_widgets["time_control_button"].hide()
+					self.options_widgets["variant_button"].hide()
+					self.options_widgets["position_button"].hide()
+				if self.options_widgets["time_control_group"].isHidden():
+					self.options_widgets["time_control_group"].show()
+				if self.options_widgets["variant_group"].isHidden():
+					self.options_widgets["variant_group"].show()
+				if self.options_widgets["position_group"].isHidden():
+					self.options_widgets["position_group"].show()
+				if self.options.layout().spacing() == 0:
+					self.options.layout().setSpacing(5)
+				self.options_widgets["time_control_group"].setFixedHeight(math.floor(event.size().height() / 3))
+				self.options_widgets["time_control_group"].setStyleSheet("background-color: #DDD")
+				self.options_widgets["variant_group"].setFixedHeight(math.floor(event.size().height() / 6))
+				self.options_widgets["variant_group"].setStyleSheet("background-color: #DDD")
+				self.options_widgets["position_group"].setFixedHeight(math.floor(event.size().height() / 4))
+				self.options_widgets["position_group"].setStyleSheet("background-color: #DDD")
+				self.options_widgets["tc_total"].setFixedSize(QSize(event.size().width() // 6, event.size().height() // 10))
+				self.options_widgets["tc_total_increment"].setFixedSize(QSize(event.size().width() // 6, event.size().height() // 10))
+				self.options_widgets["tc_move"].setFixedSize(QSize(event.size().width() // 6, event.size().height() // 10))
+				self.options_widgets["tc_unlimited"].setFixedSize(QSize(event.size().width() // 6, event.size().height() // 10))
 			else:
+				self.options.setFixedSize(QSize(math.floor(self.width() / 1.5), math.floor(self.height() / 1.5)))
+				self.options.move(QPoint((self.width() - self.options.width()) // 2, (self.height() - self.options.height()) // 2))
+				self.options_close.move(self.options.pos())
+				if self.options_widgets["time_control_button"].isHidden():
+					self.options_widgets["time_control_button"].show()
+					self.options_widgets["variant_button"].show()
+					self.options_widgets["position_button"].show()
+				if self.options.layout().spacing() == 5:
+					self.options.layout().setSpacing(0)
 				self.options_widgets["tc_total"].setFixedSize(QSize(event.size().width() // 10, event.size().height() // 12))
 				self.options_widgets["tc_total_increment"].setFixedSize(QSize(event.size().width() // 10, event.size().height() // 12))
 				self.options_widgets["tc_move"].setFixedSize(QSize(event.size().width() // 10, event.size().height() // 12))
 				self.options_widgets["tc_unlimited"].setFixedSize(QSize(event.size().width() // 10, event.size().height() // 12))
+				self.options_widgets["time_control_group"].setFixedHeight(math.floor(event.size().height() / 6))
+				self.options_widgets["variant_group"].setFixedHeight(math.floor(event.size().height() / 10))
+				self.options_widgets["position_group"].setFixedHeight(math.floor(event.size().height() / 8))
 		if min_size > 720:
 			self.quit_button.resize(QSize(min_size // 20, min_size // 20))
 		else:
@@ -553,7 +648,7 @@ class Window(QMainWindow):
 	def __init__(self) -> None:
 		super(Window, self).__init__()
 		self.setWindowTitle("Chess")
-		self.setMinimumSize(QSize(720, 500))
+		self.setMinimumSize(QSize(720, 720))
 		self.stacked_pages, self.stacks = QStackedWidget(self), {"main-page": MainPage(self, two_player_mode_function=self.twoPlayerMode), "two-players": twoplayers.TwoPlayers(self)}
 		self.stacked_pages.addWidget(self.stacks["main-page"])
 		self.stacked_pages.addWidget(self.stacks["two-players"])
@@ -579,6 +674,7 @@ class Window(QMainWindow):
 
 	def resizeEvent(self, event: QResizeEvent) -> None:
 		self.stacks["main-page"].resize(event.size())
+		self.stacks["two-players"].resize(event.size())
 		super(Window, self).resizeEvent(event)
 
 

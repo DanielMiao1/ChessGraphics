@@ -39,17 +39,18 @@ class MoveButton(QPushButton):
 class AbortButton(QPushButton):
 	def __init__(self, parent):
 		super(AbortButton, self).__init__(parent=parent)
-		self.move(40, 0)
 		self.setText("–")
-		self.setFixedSize(QSize(40, 40))
 		self.setCursor(Qt.CursorShape.PointingHandCursor)
 		self.pressed.connect(self.parent().abort)
 		self.status_tip = QLabel("Abort", parent)
 		self.status_tip.setAlignment(Qt.AlignmentFlag.AlignCenter)
-		self.status_tip.setFixedWidth(40)
-		self.status_tip.move(QPoint(self.pos().x(), self.pos().y() + 40))
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
+	
+	def resizeEvent(self, event) -> None:
+		self.status_tip.setFixedWidth(event.size().width())
+		self.status_tip.move(QPoint(self.pos().x(), self.pos().y() + event.size().width()))
+		super(AbortButton, self).resizeEvent(event)
 
 	def enterEvent(self, event: QEvent) -> None:
 		self.status_tip.show()
@@ -65,17 +66,18 @@ class AbortButton(QPushButton):
 class BackButton(QPushButton):
 	def __init__(self, parent):
 		super(BackButton, self).__init__(parent=parent)
-		self.move(0, 0)
 		self.setText("←")
-		self.setFixedSize(QSize(40, 40))
 		self.setCursor(Qt.CursorShape.PointingHandCursor)
 		self.pressed.connect(self.parent().back)
 		self.status_tip = QLabel("Back", parent)
 		self.status_tip.setAlignment(Qt.AlignmentFlag.AlignCenter)
-		self.status_tip.setFixedWidth(40)
-		self.status_tip.move(QPoint(self.pos().x(), self.pos().y() + 40))
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
+
+	def resizeEvent(self, event) -> None:
+		self.status_tip.setFixedWidth(event.size().width())
+		self.status_tip.move(QPoint(self.pos().x(), self.pos().y() + event.size().width()))
+		super(BackButton, self).resizeEvent(event)
 
 	def enterEvent(self, event: QEvent) -> None:
 		self.status_tip.show()
@@ -91,17 +93,18 @@ class BackButton(QPushButton):
 class NewButton(QPushButton):
 	def __init__(self, parent):
 		super(NewButton, self).__init__(parent=parent)
-		self.move(80, 0)
 		self.setText("+")
-		self.setFixedSize(QSize(40, 40))
 		self.setCursor(Qt.CursorShape.PointingHandCursor)
 		self.pressed.connect(self.parent().new)
 		self.status_tip = QLabel("New", parent)
 		self.status_tip.setAlignment(Qt.AlignmentFlag.AlignCenter)
-		self.status_tip.setFixedWidth(40)
-		self.status_tip.move(QPoint(self.pos().x(), self.pos().y() + 40))
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
+
+	def resizeEvent(self, event) -> None:
+		self.status_tip.setFixedWidth(event.size().width())
+		self.status_tip.move(QPoint(self.pos().x(), self.pos().y() + event.size().width()))
+		super(NewButton, self).resizeEvent(event)
 
 	def enterEvent(self, event: QEvent) -> None:
 		self.status_tip.show()
@@ -247,12 +250,17 @@ class TwoPlayers(QWidget):
 		self.parent().setCurrentIndex(0)
 
 	def abort(self):
+		if self.clocks[0].running:
+			self.clocks[0].pause()
+		if self.clocks[1].running:
+			self.clocks[1].pause()
 		self.parent().parent().resetTwoPlayerGame()
 		self.parent().setCurrentIndex(0)
 
 	def new(self):
 		self.parent().parent().resetTwoPlayerGame()
-		self.parent().setCurrentIndex(1)
+		self.parent().setCurrentIndex(0)
+		self.parent().parent().stacks["main-page"].twoPlayers()
 
 	def getGridIndex(self) -> list:
 		columns = 0
@@ -316,11 +324,31 @@ class TwoPlayers(QWidget):
 				self.opening.setText(i["eco"] + " " + i["name"])
 				return
 
-	def resizeEvent(self, event: QResizeEvent) -> None:
+	def resizeEvent(self, event) -> None:
 		self.sidebar.resize(QSize(event.size().width() - (self.width() // 2) + 400, event.size().height() - 200))
 		self.sidebar.move(QPoint((self.width() // 2) + 400, 100))
 		self.animation.setStartValue(QPoint(event.size().width(), 0))
 		if self.clocks:
 			self.clocks[0].move(QPoint(event.size().width() - self.clocks[0].width() - 10, event.size().height() - self.clocks[0].height() - 20))
 			self.clocks[1].move(QPoint(event.size().width() - self.clocks[0].width() - 10, 20))
+		if event.size().width() > event.size().height():
+			min_size = event.size().height()
+		else:
+			min_size = event.size().width()
+		if self.board is not None:
+			self.board.move(QPoint((event.size().width() - (self.board.squares[0].width() * 10)) // 2, (event.size().height() - (self.board.squares[0].width() * 10)) // 2))
+		if min_size > 720:
+			self.back_button.resize(QSize(min_size // 20, min_size // 20))
+			self.back_button.move(QPoint(0, 0))
+			self.abort_button.resize(QSize(min_size // 20, min_size // 20))
+			self.abort_button.move(QPoint(min_size // 20, 0))
+			self.new_button.resize(QSize(min_size // 20, min_size // 20))
+			self.new_button.move(QPoint(min_size // 20 * 2, 0))
+		else:
+			self.back_button.resize(QSize(36, 36))
+			self.back_button.move(QPoint(0, 0))
+			self.abort_button.resize(QSize(36, 36))
+			self.abort_button.move(QPoint(36, 0))
+			self.new_button.resize(QSize(36, 36))
+			self.new_button.move(QPoint(72, 0))
 		super(TwoPlayers, self).resizeEvent(event)
