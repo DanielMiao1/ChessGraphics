@@ -212,13 +212,25 @@ class TwoPlayers(QWidget):
 		self.clocks.append(Clock(self, self.time_control, self.timeout))
 		self.clocks[1].move(QPoint(self.width() - self.clocks[1].width(), 20))
 
-	def setVariant(self, variant):
+	def setupBoard(self, variant, position_type, position):
 		if variant == "Standard":
-			self.game = chess.Game()
+			if position_type == "FEN":
+				self.game = chess.Game(fen=position)
+			else:
+				self.game = chess.Game()
+				self.game.loadPGN(position)
 		elif variant == "Antichess":
-			self.game = chess.Antichess()
+			if position_type == "FEN":
+				self.game = chess.Antichess(fen=position)
+			else:
+				self.game = chess.Antichess()
+				self.game.loadPGN(position)
 		elif variant == "Three Check":
-			self.game = chess.ThreeCheck()
+			if position_type == "FEN":
+				self.game = chess.ThreeCheck(fen=position)
+			else:
+				self.game = chess.ThreeCheck()
+				self.game.loadPGN(position)
 		self.board = board.Board(self, self.game)
 		self.sidebar.raise_()
 
