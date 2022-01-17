@@ -18,10 +18,12 @@ except:
 	import chess
 
 
+from PyQt5.QtSvg import *
 from PyQt5.QtCore import *
 from PyQt5.QtTest import *
 from PyQt5.QtWidgets import *
 
+import settings
 import twoplayers
 
 
@@ -35,6 +37,7 @@ def PGNValid(PGN):
 			continue
 		return False
 	return contains_moves
+
 
 class PushButton(QPushButton):
 	def __init__(self, parent, text="", clicked=None):
@@ -261,11 +264,19 @@ class MainPage(QWidget):
 		self.select_mode_animation.finished.connect(lambda: self.changeAnimationDirection(self.select_mode_animation))
 		self.two_player_mode_button = PushButton(self, text="2 Player Mode", clicked=self.twoPlayers)
 		self.select_mode_label.setColor(QColor("transparent"))
+		self.settings_button = QSvgWidget(self)
+		self.settings_button.renderer().load(bytearray('<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/></svg>', encoding='utf-8'))
+		self.settings_button.setCursor(Qt.CursorShape.PointingHandCursor)
+		self.settings_button.mousePressEvent = self.settings
+		self.settings_widget = None
 
 	@staticmethod
 	def changeAnimationDirection(animation):
 		animation.setDirection(int(not animation.direction()))
 		animation.start()
+
+	def settings(self, _):
+		self.parent().parent().setIndex(2, self.parent().parent().stacks["settings"])
 	
 	def twoPlayers(self):
 		def styleTimeControlButtons(text):
@@ -609,15 +620,13 @@ class MainPage(QWidget):
 				self.options_widgets["time_control_group"].setFixedHeight(math.floor(event.size().height() / 6))
 				self.options_widgets["variant_group"].setFixedHeight(math.floor(event.size().height() / 10))
 				self.options_widgets["position_group"].setFixedHeight(math.floor(event.size().height() / 8))
-		if min_size > 720:
-			self.quit_button.resize(QSize(min_size // 20, min_size // 20))
-		else:
-			self.quit_button.resize(QSize(36, 36))
+		self.quit_button.resize(QSize(min_size // 20, min_size // 20))
 		if not self.animated:
 			self.title_opening_animation.setEndValue(QSize(self.title.maximumWidth(), 200))
 			self.title_opening_animation.setStartValue(QSize(self.title.maximumWidth(), 0))
 			self.title_opening_animation.start()
 			self.animated = True
+		self.settings_button.move(QPoint(event.size().width() - self.settings_button.width() - 10, 10))
 		super(MainPage, self).resizeEvent(event)
 
 	def titleAnimationFinished(self):
@@ -649,9 +658,10 @@ class Window(QMainWindow):
 		super(Window, self).__init__()
 		self.setWindowTitle("Chess")
 		self.setMinimumSize(QSize(720, 720))
-		self.stacked_pages, self.stacks = QStackedWidget(self), {"main-page": MainPage(self, two_player_mode_function=self.twoPlayerMode), "two-players": twoplayers.TwoPlayers(self)}
+		self.stacked_pages, self.stacks = QStackedWidget(self), {"main-page": MainPage(self, two_player_mode_function=self.twoPlayerMode), "two-players": twoplayers.TwoPlayers(self), "settings": settings.Settings(self)}
 		self.stacked_pages.addWidget(self.stacks["main-page"])
 		self.stacked_pages.addWidget(self.stacks["two-players"])
+		self.stacked_pages.addWidget(self.stacks["settings"])
 		self.showFullScreen()
 		self.stacked_pages.move(0, 0)
 		self.stacked_pages.setFixedSize(self.size())
@@ -675,6 +685,7 @@ class Window(QMainWindow):
 	def resizeEvent(self, event: QResizeEvent) -> None:
 		self.stacks["main-page"].resize(event.size())
 		self.stacks["two-players"].resize(event.size())
+		self.stacks["settings"].resize(event.size())
 		super(Window, self).resizeEvent(event)
 
 

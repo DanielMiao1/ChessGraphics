@@ -8,6 +8,9 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 from chess.functions import *
+import json
+
+settings_values = json.load(open("settings.json"))
 
 
 class MoveBullet(QLabel):
@@ -195,13 +198,13 @@ class Board(QWidget):
 		self.castle_rook_animation = None
 		for x in self.game.squares:
 			for y in x:
-				self.squares.append(Square(self, "#FFFFDD" if y.color == "white" else "#86A666"))
+				self.squares.append(Square(self, settings_values["light-square-color"] if y.color == "white" else settings_values["dark-square-color"]))
 				self.squares[-1].move((coordinateToIndex(y.position)[1] + 1) * 100, (coordinateToIndex(y.position)[0] + 1) * 100)
 		for i in self.game.pieces:
 			self.pieces.append(Piece(self, i.position, i.color, i.piece_type))
 			self.pieces[-1].move((coordinateToIndex(i.position)[1] + 1) * 100, (coordinateToIndex(i.position)[0] + 1) * 100)
 
-	def pieceAt(self, position) -> False or Piece:
+	def pieceAt(self, position):
 		for i in self.pieces:
 			if i.position == position:
 				return i
