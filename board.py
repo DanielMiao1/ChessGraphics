@@ -35,8 +35,6 @@ class MoveBullet(QLabel):
 	def mousePressEvent(self, event) -> None:
 		if event.button() == Qt.LeftButton:
 			self.piece.movePiece(self.move)
-		else:
-			self.piece.mousePressEvent(event)
 		super(MoveBullet, self).mousePressEvent(event)
 
 
@@ -77,6 +75,15 @@ class Piece(QLabel):
 		super(Piece, self).moveEvent(event)
 
 	def mousePressEvent(self, event) -> None:
+		if event.button() == Qt.MouseButton.RightButton:
+			self.showing_moves = False
+			self.setStyleSheet("background-color: transparent;")
+			for i in self.moves:
+				i.hide()
+		for i in self.parent().squares:
+			if i.position == self.position:
+				i.mousePressEvent(event, remove_move_bullets=False)
+				break
 		self.mouse_event_start = None
 		self.mouse_event_position = None
 		if event.button() == Qt.LeftButton:
@@ -88,7 +95,7 @@ class Piece(QLabel):
 		if event.buttons() == Qt.LeftButton and not self.parent().parent().game_over:
 			if self.dragging == False:
 				self.dragging = True
-				self.parent().drag_square = Square(self.parent(), "rgba(86, 12, 255, 0.5);")
+				self.parent().drag_square = Square(self.parent(), "rgba(86, 12, 255, 0.5);", self.position)
 				self.parent().drag_square.move(self.pos())
 				self.parent().drag_square.show()
 				self.raise_()
@@ -174,19 +181,46 @@ class Piece(QLabel):
 
 
 class Square(QPushButton):
-	def __init__(self, parent, color) -> None:
+	def __init__(self, parent, color, position) -> None:
 		super(Square, self).__init__(parent=parent)
 		self.setFixedSize(QSize(100, 100))
 		self.setStyleSheet(f"background-color: {color}; border: none;")
+		self.position = position
+		self.highlight_square = QPushButton(self.parent())
+		self.highlight_square.setStyleSheet("background-color: rgba(0, 174, 255, 0.5); border: none;")
+		self.highlight_square.resize(self.size())
+		self.highlight_square.mousePressEvent = self.mousePressEvent
+		self.highlight_square.hide()
 
-	def mousePressEvent(self, event) -> None:
-		for x in self.parent().pieces:
-			if x.showing_moves:
-				for y in x.moves:
-					y.hide()
-				x.showing_moves = False
-				x.setStyleSheet("background-color: transparent;")
+	def highlight(self):
+		if self.highlight_square.isHidden():
+			self.highlight_square.show()
+		else:
+			self.highlight_square.hide()
+
+	def mousePressEvent(self, event, remove_move_bullets=True) -> None:
+		if event.button() == Qt.MouseButton.LeftButton:
+			for i in self.parent().squares:
+				if not i.highlight_square.isHidden():
+					i.highlight_square.hide()
+			if remove_move_bullets:
+				for x in self.parent().pieces:
+					if x.showing_moves:
+						for y in x.moves:
+							y.hide()
+						x.showing_moves = False
+						x.setStyleSheet("background-color: transparent;")
+		else:
+			self.highlight()
 		super(Square, self).mousePressEvent(event)
+	
+	def moveEvent(self, event):
+		self.highlight_square.move(event.pos())
+		super(Square, self).moveEvent(event)
+	
+	def resizeEvent(self, event):
+		self.highlight_square.resize(event.size())
+		super(Square, self).resizeEvent(event)
 
 
 class Board(QWidget):
@@ -198,7 +232,7 @@ class Board(QWidget):
 		self.castle_rook_animation = None
 		for x in self.game.squares:
 			for y in x:
-				self.squares.append(Square(self, settings_values["light-square-color"] if y.color == "white" else settings_values["dark-square-color"]))
+				self.squares.append(Square(self, settings_values["light-square-color"] if y.color == "white" else settings_values["dark-square-color"], y.position))
 				self.squares[-1].move((coordinateToIndex(y.position)[1] + 1) * 100, (coordinateToIndex(y.position)[0] + 1) * 100)
 		for i in self.game.pieces:
 			self.pieces.append(Piece(self, i.position, i.color, i.piece_type))
