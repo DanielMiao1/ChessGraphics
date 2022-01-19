@@ -46,6 +46,18 @@ class BackButton(QPushButton):
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
 
+	def focusInEvent(self, event) -> None:
+		if event.reason() <= 2:
+			self.status_tip.show()
+			self.setStyleSheet("color: black; background-color: limegreen; border: none;")
+		super(BackButton, self).focusInEvent(event)
+	
+	def focusOutEvent(self, event) -> None:
+		if event.reason() <= 2:
+			self.status_tip.hide()
+			self.setStyleSheet("color: black; background-color: white; border: none;")
+		super(BackButton, self).focusOutEvent(event)
+
 	def resizeEvent(self, event) -> None:
 		self.status_tip.setFixedWidth(event.size().width())
 		self.status_tip.move(QPoint(self.pos().x(), self.pos().y() + event.size().width()))
@@ -72,6 +84,20 @@ class SaveButton(QPushButton):
 		self.status_tip.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
+	
+	def focusInEvent(self, event) -> None:
+		if event.reason() <= 2:
+			self.status_tip.show()
+			self.setStyleSheet("color: black; background-color: lightblue; border: none;")
+			self.save_icon.renderer().load(bytearray('<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg width="13.75" height="15.625"><polygon points="0, 0 0, 15.625 13.75, 15.625 13.75, 2.5 11.25, 0 10, 0 10, 3.75 1.875, 3.75 1.875, 0" style="fill:black"/><rect x="7.5" y="0.9375" width="1.25" height="1.875" style="fill:black"/><rect x="1.875" y="5.625" width="10" height="8.125" style="fill:lightblue"/><rect x="3.75" y="7.5" width="6.25" height="1.5" style="fill:black"/><rect x="3.75" y="10.625" width="6.25" height="1.5" style="fill:black"/></svg>', encoding='utf-8'))
+		super(SaveButton, self).focusInEvent(event)
+	
+	def focusOutEvent(self, event) -> None:
+		if event.reason() <= 2:
+			self.status_tip.hide()
+			self.setStyleSheet("color: black; background-color: white; border: none;")
+			self.save_icon.renderer().load(bytearray('<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg width="13.75" height="15.625"><polygon points="0, 0 0, 15.625 13.75, 15.625 13.75, 2.5 11.25, 0 10, 0 10, 3.75 1.875, 3.75 1.875, 0" style="fill:black"/><rect x="7.5" y="0.9375" width="1.25" height="1.875" style="fill:black"/><rect x="1.875" y="5.625" width="10" height="8.125" style="fill:white"/><rect x="3.75" y="7.5" width="6.25" height="1.5" style="fill:black"/><rect x="3.75" y="10.625" width="6.25" height="1.5" style="fill:black"/></svg>', encoding='utf-8'))
+		super(SaveButton, self).focusOutEvent(event)
 	
 	def resizeEvent(self, event) -> None:
 		self.status_tip.setFixedWidth(event.size().width())

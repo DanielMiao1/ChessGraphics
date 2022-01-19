@@ -26,6 +26,7 @@ class MoveButton(QPushButton):
 		self.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Regular.ttf"))[0], 15, weight=40))
 		self.setText(text)
 		self.setFixedSize(100, 30)
+		self.setFocusPolicy(Qt.ClickFocus)
 
 	def enterEvent(self, event: QHoverEvent) -> None:
 		self.setStyleSheet("background-color: rgba(100, 0, 255, 0.75); color: white;")
@@ -34,6 +35,21 @@ class MoveButton(QPushButton):
 	def leaveEvent(self, event: QHoverEvent) -> None:
 		self.setStyleSheet("background-color: transparent; color: black;")
 		super(MoveButton, self).leaveEvent(event)
+
+
+class TemporaryMoveButton(MoveButton):
+	def __init__(self, parent, text=""):
+		super(TemporaryMoveButton, self).__init__(parent, text=text)
+		self.setStyleSheet("background-color: rgba(0, 0, 0, 0.05); color: black;")
+		self.setFocusPolicy(Qt.ClickFocus)
+		
+	def enterEvent(self, event: QHoverEvent) -> None:
+		super(TemporaryMoveButton, self).enterEvent(event)
+		self.setStyleSheet("background-color: rgba(0, 0, 0, 0.1); color: black;")
+
+	def leaveEvent(self, event: QHoverEvent) -> None:
+		super(TemporaryMoveButton, self).leaveEvent(event)
+		self.setStyleSheet("background-color: rgba(0, 0, 0, 0.05); color: black;")
 
 
 class AbortButton(QPushButton):
@@ -46,6 +62,18 @@ class AbortButton(QPushButton):
 		self.status_tip.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
+	
+	def focusInEvent(self, event) -> None:
+		if event.reason() <= 2:
+			self.status_tip.show()
+			self.setStyleSheet("color: black; background-color: yellow; border: none;")
+		super(AbortButton, self).focusInEvent(event)
+	
+	def focusOutEvent(self, event) -> None:
+		if event.reason() <= 2:
+			self.status_tip.hide()
+			self.setStyleSheet("color: black; background-color: white; border: none;")
+		super(AbortButton, self).focusOutEvent(event)
 	
 	def resizeEvent(self, event) -> None:
 		self.status_tip.setFixedWidth(event.size().width())
@@ -73,6 +101,18 @@ class BackButton(QPushButton):
 		self.status_tip.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
+	
+	def focusInEvent(self, event) -> None:
+		if event.reason() <= 2:
+			self.status_tip.show()
+			self.setStyleSheet("color: black; background-color: limegreen; border: none;")
+		super(BackButton, self).focusInEvent(event)
+	
+	def focusOutEvent(self, event) -> None:
+		if event.reason() <= 2:
+			self.status_tip.hide()
+			self.setStyleSheet("color: black; background-color: white; border: none;")
+		super(BackButton, self).focusOutEvent(event)
 
 	def resizeEvent(self, event) -> None:
 		self.status_tip.setFixedWidth(event.size().width())
@@ -100,6 +140,18 @@ class NewButton(QPushButton):
 		self.status_tip.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
+	
+	def focusInEvent(self, event) -> None:
+		if event.reason() <= 2:
+			self.status_tip.show()
+			self.setStyleSheet("color: black; background-color: green; border: none;")
+		super(NewButton, self).focusInEvent(event)
+	
+	def focusOutEvent(self, event) -> None:
+		if event.reason() <= 2:
+			self.status_tip.hide()
+			self.setStyleSheet("color: black; background-color: white; border: none;")
+		super(NewButton, self).focusOutEvent(event)
 
 	def resizeEvent(self, event) -> None:
 		self.status_tip.setFixedWidth(event.size().width())
@@ -137,6 +189,7 @@ class Clock(QPushButton):
 		self.timer.timeout.connect(self.updateClock)
 		self.setStyleSheet("background-color: #EEE; border: none;")
 		self.setFont(QFont("Arial", 30))
+		self.setFocusPolicy(Qt.NoFocus)
 
 	def updateText(self):
 		self.setText(str(self.clock_minutes) + ":" + str(self.clock_seconds).rjust(2, "0"))
@@ -205,6 +258,8 @@ class TwoPlayers(QWidget):
 		self.new_button = NewButton(self)
 		self.clocks = []
 		self.sidebar.move(QPoint((self.width() // 2) + 400, 100))
+		self.temporary_move = None
+		self.setFocusPolicy(Qt.NoFocus)
 
 	def setTimeControl(self, time_control):
 		if time_control == "unlimited":
@@ -236,6 +291,13 @@ class TwoPlayers(QWidget):
 				self.game.loadPGN(position)
 		self.board = board.Board(self, self.game)
 		self.sidebar.raise_()
+
+	def addTemporaryMove(self, text):
+		self.temporary_move = TemporaryMoveButton(self, text)
+		self.move_buttons.append(self.temporary_move)
+		self.moves_layout.addWidget(self.move_buttons[-1], self.getGridIndex()[0], self.getGridIndex()[1])
+		self.move_buttons[-1].show()
+		self.moves_wrapper.verticalScrollBar().setSliderPosition(self.moves_wrapper.verticalScrollBar().maximum())
 
 	def startClocks(self):
 		if self.clocks:
@@ -323,6 +385,10 @@ class TwoPlayers(QWidget):
 			if i["position"] == position:
 				self.opening.setText(i["eco"] + " " + i["name"])
 				return
+
+	def keyPressEvent(self, event):
+		self.board.keyPressEvent(event)
+		super(TwoPlayers, self).keyPressEvent(event)
 
 	def resizeEvent(self, event) -> None:
 		self.sidebar.resize(QSize(event.size().width() - (self.width() // 2) + 400, event.size().height() - 200))

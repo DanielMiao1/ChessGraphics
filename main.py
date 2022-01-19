@@ -47,6 +47,21 @@ class PushButton(QPushButton):
 		self.setCursor(Qt.CursorShape.PointingHandCursor)
 		self.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-SemiBold.ttf"))[0], 15))
 		self.setStyleSheet("color: transparent; background-color: transparent; border: 15px solid transparent;")
+		self.setFocusPolicy(Qt.StrongFocus)
+	
+	def focusInEvent(self, event) -> None:
+		if event.reason() <= 2:
+			if self.setting_color:
+				return
+			self.setStyleSheet("color: white; background-color: #6400CF; border: 15px solid #6400CF;")
+		super(PushButton, self).focusInEvent(event)
+	
+	def focusOutEvent(self, event) -> None:
+		if event.reason() <= 2:
+			if self.setting_color:
+				return
+			self.setStyleSheet("color: white; background-color: #8400FF; border: 15px solid #8400FF;")
+		super(PushButton, self).focusOutEvent(event)
 
 	def enterEvent(self, event: QEvent) -> None:
 		if self.setting_color:
@@ -64,15 +79,20 @@ class PushButton(QPushButton):
 		if self.setting_color:
 			return
 		self.setStyleSheet("color: white; background-color: #4F00A6; border: 15px solid #4F00A6;")
-		super(PushButton, self).mousePressEvent(event)
 		if self.clicked is not None:
 			self.clicked()
+		self.pressed.emit()
 
 	def mouseReleaseEvent(self, event: QMouseEvent) -> None:
 		if self.setting_color:
 			return
 		self.setStyleSheet("color: white; background-color: #6400CF; border: 15px solid #6400CF;")
 		super(PushButton, self).mouseReleaseEvent(event)
+
+	def keyPressEvent(self, event) -> None:
+		if event.key() in [Qt.Key_Enter, Qt.Key_Return, Qt.Key_Space]:
+			self.pressed.emit()
+		super(PushButton, self).keyPressEvent(event)
 
 	def animationFinished(self):
 		self.setting_color = False
@@ -87,10 +107,12 @@ class PushButton(QPushButton):
 
 
 class Label(QLabel):
-	def __init__(self, parent, text=""):
+	def __init__(self, parent, text="", selectable=True):
 		super(Label, self).__init__(parent=parent)
 		self.setText(text)
 		self.setAlignment(Qt.AlignmentFlag.AlignCenter)
+		if selectable:
+			self.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
 
 	def setColor(self, color):
 		palette = self.palette()
@@ -111,6 +133,19 @@ class QuitButton(QPushButton):
 		self.status_tip.move(QPoint(self.pos().x(), self.pos().y() + 40))
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
+		self.setFocusPolicy(Qt.StrongFocus)
+	
+	def focusInEvent(self, event) -> None:
+		if event.reason() <= 2:
+			self.status_tip.show()
+			self.setStyleSheet("color: black; background-color: red; border: none;")
+		super(QuitButton, self).focusInEvent(event)
+	
+	def focusOutEvent(self, event) -> None:
+		if event.reason() <= 2:
+			self.status_tip.hide()
+			self.setStyleSheet("color: black; background-color: white; border: none;")
+		super(QuitButton, self).focusOutEvent(event)
 
 	def enterEvent(self, event: QEvent) -> None:
 		self.status_tip.show()
@@ -124,10 +159,12 @@ class QuitButton(QPushButton):
 
 
 class OptionsButton(QPushButton):
-	def __init__(self, text, parent, pressed_function=None):
+	def __init__(self, text, parent, pressed_function=None, center_text=False):
 		super(OptionsButton, self).__init__(parent=parent)
 		self.pressed_function = pressed_function
-		self.text = Label(self, text)
+		self.text = QLabel(text, self)
+		if center_text:
+			self.text.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.text.resize(self.size())
 		self.text.setWordWrap(True)
 		self.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -159,26 +196,12 @@ class StartGame(QPushButton):
 		self.pressed_function = pressed_function
 		self.setText(text)
 		self.setFixedHeight(75)
-		self.setStyleSheet("background-color: white; border: 5px solid white; color: black;")
 		self.setCursor(Qt.CursorShape.PointingHandCursor)
 	
-	def enterEvent(self, event) -> None:
-		self.setStyleSheet("background-color: #EEEEEE; border: 5px solid #EEEEEE; color: black;")
-		super(StartGame, self).enterEvent(event)
-
-	def leaveEvent(self, event) -> None:
-		self.setStyleSheet("background-color: white; border: 5px solid white; color: black;")
-		super(StartGame, self).leaveEvent(event)
-	
 	def mousePressEvent(self, event) -> None:
-		self.setStyleSheet("background-color: black; border: 5px solid black; color: white;")
 		if self.pressed_function is not None:
 			self.pressed_function()
 		super(StartGame, self).mousePressEvent(event)
-	
-	def mouseReleaseEvent(self, event) -> None:
-		self.setStyleSheet("background-color: white; border: 5px solid white; color: black;")
-		super(StartGame, self).mouseReleaseEvent(event)
 
 
 class OptionButton(QPushButton):
@@ -188,7 +211,26 @@ class OptionButton(QPushButton):
 		self.setCursor(Qt.CursorShape.PointingHandCursor)
 		self.selected = False
 	
-	def enterEvent(self, event) -> None:
+	def focusInEvent(self, event):
+		if event.reason() <= 2:
+			self.setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.2);")
+		super(OptionButton, self).focusInEvent(event)
+	
+	def focusOutEvent(self, event):
+		if event.reason() <= 2:
+			self.setStyleSheet("width: 100%; height: 30px; background-color: transparent;")
+		super(OptionButton, self).focusOutEvent(event)
+	
+	def keyPressEvent(self, event: QKeyEvent):
+		if event.text() == " ":
+			if not self.selected:
+				self.setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.4);")
+			else:
+				self.setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.2);")
+			self.selected = not self.selected
+		super(OptionButton, self).keyPressEvent(event)
+	
+	def enterEvent(self, event: QEnterEvent) -> None:
 		self.setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.2);")
 		super(OptionButton, self).enterEvent(event)
 	
@@ -200,8 +242,9 @@ class OptionButton(QPushButton):
 		super(OptionButton, self).leaveEvent(event)
 	
 	def mousePressEvent(self, event) -> None:
-		self.selected = not self.selected
-		self.setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.4);")
+		if event.button() == Qt.MouseButton.LeftButton:
+			self.selected = not self.selected
+			self.setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.4);")
 		super(OptionButton, self).mousePressEvent(event)
 	
 	def mouseReleaseEvent(self, event) -> None:
@@ -232,6 +275,39 @@ class PGNInput(QTextEdit):
 		super(PGNInput, self).keyPressEvent(event)
 
 
+class SettingsButton(PushButton):
+	def __init__(self, parent):
+		super(SettingsButton, self).__init__(parent=parent)
+		self.resize(QSize(64, 64))
+		self.svg = QSvgWidget(self)
+		self.svg.renderer().load(bytearray('<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"><path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/></svg>', encoding='utf-8'))
+		self.setStyleSheet("background-color: transparent; border: none;")
+		self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+	
+	def focusInEvent(self, event) -> None:
+		self.setStyleSheet("background-color: #CCC; border: none;")
+		super(SettingsButton, self).focusInEvent(event)
+	
+	def focusOutEvent(self, event) -> None:
+		self.setStyleSheet("background-color: transparent; border: none;")
+		super(SettingsButton, self).focusOutEvent(event)
+		
+	def enterEvent(self, event) -> None:
+		self.setStyleSheet("background-color: #CCC; border: none;")
+		super(SettingsButton, self).enterEvent(event)
+	
+	def leaveEvent(self, event) -> None:
+		self.setStyleSheet("background-color: transparent; border: none;")
+		super(SettingsButton, self).leaveEvent(event)
+	
+	def mousePressEvent(self, event) -> None:
+		self.pressed.emit()
+	
+	def resizeEvent(self, event) -> None:
+		self.svg.move(QPoint((event.size().width() - 16) // 2, (event.size().height() - 16) // 2))
+		super(SettingsButton, self).resizeEvent(event)
+
+
 class MainPage(QWidget):
 	def __init__(self, parent, two_player_mode_function=None):
 		super(MainPage, self).__init__(parent=parent)
@@ -243,7 +319,7 @@ class MainPage(QWidget):
 		self.options = None
 		self.options_widgets = None
 		self.options_close = None
-		self.title = Label(self, text="Chess")
+		self.title = Label(self, text="Chess", selectable=False)
 		self.title_animation = QPropertyAnimation(self.title, b"color")
 		self.title_animation.setLoopCount(1)
 		self.title_animation.setDuration(20000)
@@ -262,20 +338,19 @@ class MainPage(QWidget):
 		self.select_mode_animation.setStartValue(QColor("#CC00FF"))
 		self.select_mode_animation.setEndValue(QColor("#1B00FF"))
 		self.select_mode_animation.finished.connect(lambda: self.changeAnimationDirection(self.select_mode_animation))
-		self.two_player_mode_button = PushButton(self, text="2 Player Mode", clicked=self.twoPlayers)
+		self.two_player_mode_button = PushButton(self, text="2 Player Mode")
+		self.two_player_mode_button.pressed.connect(self.twoPlayers)
 		self.select_mode_label.setColor(QColor("transparent"))
-		self.settings_button = QSvgWidget(self)
-		self.settings_button.renderer().load(bytearray('<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/></svg>', encoding='utf-8'))
+		self.settings_button = SettingsButton(self)
 		self.settings_button.setCursor(Qt.CursorShape.PointingHandCursor)
-		self.settings_button.mousePressEvent = self.settings
-		self.settings_widget = None
+		self.settings_button.pressed.connect(self.settings)
 
 	@staticmethod
 	def changeAnimationDirection(animation):
 		animation.setDirection(int(not animation.direction()))
 		animation.start()
 
-	def settings(self, _):
+	def settings(self):
 		self.parent().parent().setIndex(2, self.parent().parent().stacks["settings"])
 	
 	def twoPlayers(self):
@@ -390,7 +465,7 @@ class MainPage(QWidget):
 		self.options_close = QPushButton("×", self)
 		self.options_close.pressed.connect(close_dialog)
 		self.options_close.setCursor(Qt.CursorShape.PointingHandCursor)
-		self.options_close.setStyleSheet("QPushButton { background-color: white; border: 12px solid white; } QPushButton:hover { background-color: #EEE; border: 12px solid #EEE; }")
+		self.options_close.setStyleSheet("QPushButton { background-color: white; border: 12px solid white; } QPushButton:hover, QPushButton:focus { background-color: #EEE; border: 12px solid #EEE; }")
 		self.options_close.show()
 		# Add space
 		spacing = QWidget(self.options)
@@ -408,14 +483,14 @@ class MainPage(QWidget):
 		time_control_buttons = QGroupBox(time_control_group)
 		time_control_buttons_layout = QHBoxLayout()
 		time_control_buttons_layout.setSpacing(0)
-		time_control_total = OptionsButton("Total Time", time_control_buttons, styleTimeControlButtons)
+		time_control_total = OptionsButton("Total Time", time_control_buttons, styleTimeControlButtons, center_text=True)
 		time_control_total.setFixedSize(QSize(self.width() // 12, self.height() // 17))
 		time_control_total.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
-		time_control_total_increment = OptionsButton("Total Time + Increment Per Move", time_control_buttons, styleTimeControlButtons)
+		time_control_total_increment = OptionsButton("Total Time + Increment Per Move", time_control_buttons, styleTimeControlButtons, center_text=True)
 		time_control_total_increment.setFixedSize(QSize(self.width() // 12, self.height() // 17))
-		time_control_move = OptionsButton("Time Per Move", time_control_buttons, styleTimeControlButtons)
+		time_control_move = OptionsButton("Time Per Move", time_control_buttons, styleTimeControlButtons, center_text=True)
 		time_control_move.setFixedSize(QSize(self.width() // 12, self.height() // 17))
-		time_control_unlimited = OptionsButton("Unlimited", time_control_buttons, styleTimeControlButtons)
+		time_control_unlimited = OptionsButton("Unlimited", time_control_buttons, styleTimeControlButtons, center_text=True)
 		time_control_unlimited.setFixedSize(QSize(self.width() // 12, self.height() // 17))
 		time_control_buttons_layout.addStretch()
 		time_control_buttons_layout.addWidget(time_control_total)
@@ -519,6 +594,7 @@ class MainPage(QWidget):
 		position_group.hide()
 		# Add widgets to options
 		start_game = StartGame(self.options, "Start Game", startGame)
+		start_game.setStyleSheet("StartGame { background-color: white; border: 5px solid white; color: black; } StartGame:hover, StartGame:focus { background-color: #EEEEEE; border: 5px solid #EEEEEE; color: black; }")
 		options_layout.setSpacing(0)
 		options_layout.addWidget(title)
 		options_layout.addWidget(spacing)
@@ -536,7 +612,7 @@ class MainPage(QWidget):
 		self.options.move(QPoint((self.width() - self.options.width()) // 2, (self.height() - self.options.height()) // 2))
 		self.options.show()
 		self.options_close.move(self.options.pos())
-		self.options_widgets = {"tc_total": time_control_total, "tc_total_increment": time_control_total_increment, "tc_move": time_control_move, "tc_unlimited": time_control_unlimited, "time_control_group": time_control_group, "variant_group": variant_group, "position_group": position_group, "time_control_button": time_control_button, "variant_button": variant_button, "position_button": position_button}
+		self.options_widgets = {"tc_total": time_control_total, "tc_total_increment": time_control_total_increment, "tc_move": time_control_move, "tc_unlimited": time_control_unlimited, "time_control_group": time_control_group, "variant_group": variant_group, "position_group": position_group, "time_control_button": time_control_button, "variant_button": variant_button, "position_button": position_button, "startGame": startGame}
 		if self.width() <= 1440 or self.height() <= 1080:
 			self.options.setFixedSize(self.size())
 			self.options.move(QPoint())
@@ -563,6 +639,12 @@ class MainPage(QWidget):
 			time_control_total_increment.setFixedSize(QSize(self.width() // 6, self.height() // 10))
 			time_control_move.setFixedSize(QSize(self.width() // 6, self.height() // 10))
 			time_control_unlimited.setFixedSize(QSize(self.width() // 6, self.height() // 10))
+
+	def keyPressEvent(self, event: QKeyEvent):
+		if self.options is not None:
+			if event.key() == 16777220:
+				self.options_widgets["startGame"]()
+		super(MainPage, self).keyPressEvent(event)
 
 	def resizeEvent(self, event: QResizeEvent) -> None:
 		if event.size().width() > event.size().height():

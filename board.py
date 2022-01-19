@@ -50,9 +50,12 @@ class Piece(QLabel):
 		self.dragging = False
 		self.setCursor(Qt.PointingHandCursor)
 		self.setPixmap(QPixmap("images/standard/" + color + "_" + piece))
+		self.setFocusPolicy(Qt.ClickFocus)
 
 	def showMoves(self, change_background=True):
-		if self.parent().parent().game_over:
+		if self.parent() is None:
+			return
+		if self.parent().game.game_over:
 			return
 		if change_background:
 			self.setStyleSheet("background-color: rgba(86, 12, 255, 0.5);")
@@ -140,6 +143,8 @@ class Piece(QLabel):
 			self.showing_moves = not self.showing_moves
 
 	def movePiece(self, move, animate=True) -> None:
+		if self.parent() is None:
+			return
 		if self.parent().parent().game_over:
 			return
 		self.setStyleSheet("background-color: transparent;")
@@ -191,6 +196,7 @@ class Square(QPushButton):
 		self.highlight_square.resize(self.size())
 		self.highlight_square.mousePressEvent = self.mousePressEvent
 		self.highlight_square.hide()
+		self.setFocusPolicy(Qt.ClickFocus)
 
 	def highlight(self):
 		if self.highlight_square.isHidden():
@@ -237,6 +243,116 @@ class Board(QWidget):
 		for i in self.game.pieces:
 			self.pieces.append(Piece(self, i.position, i.color, i.piece_type))
 			self.pieces[-1].move((coordinateToIndex(i.position)[1] + 1) * 100, (coordinateToIndex(i.position)[0] + 1) * 100)
+		self.setFocusPolicy(Qt.ClickFocus)
+
+	def evaluateMove(self, string):
+		try:
+			string = toSAN(string, self.game)
+		except:
+			return False
+		legal_moves = self.game.legal_moves(show_data=True)
+		for i in legal_moves:
+			if i.name == string:
+				self.pieceAt(i.old_position).movePiece(i)
+				return True
+		return False
+
+	@staticmethod
+	def generateTemporaryValidCharacters(string):
+		if not string:
+			return ["a", "b", "c", "d", "e", "f", "g", "h", "P", "N", "B", "R", "Q", "K"]
+		if string[-1] == "x":
+			return ["a", "b", "c", "d", "e", "f", "g", "h"]
+		if string[-1] in ["a", "b", "c", "d", "e", "f", "g", "h"]:
+			return ["1", "2", "3", "4", "5", "6", "7", "8", "x"]
+		if string[-1].isnumeric() and len([True for i in string if i.isnumeric()]) <= 1:
+			return ["a", "b", "c", "d", "e", "f", "g", "h", "x"]
+		if string[-1] in ["P", "N", "B", "R", "Q", "K"]:
+			return ["a", "b", "c", "d", "e", "f", "g", "h", "x"]
+		if string[-1].upper() == "O" and len(string) <= 4:
+			return ["-"]
+		if string[-1] == "-" and "O" in string.upper():
+			return ["O"]
+		return []
+
+	def keyPressEvent(self, event):
+		if self.parent().temporary_move is None:
+			if event.text() in ["a", "b", "c", "d", "e", "f", "g", "h", "P", "N", "B", "R", "Q", "K", "O"]:
+				self.parent().addTemporaryMove(event.text())
+				if event.text() in ["O", "0"]:
+					return
+				if event.text() in ["a", "b", "c", "d", "e", "f", "g", "h"]:
+					for i in self.squares:
+						if i.position[0] == event.text():
+							if i.highlight_square.isHidden():
+								i.highlight_square.show()
+				else:
+					positions = list(map(lambda x: str(x.position), self.game.pieceType({"P": "pawn", "N": "knight", "B": "bishop", "R": "rook", "Q": "queen", "K": "king"}[event.text()], color=self.game.turn)))
+					for i in self.squares:
+						if i.position in positions:
+							if i.highlight_square.isHidden():
+								i.highlight_square.show()
+						else:
+							if not i.highlight_square.isHidden():
+								i.highlight_square.hide()
+		elif event.key() in [Qt.Key.Key_Backspace, Qt.Key.Key_Delete]:
+			self.parent().temporary_move.setText(self.parent().temporary_move.text()[:-1])
+		elif event.key() in [Qt.Key.Key_Return, Qt.Key.Key_Enter] and self.parent().temporary_move is not None:
+			temporary_move_text = self.parent().temporary_move.text()
+			self.parent().moves_layout.removeWidget(self.parent().temporary_move)
+			self.parent().move_buttons.remove(self.parent().temporary_move)
+			self.parent().temporary_move.deleteLater()
+			if self.evaluateMove(self.parent().temporary_move.text().replace("P", "")):
+				self.parent().temporary_move = None
+				for i in self.squares:
+					if not i.highlight_square.isHidden():
+						i.highlight_square.hide()
+			else:
+				self.parent().addTemporaryMove(temporary_move_text)
+		elif event.key() == Qt.Key.Key_Escape:
+			self.parent().moves_layout.removeWidget(self.parent().temporary_move)
+			self.parent().move_buttons.remove(self.parent().temporary_move)
+			self.parent().temporary_move.deleteLater()
+			self.parent().temporary_move = None
+			for i in self.squares:
+				if not i.highlight_square.isHidden():
+					i.highlight_square.hide()
+		elif event.text() in self.generateTemporaryValidCharacters(self.parent().temporary_move.text()):
+			self.parent().temporary_move.setText(self.parent().temporary_move.text() + event.text())
+			if event.text() in ["P", "N", "B", "R", "Q", "K"]:
+				positions = list(map(lambda x: str(x.position), self.game.pieceType({"P": "pawn", "N": "knight", "B": "bishop", "R": "rook", "Q": "queen", "K": "king"}[event.text()], color=self.game.turn)))
+				for i in self.squares:
+					if i.position in positions:
+						if i.highlight_square.isHidden():
+							i.highlight_square.show()
+					else:
+						if not i.highlight_square.isHidden():
+							i.highlight_square.hide()
+			elif event.text() in ["a", "b", "c", "d", "e", "f", "g", "h"]:
+				for i in self.squares:
+					if i.position[0] == event.text():
+						if i.highlight_square.isHidden():
+							i.highlight_square.show()
+					else:
+						if not i.highlight_square.isHidden():
+							i.highlight_square.hide()
+			elif event.text().isnumeric():
+				if self.pieceAt(self.parent().temporary_move.text()[-2:]) and self.pieceAt(self.parent().temporary_move.text()[-2:]).color == self.game.turn:
+					for i in self.squares:
+						if not i.highlight_square.isHidden():
+							i.highlight_square.hide()
+					self.pieceAt(self.parent().temporary_move.text()[-2:]).showMoves()
+					self.pieceAt(self.parent().temporary_move.text()[-2:]).showing_moves = True
+					self.pieceAt(self.parent().temporary_move.text()[-2:]).setStyleSheet("background-color: rgba(86, 12, 255, 0.5);")
+				else:
+					for i in self.squares:
+						if i.position == self.parent().temporary_move.text()[-2:]:
+							if i.highlight_square.isHidden():
+								i.highlight_square.show()
+						else:
+							if not i.highlight_square.isHidden():
+								i.highlight_square.hide()
+		super(Board, self).keyPressEvent(event)
 
 	def pieceAt(self, position):
 		for i in self.pieces:
