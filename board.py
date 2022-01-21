@@ -78,6 +78,11 @@ class Piece(QLabel):
 		super(Piece, self).moveEvent(event)
 
 	def mousePressEvent(self, event) -> None:
+		if self.color != self.parent().game.turn:
+			self.setStyleSheet("background-color: rgba(86, 12, 255, 0.5);")
+			super(Piece, self).mousePressEvent(event)
+			self.mouse_event_start = self.mouse_event_position = None
+			return
 		if event.button() == Qt.MouseButton.RightButton:
 			self.showing_moves = False
 			self.setStyleSheet("background-color: transparent;")
@@ -87,15 +92,13 @@ class Piece(QLabel):
 			if i.position == self.position:
 				i.mousePressEvent(event, remove_move_bullets=False)
 				break
-		self.mouse_event_start = None
-		self.mouse_event_position = None
+		self.mouse_event_start = self.mouse_event_position = None
 		if event.button() == Qt.LeftButton:
-			self.mouse_event_start = event.globalPos()
-			self.mouse_event_position = event.globalPos()
+			self.mouse_event_start, self.mouse_event_position = event.globalPos(), event.globalPos()
 		super(Piece, self).mousePressEvent(event)
 
 	def mouseMoveEvent(self, event) -> None:
-		if event.buttons() == Qt.LeftButton and not self.parent().parent().game_over:
+		if event.buttons() == Qt.LeftButton and not self.parent().parent().game_over and self.mouse_event_start is not None and self.mouse_event_position is not None:
 			if self.dragging == False:
 				self.dragging = True
 				self.parent().drag_square = Square(self.parent(), "rgba(86, 12, 255, 0.5);", self.position)
@@ -179,6 +182,13 @@ class Piece(QLabel):
 				self.parent().castle_rook_animation.setDuration(100)
 				self.parent().castle_rook_animation.start()
 		self.parent().game.move(move)
+		self.parent().white_king.setStyleSheet("background-color: transparent;")
+		self.parent().black_king.setStyleSheet("background-color: transparent;")
+		if self.parent().game.in_check:
+			if self.parent().game.turn == "white":
+				self.parent().white_king.setStyleSheet("background-color: #e96160;")
+			else:
+				self.parent().black_king.setStyleSheet("background-color: #e96160;")
 		for i in self.moves:
 			i.setParent(None)
 		self.parent().parent().parent().parent().setWindowTitle("2-Player Chess Game: " + self.parent().game.turn.title() + " to move")
@@ -243,7 +253,21 @@ class Board(QWidget):
 		for i in self.game.pieces:
 			self.pieces.append(Piece(self, i.position, i.color, i.piece_type))
 			self.pieces[-1].move((coordinateToIndex(i.position)[1] + 1) * 100, (coordinateToIndex(i.position)[0] + 1) * 100)
+			if i.piece_type == "king":
+				if i.color == "white":
+					self.white_king = self.pieces[-1]
+				if i.color == "black":
+					self.black_king = self.pieces[-1]
 		self.setFocusPolicy(Qt.ClickFocus)
+	
+	def updatePieces(self):
+		for i in self.pieces:
+			i.deleteLater()
+		self.pieces = []
+		for i in self.game.pieces:
+			self.pieces.append(Piece(self, i.position, i.color, i.piece_type))
+			self.pieces[-1].move((coordinateToIndex(i.position)[1] + 1) * 100, (coordinateToIndex(i.position)[0] + 1) * 100)
+			self.pieces[-1].show()
 
 	def evaluateMove(self, string):
 		try:

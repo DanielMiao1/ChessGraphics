@@ -222,6 +222,20 @@ class Clock(QPushButton):
 			self.updateClock()
 
 
+class TakebackButton(QPushButton):
+	def __init__(self, parent):
+		super(TakebackButton, self).__init__("⇐", parent)
+		self.setStyleSheet("TakebackButton { background-color: transparent; border: none; } TakebackButton:hover { background-color: #AAA; border: none; }")
+		self.setCursor(Qt.PointingHandCursor)
+		self.setToolTip("Takeback")
+	
+	def mouseReleaseEvent(self, event) -> None:
+		self.parent().game.takeback()
+		self.parent().board.updatePieces()
+		asyncio.get_event_loop().run_until_complete(self.parent().updateTakebackOpening())
+		super(TakebackButton, self).mouseReleaseEvent(event)
+	
+
 class TwoPlayers(QWidget):
 	def __init__(self, parent):
 		super(TwoPlayers, self).__init__(parent=parent)
@@ -239,7 +253,7 @@ class TwoPlayers(QWidget):
 		self.opening = QLabel("Starting Position", self)
 		self.opening.setWordWrap(True)
 		self.opening.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Light.ttf"))[0], 15, italic=True))
-		self.opening.resize(200, 10)
+		self.opening.resize(QSize(300, 50))
 		self.moves = QWidget()
 		self.moves_layout = QGridLayout()
 		self.moves_layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
@@ -250,7 +264,7 @@ class TwoPlayers(QWidget):
 		self.moves_wrapper.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 		self.moves_wrapper.setWidgetResizable(True)
 		self.moves_wrapper.setWidget(self.moves)
-		self.sidebar_layout.addWidget(self.opening)
+		self.takeback = TakebackButton(self)
 		self.sidebar_layout.addWidget(self.moves_wrapper)
 		self.sidebar.setLayout(self.sidebar_layout)
 		self.back_button = BackButton(self)
@@ -386,14 +400,28 @@ class TwoPlayers(QWidget):
 				self.opening.setText(i["eco"] + " " + i["name"])
 				return
 
+	async def updateTakebackOpening(self):
+		game = chess.Game()
+		opening = "Starting Position"
+		for x in self.game.raw_move_list:
+			game.move(x.name, evaluate_checks=False, evaluate_move_checks=False, evaluate_move_checkmate=False)
+			position = game.FEN().split()[0]
+			for y in chess.openings.openings:
+				if y["position"] == position:
+					opening = y["eco"] + " " + y["name"]
+					break
+		self.opening.setText(opening)
+
 	def keyPressEvent(self, event):
 		self.board.keyPressEvent(event)
 		super(TwoPlayers, self).keyPressEvent(event)
 
 	def resizeEvent(self, event) -> None:
 		self.sidebar.resize(QSize(event.size().width() - (self.width() // 2) + 400, event.size().height() - 200))
-		self.sidebar.move(QPoint((self.width() // 2) + 400, 100))
+		self.sidebar.move(QPoint((event.size().width() // 2) + 400, 100))
 		self.animation.setStartValue(QPoint(event.size().width(), 0))
+		self.opening.move(QPoint(event.size().width() // 4 - self.opening.width(), event.size().height() // 2))
+		self.takeback.move(QPoint(event.size().width() // 4 - self.opening.width(), event.size().height() // 2 + self.opening.height()))
 		if self.clocks:
 			self.clocks[0].move(QPoint(event.size().width() - self.clocks[0].width() - 10, event.size().height() - self.clocks[0].height() - 20))
 			self.clocks[1].move(QPoint(event.size().width() - self.clocks[0].width() - 10, 20))
@@ -409,4 +437,5 @@ class TwoPlayers(QWidget):
 		self.abort_button.move(QPoint(min_size // 20, 0))
 		self.new_button.resize(QSize(min_size // 20, min_size // 20))
 		self.new_button.move(QPoint(min_size // 20 * 2, 0))
+		self.takeback.resize(QSize(min_size // 40, min_size // 40))
 		super(TwoPlayers, self).resizeEvent(event)
