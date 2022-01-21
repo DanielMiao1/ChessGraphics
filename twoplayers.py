@@ -3,15 +3,14 @@ twoplayers.py
 2 Player Chess Mode
 """
 
+import json
+import board
 import chess
 import asyncio
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
-
-import board
-
 
 def getMinutesSeconds(seconds):
 	if seconds < 60:
@@ -239,6 +238,7 @@ class TakebackButton(QPushButton):
 class TwoPlayers(QWidget):
 	def __init__(self, parent):
 		super(TwoPlayers, self).__init__(parent=parent)
+		self.settings_values = json.load(open("settings.json"))
 		self.game = None
 		self.time_control = None
 		self.game_over = False
@@ -411,6 +411,9 @@ class TwoPlayers(QWidget):
 					opening = y["eco"] + " " + y["name"]
 					break
 		self.opening.setText(opening)
+	
+	def updateSettingsValues(self):
+		self.settings_values = json.load(open("settings.json"))
 
 	def keyPressEvent(self, event):
 		self.board.keyPressEvent(event)
@@ -439,3 +442,4 @@ class TwoPlayers(QWidget):
 		self.new_button.move(QPoint(min_size // 20 * 2, 0))
 		self.takeback.resize(QSize(min_size // 40, min_size // 40))
 		super(TwoPlayers, self).resizeEvent(event)
+	

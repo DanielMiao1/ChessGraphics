@@ -8,9 +8,6 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 from chess.functions import *
-import json
-
-settings_values = json.load(open("settings.json"))
 
 
 class MoveBullet(QLabel):
@@ -159,7 +156,7 @@ class Piece(QLabel):
 		if animate:
 			self.move_animation = QPropertyAnimation(self, b"pos")
 			self.move_animation.setEndValue(QPoint((coordinateToIndex(self.position)[1] + 1) * 100, (coordinateToIndex(self.position)[0] + 1) * 100))
-			self.move_animation.setDuration(100)
+			self.move_animation.setDuration({"Default": 100, "Slow": 225, "Fast": 50}[self.parent().parent().settings_values["piece-animation-speed"]])
 			self.move_animation.start()
 		else:
 			self.move(QPoint((coordinateToIndex(self.position)[1] + 1) * 100, (coordinateToIndex(self.position)[0] + 1) * 100))
@@ -248,7 +245,7 @@ class Board(QWidget):
 		self.castle_rook_animation = None
 		for x in self.game.squares:
 			for y in x:
-				self.squares.append(Square(self, settings_values["light-square-color"] if y.color == "white" else settings_values["dark-square-color"], y.position))
+				self.squares.append(Square(self, parent.settings_values["light-square-color"] if y.color == "white" else parent.settings_values["dark-square-color"], y.position))
 				self.squares[-1].move((coordinateToIndex(y.position)[1] + 1) * 100, (coordinateToIndex(y.position)[0] + 1) * 100)
 		for i in self.game.pieces:
 			self.pieces.append(Piece(self, i.position, i.color, i.piece_type))

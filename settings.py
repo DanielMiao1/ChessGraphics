@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import *
 
 import json
 
-settings_defaults = {"light-square-color": "#FFFFDD", "dark-square-color": "#86A666"}
+settings_defaults = {"light-square-color": "#FFFFDD", "dark-square-color": "#86A666", "piece-animation-speed": "Default"}
 
 try:
 	settings = json.load(open("settings.json"))
@@ -118,9 +118,42 @@ class SaveButton(QPushButton):
 		super(SaveButton, self).leaveEvent(event)
 
 
+class OptionsButton(QPushButton):
+	def __init__(self, text, parent, pressed_function=None, center_text=False):
+		super(OptionsButton, self).__init__(parent=parent)
+		self.pressed_function = pressed_function
+		self.text = QLabel(text, self)
+		if center_text:
+			self.text.setAlignment(Qt.AlignmentFlag.AlignCenter)
+		self.text.resize(self.size())
+		self.text.setWordWrap(True)
+		self.setCursor(Qt.CursorShape.PointingHandCursor)
+		self.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+	
+	def resizeEvent(self, event):
+		self.text.resize(event.size())
+		super(OptionsButton, self).resizeEvent(event)
+	
+	def enterEvent(self, event) -> None:
+		if self.styleSheet().split()[1] == "white;":
+			self.setStyleSheet("background-color: #EEEEEE; border: 12px solid #EEEEEE; color: black")
+		super(OptionsButton, self).enterEvent(event)
+	
+	def leaveEvent(self, event) -> None:
+		if self.styleSheet().split()[1] == "#EEEEEE;":
+			self.setStyleSheet("background-color: white; border: 12px solid white; color: black")
+		super(OptionsButton, self).leaveEvent(event)
+	
+	def mousePressEvent(self, event) -> None:
+		if self.pressed_function is not None:
+			self.pressed_function(self.text.text())
+		super(OptionsButton, self).mousePressEvent(event)
+
+
 class Settings(QWidget):
 	def __init__(self, parent):
 		super(Settings, self).__init__(parent=parent)
+		self.setStyleSheet("QGroupBox { background-color: #FFF; border: none; }")
 		self.changed = {}
 		self.animation = QPropertyAnimation(self, b"pos")
 		self.animation.setEndValue(QPoint())
@@ -134,7 +167,6 @@ class Settings(QWidget):
 		self.tabs = QTabWidget(self)
 		self.tabs.setDocumentMode(True)
 		self.board_settings = QGroupBox(self)
-		self.board_settings.setStyleSheet("background-color: #EEE; border: none;")
 		self.board_settings_layout = QGridLayout()
 		self.board_settings_light_square_color_label = QLabel("Light Square Color", self)
 		self.board_settings_light_square_color = QLineEdit(settings_values["light-square-color"], self.board_settings)
@@ -153,7 +185,46 @@ class Settings(QWidget):
 		self.board_settings_layout.setRowStretch(0, 0)
 		self.board_settings_layout.setRowStretch(2, 1)
 		self.board_settings.setLayout(self.board_settings_layout)
+		self.animation_settings = QGroupBox(self)
+		self.animation_settings_layout = QGridLayout()
+		self.animation_settings_piece_animation_speed_label = QLabel("Piece animation speed", self)
+		self.animation_settings_piece_animation_speed = QGroupBox(self.animation_settings)
+		self.animation_settings_piece_animation_speed_layout = QHBoxLayout()
+
+		def animationSpeedChanged(text):
+			self.animation_settings_piece_animation_speed_slow.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+			self.animation_settings_piece_animation_speed_default.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+			self.animation_settings_piece_animation_speed_fast.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+			if text == "Slow":
+				self.animation_settings_piece_animation_speed_slow.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+			elif text == "Default":
+				self.animation_settings_piece_animation_speed_default.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+			else:
+				self.animation_settings_piece_animation_speed_fast.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+			self.changed["piece-animation-speed"] = text
+			if self.unsaved_changes.isHidden():
+				self.unsaved_changes.show()
+
+		self.animation_settings_piece_animation_speed_slow = OptionsButton("Slow", self, pressed_function=animationSpeedChanged, center_text=True)
+		self.animation_settings_piece_animation_speed_default = OptionsButton("Default", self, pressed_function=animationSpeedChanged, center_text=True)
+		self.animation_settings_piece_animation_speed_fast = OptionsButton("Fast", self, pressed_function=animationSpeedChanged, center_text=True)
+		if settings_values["piece-animation-speed"] == "Default":
+			self.animation_settings_piece_animation_speed_default.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+		elif settings_values["piece-animation-speed"] == "Slow":
+			self.animation_settings_piece_animation_speed_slow.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+		else:
+			self.animation_settings_piece_animation_speed_fast.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+		self.animation_settings_piece_animation_speed_layout.addWidget(self.animation_settings_piece_animation_speed_slow)
+		self.animation_settings_piece_animation_speed_layout.addWidget(self.animation_settings_piece_animation_speed_default)
+		self.animation_settings_piece_animation_speed_layout.addWidget(self.animation_settings_piece_animation_speed_fast)
+		self.animation_settings_piece_animation_speed.setLayout(self.animation_settings_piece_animation_speed_layout)
+		self.animation_settings_layout.addWidget(self.animation_settings_piece_animation_speed_label, 0, 1)
+		self.animation_settings_layout.addWidget(self.animation_settings_piece_animation_speed, 1, 1)
+		self.animation_settings_layout.setRowStretch(0, 0)
+		self.animation_settings_layout.setRowStretch(2, 1)
+		self.animation_settings.setLayout(self.animation_settings_layout)
 		self.tabs.addTab(self.board_settings, "Board Settings")
+		self.tabs.addTab(self.animation_settings, "Animation Settings")
 	
 	def saveSettings(self):
 		for x, y in self.changed.items():
@@ -161,6 +232,7 @@ class Settings(QWidget):
 		self.changed = {}
 		if not self.unsaved_changes.isHidden():
 			self.unsaved_changes.hide()
+		self.parent().parent().stacks["two-players"].updateSettingsValues()
 	
 	def squareColorChanged(self, widget, key):
 		if QColor.isValidColor(widget.text()):
