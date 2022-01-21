@@ -12,6 +12,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
+
 def getMinutesSeconds(seconds):
 	if seconds < 60:
 		return 0, seconds
@@ -252,7 +253,7 @@ class TwoPlayers(QWidget):
 		self.sidebar_layout = QGridLayout()
 		self.opening = QLabel("Starting Position", self)
 		self.opening.setWordWrap(True)
-		self.opening.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Light.ttf"))[0], 15, italic=True))
+		self.opening.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Bold.ttf"))[0], 17, italic=True))
 		self.opening.resize(QSize(300, 50))
 		self.moves = QWidget()
 		self.moves_layout = QGridLayout()
@@ -265,6 +266,7 @@ class TwoPlayers(QWidget):
 		self.moves_wrapper.setWidgetResizable(True)
 		self.moves_wrapper.setWidget(self.moves)
 		self.takeback = TakebackButton(self)
+		self.game_over_label = self.game_result_label = None
 		self.sidebar_layout.addWidget(self.moves_wrapper)
 		self.sidebar.setLayout(self.sidebar_layout)
 		self.back_button = BackButton(self)
@@ -361,7 +363,22 @@ class TwoPlayers(QWidget):
 		self.moves_count += 0.5
 		asyncio.get_event_loop().run_until_complete(self.updateOpening())
 		if self.game.game_over:
-			self.parent().parent().setWindowTitle("2-Player Chess Game: " + {"white": "Black", "black": "White"}[self.game.turn] + " wins")
+			self.takeback.deleteLater()
+			self.game_over_label = QLabel("Game Over", self)
+			self.game_over_label.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Light.ttf"))[0], 15))
+			self.game_over_label.show()
+			if self.game.drawn:
+				self.parent().parent().setWindowTitle("2-Player Chess Game: Draw")
+				self.game_result_label = QLabel("Draw | 1/2-1/2", self)
+				self.game_result_label.show()
+			else:
+				self.parent().parent().setWindowTitle("2-Player Chess Game: " + {"white": "Black", "black": "White"}[self.game.turn] + " wins")
+				self.game_result_label = QLabel({"white": "Black", "black": "White"}[self.game.turn] + " wins | " + self.game.tags["Result"], self)
+				self.game_result_label.resize(QSize(150, 15))
+				self.game_result_label.show()
+			self.game_over_label.move(QPoint(self.width() // 4 - self.opening.width(), self.height() // 2 + self.opening.height()))
+			self.game_result_label.move(QPoint(self.width() // 4 - self.opening.width(), self.height() // 2 + self.opening.height() + self.game_over_label.height()))
+			self.game_result_label.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Light.ttf"))[0], 15))
 			if self.clocks:
 				if self.clocks[0].running:
 					self.clocks[0].pause()
@@ -425,6 +442,9 @@ class TwoPlayers(QWidget):
 		self.animation.setStartValue(QPoint(event.size().width(), 0))
 		self.opening.move(QPoint(event.size().width() // 4 - self.opening.width(), event.size().height() // 2))
 		self.takeback.move(QPoint(event.size().width() // 4 - self.opening.width(), event.size().height() // 2 + self.opening.height()))
+		if self.game_over_label is not None and self.game_result_label is not None:
+			self.game_over_label.move(QPoint(event.size().width() // 4 - self.opening.width(), event.size().height() // 2 + self.opening.height()))
+			self.game_result_label.move(QPoint(event.size().width() // 4 - self.opening.width(), event.size().height() // 2 + self.opening.height() + self.game_over_label.height()))
 		if self.clocks:
 			self.clocks[0].move(QPoint(event.size().width() - self.clocks[0].width() - 10, event.size().height() - self.clocks[0].height() - 20))
 			self.clocks[1].move(QPoint(event.size().width() - self.clocks[0].width() - 10, 20))

@@ -2,8 +2,6 @@
 main.py
 Chess Game Main File
 """
-import math
-
 try:
 	from PyQt5.QtGui import *
 except ModuleNotFoundError:
@@ -23,6 +21,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtTest import *
 from PyQt5.QtWidgets import *
 
+import math
 import settings
 import twoplayers
 
