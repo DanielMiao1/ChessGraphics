@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 """
-twoplayers.py
-2-player game mode
+computer.py
+Player-vs-computer game mode
 """
 
 import json
+import random
+
 import board
 import chess
 import asyncio
@@ -13,6 +15,169 @@ import asyncio
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
+
+openings = {
+	"1. e4": {
+		"e5": 0.5,
+		"c5": 0.5,
+		"e6": 0.4,
+		"c6": 0.4,
+		"Nf6": 0.2,
+		"Nc6": 0.2,
+		"g6": 0.1,
+		"d6": 0.1,
+		"b6": 0.1
+	},
+	"1. d4": {
+		"d5": 0.5,
+		"Nf6": 0.5,
+		"e6": 0.4,
+		"d6": 0.3,
+		"Nc6": 0.2
+	},
+	"1. c4": {
+		"e5": 0.5,
+		"c5": 0.45,
+		"Nf6": 0.4,
+		"e6": 0.4,
+		"Nc6": 0.3,
+		"d5": 0.3,
+		"c6": 0.15,
+		"d6": 0.15
+	},
+	"1. Nf3": {
+		"d5": 0.5,
+		"Nf6": 0.5,
+		"c5": 0.45,
+		"e6": 0.45,
+		"Nc6": 0.3,
+		"d6": 0.2,
+		"c6": 0.2
+	},
+	"1. e4 e5 Nf3": {
+		"Nc6": 0.5,
+		"d6": 0.2,
+	},
+	"1. e4 e5 Bc4": {
+		"Nf6": 0.5,
+		"Nc6": 0.45,
+		"Bc5": 0.4,
+		"d6": 0.4,
+		"c6": 0.3
+	},
+	"1. e4 e5 f4": {
+		"exf4": 0.5,
+		"d5": 0.3,
+	},
+	"1. e4 e5 Nc3": {
+		"Nf6": 0.5
+	},
+	"1. e4 e6 d4": {
+		"d5": 0.5
+	},
+	"1. e4 e6 Nf3": {
+		"d5": 0.5
+	},
+	"1. e4 e6 Nc3": {
+		"c5": 0.5,
+		"d5": 0.45
+	},
+	"1. e4 e6 d3": {
+		"d5": 0.5
+	},
+	"1. e4 c5 Nf3": {
+		"e6": 0.5,
+		"d6": 0.5,
+		"Nc6": 0.4
+	},
+	"1. e4 c5 d4": {
+		"cxd4": 0.5
+	},
+	"1. e4 c5 Nc3": {
+		"Nc6": 0.5,
+		"a6": 0.4,
+		"d6": 0.4,
+		"e6": 0.3
+	},
+	"1. e4 c6 d4": {
+		"d5": 0.5
+	},
+	"1. e4 c6 Nc3": {
+		"d5": 0.5
+	},
+	"1. e4 c6 Nf3": {
+		"d5": 0.5
+	},
+	"1. d4 d5 Bf4": {
+		"Nf6": 0.5,
+		"c5": 0.5,
+		"Bf5": 0.35
+	},
+	"1. d4 d5 Nf3": {
+		"e6": 0.5,
+		"c6": 0.5,
+		"Nf6": 0.5,
+		"Bf5": 0.35,
+		"Nd7": 0.25
+	},
+	"1. d4 Nf6 c4": {
+		"e6": 0.5,
+		"c6": 0.5,
+		"d6": 0.45,
+		"g6": 0.4,
+		"e5": 0.4,
+	},
+	"1. d4 e6 e4": {
+		"d5": 0.5
+	},
+	"1. d4 e6 Nf3": {
+		"d5": 0.5
+	},
+	"1. d4 e6 Nc3": {
+		"d5": 0.5
+	},
+	"1. c4 e5 Nc3": {
+		"Nf3": 0.5,
+		"Bb4": 0.3
+	},
+	"1. c4 e5 g3": {
+		"Nf6": 0.5,
+		"d5": 0.4
+	},
+	"1. c4 e5 Nf3": {
+		"e4": 0.5,
+		"Nc6": 0.35
+	},
+	"1. c4 e5 e4": {
+		"Bc5": 0.5,
+		"Nc6": 0.5,
+		"Nf6": 0.35
+	},
+	"1. c4 c5 Nf3": {
+		"Nf6": 0.5,
+		"Nc6": 0.35,
+		"e6": 0.3
+	},
+	"1. c4 c5 e4": {
+		"Nf6": 0.5,
+		"Nc6": 0.5,
+		"e5": 0.45,
+		"d6": 0.4
+	},
+	"1. c4 c5 d4": {
+		"cxd4": 0.5
+	},
+	"1. c4 c5 f4": {
+		"g6": 0.5,
+		"e6": 0.5,
+		"Nc6": 0.4
+	},
+	"1. c4 Nf6 Nf3": {
+		"e6": 0.5,
+		"c5": 0.5,
+		"c6": 0.4
+	}
+}
 
 
 def getMinutesSeconds(seconds):
@@ -233,15 +398,35 @@ class TakebackButton(QPushButton):
 	
 	def mouseReleaseEvent(self, event) -> None:
 		self.parent().game.takeback()
+		self.parent().game.takeback()
 		self.parent().board.updatePieces()
 		asyncio.get_event_loop().run_until_complete(self.parent().updateTakebackOpening())
 		super(TakebackButton, self).mouseReleaseEvent(event)
 	
 
-class TwoPlayers(QWidget):
+class Thread(QObject):
+	finished = pyqtSignal()
+	output = pyqtSignal(str)
+
+	def __init__(self, function):
+		super(Thread, self).__init__()
+		self.function = function
+	
+	def run(self):
+		result = self.function()
+		self.finished.emit()
+		if type(result) == dict:
+			self.output.emit(result["move"])
+		else:
+			self.output.emit(result)
+
+
+class Computer(QWidget):
 	def __init__(self, parent):
-		super(TwoPlayers, self).__init__(parent=parent)
-		self.type_ = "twoplayers"
+		super(Computer, self).__init__(parent=parent)
+		self.player_color = "white"
+		self.type_ = "computer"
+		self.computer_level = "0"
 		self.settings_values = json.load(open("settings.json"))
 		self.game = None
 		self.time_control = None
@@ -279,6 +464,8 @@ class TwoPlayers(QWidget):
 		self.sidebar.move(QPoint((self.width() // 2) + 400, 100))
 		self.temporary_move = None
 		self.setFocusPolicy(Qt.NoFocus)
+		self.get_computer_move_thread = self.get_computer_move_runner = None
+		self.computer_moving = False
 
 	def setTimeControl(self, time_control):
 		if time_control == "unlimited":
@@ -412,7 +599,48 @@ class TwoPlayers(QWidget):
 			elif self.clocks[1].running:
 				self.clocks[1].pause()
 				self.clocks[0].start()
-				
+		if self.game.turn != self.player_color:
+			if self.computer_level == 0:
+				computer_move = random.choice(self.game.legal_moves(True))
+				self.board.pieceAt(computer_move.old_position).movePiece(computer_move)
+			else:
+				self.computer_moving = True
+				self.get_computer_move_thread = QThread()
+				self.get_computer_move_runner = Thread(self.getComputerMove)
+				self.get_computer_move_runner.moveToThread(self.get_computer_move_thread)
+				self.get_computer_move_thread.started.connect(self.get_computer_move_runner.run)
+				self.get_computer_move_runner.output.connect(self.makeComputerMove)
+				self.get_computer_move_runner.finished.connect(self.get_computer_move_thread.quit)
+				self.get_computer_move_runner.finished.connect(self.get_computer_move_runner.deleteLater)
+				self.get_computer_move_thread.finished.connect(self.get_computer_move_thread.deleteLater)
+				self.get_computer_move_thread.start()
+
+	def makeComputerMove(self, move):
+		for i in self.game.legal_moves(True):
+			if i.name == move:
+				self.board.pieceAt(i.old_position).movePiece(i)
+				break
+		self.computer_moving = False
+	
+	def getComputerMove(self):
+		if self.game.gamePhase() == "opening":
+			if len(self.game.raw_move_list) <= 4:
+				for i, j in openings.items():
+					if i == self.game.move_list:
+						moves = []
+						weights = []
+						for x, y in j.items():
+							moves.append(x)
+							weights.append(y)
+						return random.choices(population=moves, weights=weights)[0]
+			moves = []
+			for i in chess.openings.openings:
+				if len(i["moves"].split()) != 1 and " ".join(i["moves"].split()[:-1]) == self.game.move_list:
+					moves.append(i["moves"].split()[-1])
+			if moves:
+				return random.choice(moves)
+		return self.game.minimax_evaluation(self.computer_level)
+	
 	async def updateOpening(self):
 		position = self.game.FEN().split()[0]
 		for i in chess.openings.openings:
@@ -437,7 +665,7 @@ class TwoPlayers(QWidget):
 
 	def keyPressEvent(self, event):
 		self.board.keyPressEvent(event)
-		super(TwoPlayers, self).keyPressEvent(event)
+		super(Computer, self).keyPressEvent(event)
 
 	def resizeEvent(self, event) -> None:
 		self.sidebar.resize(QSize(event.size().width() - (self.width() // 2) + 400, event.size().height() - 200))
@@ -464,5 +692,5 @@ class TwoPlayers(QWidget):
 		self.new_button.resize(QSize(min_size // 20, min_size // 20))
 		self.new_button.move(QPoint(min_size // 20 * 2, 0))
 		self.takeback.resize(QSize(min_size // 40, min_size // 40))
-		super(TwoPlayers, self).resizeEvent(event)
+		super(Computer, self).resizeEvent(event)
 	

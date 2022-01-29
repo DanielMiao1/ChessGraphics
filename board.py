@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 board.py
 Chess Board Graphics
@@ -75,7 +77,13 @@ class Piece(QLabel):
 		super(Piece, self).moveEvent(event)
 
 	def mousePressEvent(self, event) -> None:
-		if self.color != self.parent().game.turn:
+		if event.button() == Qt.LeftButton and (self.color != self.parent().game.turn or (self.parent().parent().type_ == "computer" and self.color != self.parent().parent().player_color) or self.parent().parent().computer_moving):
+			for x in self.parent().pieces:
+				if x.showing_moves:
+					for y in x.moves:
+						y.hide()
+					x.showing_moves = False
+					x.setStyleSheet("background-color: transparent;")
 			self.setStyleSheet("background-color: rgba(86, 12, 255, 0.5);")
 			super(Piece, self).mousePressEvent(event)
 			self.mouse_event_start = self.mouse_event_position = None
@@ -136,13 +144,16 @@ class Piece(QLabel):
 		if event.button() == Qt.LeftButton:
 			if self.showing_moves:
 				self.setStyleSheet("background-color: transparent;")
-				for i in self.moves:
-					i.hide()
+				if not (self.parent().parent().type_ == "computer" and self.color != self.parent().parent().player_color) and not self.parent().parent().computer_moving:
+					for i in self.moves:
+						i.hide()
 			else:
-				self.showMoves()
+				if not (self.parent().parent().type_ == "computer" and self.color != self.parent().parent().player_color) and not self.parent().parent().computer_moving:
+					self.showMoves()
 			self.showing_moves = not self.showing_moves
 
 	def movePiece(self, move, animate=True) -> None:
+		# TODO: Pawn promotion dialog
 		if self.parent() is None:
 			return
 		if self.parent().parent().game_over:
@@ -187,7 +198,8 @@ class Piece(QLabel):
 			else:
 				self.parent().black_king.setStyleSheet("background-color: #e96160;")
 		for i in self.moves:
-			i.setParent(None)
+			i.deleteLater()
+		self.moves = []
 		self.parent().parent().parent().parent().setWindowTitle("2-Player Chess Game: " + self.parent().game.turn.title() + " to move")
 		self.parent().parent().addMove(move.name)
 
@@ -265,6 +277,11 @@ class Board(QWidget):
 			self.pieces.append(Piece(self, i.position, i.color, i.piece_type))
 			self.pieces[-1].move((coordinateToIndex(i.position)[1] + 1) * 100, (coordinateToIndex(i.position)[0] + 1) * 100)
 			self.pieces[-1].show()
+			if i.piece_type == "king":
+				if i.color == "white":
+					self.white_king = self.pieces[-1]
+				if i.color == "black":
+					self.black_king = self.pieces[-1]
 
 	def evaluateMove(self, string):
 		try:

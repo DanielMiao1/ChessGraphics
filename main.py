@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 main.py
 Chess Game Main File
@@ -11,7 +13,7 @@ except ModuleNotFoundError:
 try:
 	import chess
 	chess.Game()
-except:
+except (AttributeError, ModuleNotFoundError):
 	__import__("os").system("pip3 install git+https://github.com/DanielMiao1/chess")
 	import chess
 
@@ -22,6 +24,7 @@ from PyQt5.QtTest import *
 from PyQt5.QtWidgets import *
 
 import math
+import computer
 import settings
 import twoplayers
 
@@ -158,7 +161,7 @@ class QuitButton(QPushButton):
 
 
 class OptionsButton(QPushButton):
-	def __init__(self, text, parent, pressed_function=None, center_text=False):
+	def __init__(self, text, parent, pressed_function=None, center_text=False, border=True, size=False):
 		super(OptionsButton, self).__init__(parent=parent)
 		self.pressed_function = pressed_function
 		self.text = QLabel(text, self)
@@ -167,7 +170,13 @@ class OptionsButton(QPushButton):
 		self.text.resize(self.size())
 		self.text.setWordWrap(True)
 		self.setCursor(Qt.CursorShape.PointingHandCursor)
-		self.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+		self.border = border
+		if size:
+			self.setFixedSize(size)
+		if self.border:
+			self.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+		else:
+			self.setStyleSheet("background-color: white; border: none; color: black;")
 	
 	def resizeEvent(self, event):
 		self.text.resize(event.size())
@@ -175,12 +184,18 @@ class OptionsButton(QPushButton):
 	
 	def enterEvent(self, event) -> None:
 		if self.styleSheet().split()[1] == "white;":
-			self.setStyleSheet("background-color: #EEEEEE; border: 12px solid #EEEEEE; color: black")
+			if self.border:
+				self.setStyleSheet("background-color: #EEEEEE; border: 12px solid #EEEEEE; color: black")
+			else:
+				self.setStyleSheet("background-color: #EEEEEE; border: none; color: black")
 		super(OptionsButton, self).enterEvent(event)
 	
 	def leaveEvent(self, event) -> None:
 		if self.styleSheet().split()[1] == "#EEEEEE;":
-			self.setStyleSheet("background-color: white; border: 12px solid white; color: black")
+			if self.border:
+				self.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+			else:
+				self.setStyleSheet("background-color: white; border: none; color: black;")
 		super(OptionsButton, self).leaveEvent(event)
 	
 	def mousePressEvent(self, event) -> None:
@@ -308,16 +323,15 @@ class SettingsButton(PushButton):
 
 
 class MainPage(QWidget):
-	def __init__(self, parent, two_player_mode_function=None):
+	def __init__(self, parent, two_player_mode_function, computer_mode_function):
 		super(MainPage, self).__init__(parent=parent)
-		self.select_mode_label_animation, self.two_player_mode_animation = None, None
+		self.select_mode_label_animation = self.two_player_mode_animation = self.computer_mode_button_animation = None
 		self.two_player_mode_function = two_player_mode_function
+		self.computer_mode_function = computer_mode_function
 		self.quit_button = QuitButton(self)
 		self.quit_button.hide()
 		self.animated = False
-		self.options = None
-		self.options_widgets = None
-		self.options_close = None
+		self.two_player_mode_options = self.two_player_mode_options_widgets = self.two_player_mode_options_close = self.computer_mode_options = self.computer_mode_options_widgets = self.computer_mode_options_close = None
 		self.title = Label(self, text="Chess", selectable=False)
 		self.title_animation = QPropertyAnimation(self.title, b"color")
 		self.title_animation.setLoopCount(1)
@@ -339,6 +353,8 @@ class MainPage(QWidget):
 		self.select_mode_animation.finished.connect(lambda: self.changeAnimationDirection(self.select_mode_animation))
 		self.two_player_mode_button = PushButton(self, text="2 Player Mode")
 		self.two_player_mode_button.pressed.connect(self.twoPlayers)
+		self.computer_mode_button = PushButton(self, text="Player-Computer Mode")
+		self.computer_mode_button.pressed.connect(self.computer)
 		self.select_mode_label.setColor(QColor("transparent"))
 		self.settings_button = SettingsButton(self)
 		self.settings_button.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -351,6 +367,348 @@ class MainPage(QWidget):
 
 	def settings(self):
 		self.parent().parent().setIndex(2, self.parent().parent().stacks["settings"])
+	
+	def computer(self):
+		def styleLevelButtons(text):
+			nonlocal computer_level_0, computer_level_1, computer_level_2, computer_level_3, computer_level
+			computer_level_0.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+			computer_level_1.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+			computer_level_2.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+			computer_level_3.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+			if text == "0":
+				computer_level_0.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+			elif text == "1":
+				computer_level_1.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+			elif text == "2":
+				computer_level_2.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+			else:
+				computer_level_3.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+			computer_level = text
+
+		def styleTimeControlButtons(text):
+			nonlocal time_control_total, time_control_total_increment, time_control_move, time_control_selected, time_control_widget_total, time_control_widget_total_increment, time_control_widget_move, time_control_display
+			time_control_total.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+			time_control_total_increment.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+			time_control_move.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+			time_control_unlimited.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+			time_control_selected = text
+			time_control_display.setText("10.0m+0s")
+			if text == "Total Time":
+				time_control_widget_total_increment.hide()
+				time_control_widget_move.hide()
+				time_control_widget_total.show()
+				time_control_total.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+			elif text == "Total Time + Increment Per Move":
+				time_control_widget_total.hide()
+				time_control_widget_move.hide()
+				time_control_widget_total_increment.show()
+				time_control_total_increment.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+			elif text == "Unlimited":
+				time_control_display.setText("unlimited")
+				time_control_widget_total.hide()
+				time_control_widget_move.hide()
+				time_control_widget_total_increment.hide()
+				time_control_unlimited.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+			else:
+				time_control_widget_total.hide()
+				time_control_widget_total_increment.hide()
+				time_control_widget_move.show()
+				time_control_move.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+
+		def styleVariantButtons(text):
+			nonlocal variant_standard, variant_antichess, variant_threecheck, variant_selected
+			variant_standard.setStyleSheet("background-color: white; border: none; color: black;")
+			variant_antichess.setStyleSheet("background-color: white; border: none; color: black;")
+			variant_threecheck.setStyleSheet("background-color: white; border: none; color: black;")
+			variant_selected = text
+			if text == "Standard":
+				variant_standard.setStyleSheet("background-color: black; border: none; color: white;")
+			elif text == "Antichess":
+				variant_antichess.setStyleSheet("background-color: black; border: none; color: white;")
+			else:
+				variant_threecheck.setStyleSheet("background-color: black; border: none; color: white;")
+		
+		def stylePositionButtons(text):
+			nonlocal position_fen, position_pgn, selected_position, position_widget_fen, position_widget_pgn
+			position_fen.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+			position_pgn.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+			selected_position = text
+			if text == "FEN":
+				position_widget_pgn.hide()
+				position_widget_fen.show()
+				position_fen.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+			else:
+				position_widget_pgn.show()
+				position_widget_fen.hide()
+				position_pgn.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+
+		def updatePositionText():
+			nonlocal position_widget_fen, position_widget_pgn, selected_position, position_text
+			if selected_position == "FEN":
+				position_text = position_widget_fen.text()
+				if position_text.strip() == "" or chess.functions.FENvalid(position_text.strip()):
+					position_widget_fen.setStyleSheet("background-color: #999; border: 3px solid #999;")
+				else:
+					position_widget_fen.setStyleSheet("background-color: #ff7e7e; border: 3px solid #ff7e7e;")
+			else:
+				position_text = position_widget_pgn.toPlainText()
+				if position_text.strip() == "" or PGNValid(position_text):
+					position_widget_pgn.setStyleSheet("background-color: #999; border: 3px solid #999;")
+				else:
+					position_widget_pgn.setStyleSheet("background-color: #ff7e7e; border: 3px solid #ff7e7e;")
+
+		def changeTimeDisplay(slider, value):
+			nonlocal time_control_display, time_control_widget_total_increment_total, time_control_widget_total_increment_increment
+			if slider == "total":
+				time_control_display.setText(str(value / 10) + "m" + "+0s")
+			elif slider == "inc_total":
+				if "+" not in time_control_display.text():
+					time_control_display.setText(str(time_control_widget_total_increment_total.value()) + "+" + str(time_control_widget_total_increment_increment.value()))
+				time_control_display.setText(str(value / 10) + "m+" + str(time_control_widget_total_increment_increment.value()) + "s")
+			elif slider == "inc_inc":
+				if "+" not in time_control_display.text():
+					time_control_display.setText(str(time_control_widget_total_increment_total.value()) + "+" + str(time_control_widget_total_increment_increment.value()))
+				time_control_display.setText(str(time_control_widget_total_increment_total.value() / 10) + "m+" + str(value) + "s")
+			else:
+				time_control_display.setText(str(value) + "s")
+
+		def startGame():
+			nonlocal time_control_display, variant_selected, selected_position, position_text, computer_level
+			updatePositionText()
+			if selected_position == "FEN" and position_text.strip() == "":
+				position_text = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+			self.computer_mode_function(computer_level, time_control_display.text(), variant_selected, selected_position, position_text.strip())
+			self.computer_mode_options.deleteLater()
+			self.computer_mode_options_close.deleteLater()
+			self.computer_mode_options = self.computer_mode_options_widgets = None
+
+		def close_dialog():
+			self.computer_mode_options.deleteLater()
+			self.computer_mode_options_close.deleteLater()
+			self.computer_mode_options = self.computer_mode_options_widgets = self.computer_mode_options_close = None
+
+		# Options scroll area
+		self.computer_mode_options = QGroupBox(self)
+		options_layout = QVBoxLayout()
+		# Title and close button
+		title = Label(self.computer_mode_options, "New Player vs Computer Game")
+		title.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Bold.ttf"))[0], 20))
+		self.computer_mode_options_close = QPushButton("×", self)
+		self.computer_mode_options_close.pressed.connect(close_dialog)
+		self.computer_mode_options_close.setCursor(Qt.CursorShape.PointingHandCursor)
+		self.computer_mode_options_close.setStyleSheet("QPushButton { background-color: white; border: 12px solid white; } QPushButton:hover, QPushButton:focus { background-color: #EEE; border: 12px solid #EEE; }")
+		self.computer_mode_options_close.show()
+		# Add space
+		spacing = QWidget(self.computer_mode_options)
+		spacing.setFixedSize(QSize(1, 30))
+		# Computer level section
+		computer_level = "0"
+		computer_level_button = OptionButton(self, "Computer Level")
+		computer_level_group = QGroupBox(self.computer_mode_options)
+		computer_level_group.setStyleSheet("background-color: #AAA;")
+		computer_level_button.pressed.connect(lambda computer_level_group=computer_level_group: computer_level_group.show() if computer_level_group.isHidden() else computer_level_group.hide())
+		computer_level_group.setFixedHeight(math.floor(self.height() / 6))
+		computer_level_group_layout = QHBoxLayout()
+		computer_level_group_layout.setSpacing(2)
+		computer_level_0 = OptionsButton("0", self, pressed_function=styleLevelButtons, center_text=True, border=False, size=QSize(40, 40))
+		computer_level_0.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+		computer_level_1 = OptionsButton("1", self, pressed_function=styleLevelButtons, center_text=True, border=False, size=QSize(40, 40))
+		computer_level_2 = OptionsButton("2", self, pressed_function=styleLevelButtons, center_text=True, border=False, size=QSize(40, 40))
+		computer_level_3 = OptionsButton("3", self, pressed_function=styleLevelButtons, center_text=True, border=False, size=QSize(40, 40))
+		computer_level_group_layout.addStretch()
+		computer_level_group_layout.addWidget(computer_level_0)
+		computer_level_group_layout.addWidget(computer_level_1)
+		computer_level_group_layout.addWidget(computer_level_2)
+		computer_level_group_layout.addWidget(computer_level_3)
+		computer_level_group_layout.addStretch()
+		computer_level_group.setLayout(computer_level_group_layout)
+		computer_level_group.hide()
+		# Time control section
+		time_control_button = OptionButton(self, "Time Control")
+		time_control_group = QGroupBox(self.computer_mode_options)
+		time_control_group.setStyleSheet("background-color: #AAA;")
+		time_control_button.pressed.connect(lambda time_control_group=time_control_group: time_control_group.show() if time_control_group.isHidden() else time_control_group.hide())
+		time_control_group.setFixedHeight(math.floor(self.height() / 6))
+		time_control_group_layout = QGridLayout()
+		time_control_group_layout.setSpacing(0)
+		time_control_display = Label(time_control_group, "10.0m+0s")
+		time_control_selected = "Total Time"
+		time_control_buttons = QGroupBox(time_control_group)
+		time_control_buttons_layout = QHBoxLayout()
+		time_control_buttons_layout.setSpacing(0)
+		time_control_total = OptionsButton("Total Time", time_control_buttons, styleTimeControlButtons, center_text=True, size=QSize(120, 50))
+		time_control_total.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+		time_control_total_increment = OptionsButton("Total Time + Increment Per Move", time_control_buttons, styleTimeControlButtons, center_text=True, size=QSize(120, 50))
+		time_control_move = OptionsButton("Time Per Move", time_control_buttons, styleTimeControlButtons, center_text=True, size=QSize(120, 50))
+		time_control_unlimited = OptionsButton("Unlimited", time_control_buttons, styleTimeControlButtons, center_text=True, size=QSize(120, 50))
+		time_control_buttons_layout.addStretch()
+		time_control_buttons_layout.addWidget(time_control_total)
+		time_control_buttons_layout.addSpacing(5)
+		time_control_buttons_layout.addWidget(time_control_total_increment)
+		time_control_buttons_layout.addSpacing(5)
+		time_control_buttons_layout.addWidget(time_control_move)
+		time_control_buttons_layout.addSpacing(5)
+		time_control_buttons_layout.addWidget(time_control_unlimited)
+		time_control_buttons_layout.addStretch()
+		time_control_buttons.setLayout(time_control_buttons_layout)
+		time_control_widget = QGroupBox(time_control_group)
+		time_control_widget_layout = QVBoxLayout()
+		time_control_widget_layout.setSpacing(0)
+		time_control_widget_total = QSlider(Qt.Orientation.Horizontal, time_control_widget)
+		time_control_widget_total.setRange(1, 750)
+		time_control_widget_total.setValue(100)
+		time_control_widget_total.valueChanged.connect(lambda value: changeTimeDisplay("total", value))
+		time_control_widget_total_increment = QGroupBox()
+		time_control_widget_total_increment_layout = QVBoxLayout()
+		time_control_widget_total_increment_layout.setSpacing(0)
+		time_control_widget_total_increment_total = QSlider(Qt.Orientation.Horizontal, time_control_widget_total_increment)
+		time_control_widget_total_increment_total.setRange(0, 500)
+		time_control_widget_total_increment_total.valueChanged.connect(lambda value: changeTimeDisplay("inc_total", value))
+		time_control_widget_total_increment_increment = QSlider(Qt.Orientation.Horizontal, time_control_widget_total_increment)
+		time_control_widget_total_increment_increment.setRange(1, 100)
+		time_control_widget_total_increment_increment.valueChanged.connect(lambda value: changeTimeDisplay("inc_inc", value))
+		time_control_widget_total_increment_layout.addWidget(time_control_widget_total_increment_total)
+		time_control_widget_total_increment_layout.addWidget(time_control_widget_total_increment_increment)
+		time_control_widget_total_increment_layout.addStretch()
+		time_control_widget_total_increment.setLayout(time_control_widget_total_increment_layout)
+		time_control_widget_total_increment.hide()
+		time_control_widget_move = QSlider(Qt.Orientation.Horizontal, time_control_widget)
+		time_control_widget_move.setRange(1, 100)
+		time_control_widget_move.valueChanged.connect(lambda value: changeTimeDisplay("move", value))
+		time_control_widget_move.hide()
+		time_control_widget_layout.addWidget(time_control_widget_total)
+		time_control_widget_layout.addWidget(time_control_widget_total_increment)
+		time_control_widget_layout.addWidget(time_control_widget_move)
+		time_control_widget.setLayout(time_control_widget_layout)
+		time_control_group_layout.addWidget(time_control_display, 1, 1)
+		time_control_group_layout.addWidget(time_control_buttons, 2, 1)
+		time_control_group_layout.addWidget(time_control_widget, 3, 1)
+		time_control_group.setLayout(time_control_group_layout)
+		time_control_group.hide()
+		# Variant section
+		variant_selected = "Standard"
+		variant_button = OptionButton(self, "Chess Variant")
+		variant_group = QGroupBox(self.computer_mode_options)
+		variant_group.setStyleSheet("background-color: #AAA;")
+		variant_button.pressed.connect(lambda variant_group=variant_group: variant_group.show() if variant_group.isHidden() else variant_group.hide())
+		variant_group.setFixedHeight(math.floor(self.height() / 10))
+		variant_group_layout = QGridLayout()
+		variant_group_layout.setSpacing(5)
+		variant_standard = OptionsButton("  Standard", variant_group, styleVariantButtons, border=False)
+		variant_standard.setFixedHeight(30)
+		variant_standard.setStyleSheet("background-color: black; border: none; color: white;")
+		variant_antichess = OptionsButton("  Antichess", variant_group, styleVariantButtons, border=False)
+		variant_antichess.setFixedHeight(30)
+		variant_threecheck = OptionsButton("  Three Check", variant_group, styleVariantButtons, border=False)
+		variant_threecheck.setFixedHeight(30)
+		variant_group_layout.addWidget(variant_standard, 1, 1)
+		variant_group_layout.addWidget(variant_antichess, 1, 2)
+		variant_group_layout.addWidget(variant_threecheck, 2, 1)
+		variant_group.setLayout(variant_group_layout)
+		variant_group.hide()
+		# Position section
+		selected_position = "FEN"
+		position_text = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+		position_button = OptionButton(self, "FEN/PGN")
+		position_group = QGroupBox(self.computer_mode_options)
+		position_group.setStyleSheet("background-color: #AAA;")
+		position_button.pressed.connect(lambda position_group=position_group: position_group.show() if position_group.isHidden() else position_group.hide())
+		position_group.setFixedHeight(math.floor(self.height() / 8))
+		position_group_layout = QVBoxLayout()
+		position_group_layout.setSpacing(0)
+		position_buttons = QGroupBox(time_control_group)
+		position_buttons_layout = QHBoxLayout()
+		position_buttons_layout.setSpacing(5)
+		position_fen = OptionsButton("FEN", position_buttons, stylePositionButtons)
+		position_fen.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+		position_pgn = OptionsButton("PGN", position_buttons, stylePositionButtons)
+		position_buttons_layout.addWidget(position_fen)
+		position_buttons_layout.addWidget(position_pgn)
+		position_buttons.setLayout(position_buttons_layout)
+		position_widget = QGroupBox(position_group)
+		position_widget_layout = QVBoxLayout()
+		position_widget_layout.setSpacing(0)
+		position_widget_fen = FENInput(self, key_press_function=updatePositionText)
+		position_widget_fen.setAttribute(Qt.WA_MacShowFocusRect, 0)
+		position_widget_fen.setStyleSheet("background-color: #999; border: 3px solid #999;")
+		position_widget_fen.textChanged.connect(updatePositionText)
+		position_widget_pgn = PGNInput(self, key_press_function=updatePositionText)
+		position_widget_pgn.setStyleSheet("background-color: #999; border: 3px solid #999;")
+		position_widget_pgn.textChanged.connect(updatePositionText)
+		position_widget_pgn.hide()
+		position_widget_layout.addWidget(position_widget_fen)
+		position_widget_layout.addWidget(position_widget_pgn)
+		position_widget_layout.addStretch()
+		position_widget.setLayout(position_widget_layout)
+		position_group_layout.addWidget(position_buttons)
+		position_group_layout.addWidget(position_widget)
+		position_group.setLayout(position_group_layout)
+		position_group.hide()
+		# Add widgets to options
+		start_game = StartGame(self.computer_mode_options, "Start Game", startGame)
+		start_game.setStyleSheet("StartGame { background-color: white; border: 5px solid white; color: black; } StartGame:hover, StartGame:focus { background-color: #EEEEEE; border: 5px solid #EEEEEE; color: black; }")
+		options_layout.setSpacing(0)
+		options_layout.addWidget(title)
+		options_layout.addWidget(spacing)
+		options_layout.addWidget(computer_level_button)
+		options_layout.addWidget(computer_level_group)
+		options_layout.addWidget(time_control_button)
+		options_layout.addWidget(time_control_group)
+		options_layout.addWidget(variant_button)
+		options_layout.addWidget(variant_group)
+		options_layout.addWidget(position_button)
+		options_layout.addWidget(position_group)
+		options_layout.addStretch()
+		options_layout.addWidget(start_game)
+		self.computer_mode_options.setStyleSheet("background-color: white; border: none;")
+		self.computer_mode_options.setLayout(options_layout)
+		self.computer_mode_options.setFixedSize(QSize(math.floor(self.width() / 1.5), math.floor(self.height() / 1.5)))
+		self.computer_mode_options.move(QPoint((self.width() - self.computer_mode_options.width()) // 2, (self.height() - self.computer_mode_options.height()) // 2))
+		self.computer_mode_options.show()
+		self.computer_mode_options.move(self.computer_mode_options.pos())
+		self.computer_mode_options_widgets = {"level_group": computer_level_group, "level_button": computer_level_button, "tc_total": time_control_total, "tc_total_increment": time_control_total_increment, "tc_move": time_control_move, "tc_unlimited": time_control_unlimited, "time_control_group": time_control_group, "variant_group": variant_group, "position_group": position_group, "time_control_button": time_control_button, "variant_button": variant_button, "position_button": position_button, "variant_buttons": [variant_antichess, variant_threecheck, variant_standard], "startGame": startGame}
+		if self.width() <= 1440 or self.height() <= 1080:
+			self.computer_mode_options.setFixedSize(self.size())
+			self.computer_mode_options.move(QPoint())
+			self.computer_mode_options_close.move(QPoint())
+			if not computer_level_button.isHidden():
+				computer_level_button.hide()
+				time_control_button.hide()
+				variant_button.hide()
+				position_button.hide()
+			if computer_level_group.isHidden():
+				computer_level_group.show()
+			if time_control_group.isHidden():
+				time_control_group.show()
+			if variant_group.isHidden():
+				variant_group.show()
+			if position_group.isHidden():
+				position_group.show()
+			if options_layout.spacing() == 0:
+				options_layout.setSpacing(5)
+			computer_level_group.setFixedHeight(math.floor(self.height() / 11))
+			computer_level_group.setStyleSheet("background-color: #DDD")
+			time_control_group.setFixedHeight(math.floor(self.height() / 5))
+			time_control_group.setStyleSheet("background-color: #DDD")
+			variant_group.setFixedHeight(math.floor(self.height() / 10))
+			variant_group.setStyleSheet("background-color: #DDD")
+			position_group.setFixedHeight(math.floor(self.height() / 4))
+			position_group.setStyleSheet("background-color: #DDD")
+		else:
+			self.computer_mode_options.setFixedSize(QSize(math.floor(self.width() / 1.5), math.floor(self.height() / 1.5)))
+			self.computer_mode_options.move(QPoint((self.width() - self.computer_mode_options.width()) // 2, (self.height() - self.computer_mode_options.height()) // 2))
+			self.computer_mode_options_close.move(self.computer_mode_options.pos())
+			if self.computer_mode_options_widgets["level_button"].isHidden():
+				self.computer_mode_options_widgets["level_button"].show()
+				self.computer_mode_options_widgets["time_control_button"].show()
+				self.computer_mode_options_widgets["variant_button"].show()
+				self.computer_mode_options_widgets["position_button"].show()
+			if self.computer_mode_options.layout().spacing() == 5:
+				self.computer_mode_options.layout().setSpacing(0)
+			self.computer_mode_options_widgets["level_group"].setFixedHeight(math.floor(self.height() / 20))
+			self.computer_mode_options_widgets["time_control_group"].setFixedHeight(math.floor(self.height() / 6))
+			self.computer_mode_options_widgets["variant_group"].setFixedHeight(math.floor(self.height() / 15))
+			self.computer_mode_options_widgets["position_group"].setFixedHeight(math.floor(self.height() / 8))
 	
 	def twoPlayers(self):
 		def styleTimeControlButtons(text):
@@ -446,32 +804,32 @@ class MainPage(QWidget):
 			if selected_position == "FEN" and position_text.strip() == "":
 				position_text = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 			self.two_player_mode_function(time_control_display.text(), variant_selected, selected_position, position_text.strip())
-			self.options.deleteLater()
-			self.options_close.deleteLater()
-			self.options = self.options_widgets = None
+			self.two_player_mode_options.deleteLater()
+			self.two_player_mode_options_close.deleteLater()
+			self.two_player_mode_options = self.two_player_mode_options_widgets = None
 
 		def close_dialog():
-			self.options.deleteLater()
-			self.options_close.deleteLater()
-			self.options = self.options_widgets = self.options_close = None
+			self.two_player_mode_options.deleteLater()
+			self.two_player_mode_options_close.deleteLater()
+			self.two_player_mode_options = self.two_player_mode_options_widgets = self.two_player_mode_options_close = None
 
 		# Options scroll area
-		self.options = QGroupBox(self)
+		self.two_player_mode_options = QGroupBox(self)
 		options_layout = QVBoxLayout()
 		# Title and close button
-		title = Label(self.options, "New 2 Player Game")
+		title = Label(self.two_player_mode_options, "New 2 Player Game")
 		title.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Bold.ttf"))[0], 20))
-		self.options_close = QPushButton("×", self)
-		self.options_close.pressed.connect(close_dialog)
-		self.options_close.setCursor(Qt.CursorShape.PointingHandCursor)
-		self.options_close.setStyleSheet("QPushButton { background-color: white; border: 12px solid white; } QPushButton:hover, QPushButton:focus { background-color: #EEE; border: 12px solid #EEE; }")
-		self.options_close.show()
+		self.two_player_mode_options_close = QPushButton("×", self)
+		self.two_player_mode_options_close.pressed.connect(close_dialog)
+		self.two_player_mode_options_close.setCursor(Qt.CursorShape.PointingHandCursor)
+		self.two_player_mode_options_close.setStyleSheet("QPushButton { background-color: white; border: 12px solid white; } QPushButton:hover, QPushButton:focus { background-color: #EEE; border: 12px solid #EEE; }")
+		self.two_player_mode_options_close.show()
 		# Add space
-		spacing = QWidget(self.options)
+		spacing = QWidget(self.two_player_mode_options)
 		spacing.setFixedSize(QSize(1, 30))
 		# Time control section
 		time_control_button = OptionButton(self, "Time Control")
-		time_control_group = QGroupBox(self.options)
+		time_control_group = QGroupBox(self.two_player_mode_options)
 		time_control_group.setStyleSheet("background-color: #AAA;")
 		time_control_button.pressed.connect(lambda time_control_group=time_control_group: time_control_group.show() if time_control_group.isHidden() else time_control_group.hide())
 		time_control_group.setFixedHeight(math.floor(self.height() / 6))
@@ -538,7 +896,7 @@ class MainPage(QWidget):
 		# Variant section
 		variant_selected = "Standard"
 		variant_button = OptionButton(self, "Chess Variant")
-		variant_group = QGroupBox(self.options)
+		variant_group = QGroupBox(self.two_player_mode_options)
 		variant_group.setStyleSheet("background-color: #AAA;")
 		variant_button.pressed.connect(lambda variant_group=variant_group: variant_group.show() if variant_group.isHidden() else variant_group.hide())
 		variant_group.setFixedHeight(math.floor(self.height() / 10))
@@ -557,7 +915,7 @@ class MainPage(QWidget):
 		selected_position = "FEN"
 		position_text = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 		position_button = OptionButton(self, "FEN/PGN")
-		position_group = QGroupBox(self.options)
+		position_group = QGroupBox(self.two_player_mode_options)
 		position_group.setStyleSheet("background-color: #AAA;")
 		position_button.pressed.connect(lambda position_group=position_group: position_group.show() if position_group.isHidden() else position_group.hide())
 		position_group.setFixedHeight(math.floor(self.height() / 8))
@@ -592,7 +950,7 @@ class MainPage(QWidget):
 		position_group.setLayout(position_group_layout)
 		position_group.hide()
 		# Add widgets to options
-		start_game = StartGame(self.options, "Start Game", startGame)
+		start_game = StartGame(self.two_player_mode_options, "Start Game", startGame)
 		start_game.setStyleSheet("StartGame { background-color: white; border: 5px solid white; color: black; } StartGame:hover, StartGame:focus { background-color: #EEEEEE; border: 5px solid #EEEEEE; color: black; }")
 		options_layout.setSpacing(0)
 		options_layout.addWidget(title)
@@ -605,17 +963,17 @@ class MainPage(QWidget):
 		options_layout.addWidget(position_group)
 		options_layout.addStretch()
 		options_layout.addWidget(start_game)
-		self.options.setStyleSheet("background-color: white; border: none;")
-		self.options.setLayout(options_layout)
-		self.options.setFixedSize(QSize(math.floor(self.width() / 1.5), math.floor(self.height() / 1.5)))
-		self.options.move(QPoint((self.width() - self.options.width()) // 2, (self.height() - self.options.height()) // 2))
-		self.options.show()
-		self.options_close.move(self.options.pos())
-		self.options_widgets = {"tc_total": time_control_total, "tc_total_increment": time_control_total_increment, "tc_move": time_control_move, "tc_unlimited": time_control_unlimited, "time_control_group": time_control_group, "variant_group": variant_group, "position_group": position_group, "time_control_button": time_control_button, "variant_button": variant_button, "position_button": position_button, "startGame": startGame}
+		self.two_player_mode_options.setStyleSheet("background-color: white; border: none;")
+		self.two_player_mode_options.setLayout(options_layout)
+		self.two_player_mode_options.setFixedSize(QSize(math.floor(self.width() / 1.5), math.floor(self.height() / 1.5)))
+		self.two_player_mode_options.move(QPoint((self.width() - self.two_player_mode_options.width()) // 2, (self.height() - self.two_player_mode_options.height()) // 2))
+		self.two_player_mode_options.show()
+		self.two_player_mode_options.move(self.two_player_mode_options.pos())
+		self.two_player_mode_options_widgets = {"tc_total": time_control_total, "tc_total_increment": time_control_total_increment, "tc_move": time_control_move, "tc_unlimited": time_control_unlimited, "time_control_group": time_control_group, "variant_group": variant_group, "position_group": position_group, "time_control_button": time_control_button, "variant_button": variant_button, "position_button": position_button, "startGame": startGame}
 		if self.width() <= 1440 or self.height() <= 1080:
-			self.options.setFixedSize(self.size())
-			self.options.move(QPoint())
-			self.options_close.move(QPoint())
+			self.two_player_mode_options.setFixedSize(self.size())
+			self.two_player_mode_options.move(QPoint())
+			self.two_player_mode_options_close.move(QPoint())
 			if not time_control_button.isHidden():
 				time_control_button.hide()
 				variant_button.hide()
@@ -638,11 +996,31 @@ class MainPage(QWidget):
 			time_control_total_increment.setFixedSize(QSize(self.width() // 6, self.height() // 10))
 			time_control_move.setFixedSize(QSize(self.width() // 6, self.height() // 10))
 			time_control_unlimited.setFixedSize(QSize(self.width() // 6, self.height() // 10))
+		else:
+			self.two_player_mode_options.setFixedSize(QSize(math.floor(self.width() / 1.5), math.floor(self.height() / 1.5)))
+			self.two_player_mode_options.move(QPoint((self.width() - self.two_player_mode_options.width()) // 2, (self.height() - self.two_player_mode_options.height()) // 2))
+			self.two_player_mode_options_close.move(self.two_player_mode_options.pos())
+			if self.two_player_mode_options_widgets["time_control_button"].isHidden():
+				self.two_player_mode_options_widgets["time_control_button"].show()
+				self.two_player_mode_options_widgets["variant_button"].show()
+				self.two_player_mode_options_widgets["position_button"].show()
+			if self.two_player_mode_options.layout().spacing() == 5:
+				self.two_player_mode_options.layout().setSpacing(0)
+			self.two_player_mode_options_widgets["tc_total"].setFixedSize(QSize(self.width() // 10, self.height() // 12))
+			self.two_player_mode_options_widgets["tc_total_increment"].setFixedSize(QSize(self.width() // 10, self.height() // 12))
+			self.two_player_mode_options_widgets["tc_move"].setFixedSize(QSize(self.width() // 10, self.height() // 12))
+			self.two_player_mode_options_widgets["tc_unlimited"].setFixedSize(QSize(self.width() // 10, self.height() // 12))
+			self.two_player_mode_options_widgets["time_control_group"].setFixedHeight(math.floor(self.height() / 6))
+			self.two_player_mode_options_widgets["variant_group"].setFixedHeight(math.floor(self.height() / 10))
+			self.two_player_mode_options_widgets["position_group"].setFixedHeight(math.floor(self.height() / 8))
 
 	def keyPressEvent(self, event: QKeyEvent):
-		if self.options is not None:
+		if self.two_player_mode_options is not None:
 			if event.key() == 16777220:
-				self.options_widgets["startGame"]()
+				self.two_player_mode_options_widgets["startGame"]()
+		if self.computer_mode_options is not None:
+			if event.key() == 16777220:
+				self.computer_mode_options_widgets["startGame"]()
 		super(MainPage, self).keyPressEvent(event)
 
 	def resizeEvent(self, event: QResizeEvent) -> None:
@@ -657,50 +1035,116 @@ class MainPage(QWidget):
 		self.title.move((event.size().width() - self.title.width()) // 2, event.size().height() // 20)
 		self.select_mode_label.move((event.size().width() - self.select_mode_label.width()) // 2, (event.size().height() // 20) + 200)
 		self.two_player_mode_button.move((event.size().width() - self.two_player_mode_button.width()) // 2, (event.size().height() // 20) + 250)
-		if self.options is not None:
+		self.computer_mode_button.move((event.size().width() - self.computer_mode_button.width()) // 2, (event.size().height() // 20) + 325)
+		if self.two_player_mode_options is not None:
 			if event.size().width() <= 1440 or event.size().height() <= 1080:
-				self.options.setFixedSize(event.size())
-				self.options.move(QPoint())
-				self.options_close.move(QPoint())
-				if not self.options_widgets["time_control_button"].isHidden():
-					self.options_widgets["time_control_button"].hide()
-					self.options_widgets["variant_button"].hide()
-					self.options_widgets["position_button"].hide()
-				if self.options_widgets["time_control_group"].isHidden():
-					self.options_widgets["time_control_group"].show()
-				if self.options_widgets["variant_group"].isHidden():
-					self.options_widgets["variant_group"].show()
-				if self.options_widgets["position_group"].isHidden():
-					self.options_widgets["position_group"].show()
-				if self.options.layout().spacing() == 0:
-					self.options.layout().setSpacing(5)
-				self.options_widgets["time_control_group"].setFixedHeight(math.floor(event.size().height() / 3))
-				self.options_widgets["time_control_group"].setStyleSheet("background-color: #DDD")
-				self.options_widgets["variant_group"].setFixedHeight(math.floor(event.size().height() / 6))
-				self.options_widgets["variant_group"].setStyleSheet("background-color: #DDD")
-				self.options_widgets["position_group"].setFixedHeight(math.floor(event.size().height() / 4))
-				self.options_widgets["position_group"].setStyleSheet("background-color: #DDD")
-				self.options_widgets["tc_total"].setFixedSize(QSize(event.size().width() // 6, event.size().height() // 10))
-				self.options_widgets["tc_total_increment"].setFixedSize(QSize(event.size().width() // 6, event.size().height() // 10))
-				self.options_widgets["tc_move"].setFixedSize(QSize(event.size().width() // 6, event.size().height() // 10))
-				self.options_widgets["tc_unlimited"].setFixedSize(QSize(event.size().width() // 6, event.size().height() // 10))
+				self.two_player_mode_options.setFixedSize(event.size())
+				self.two_player_mode_options.move(QPoint())
+				self.two_player_mode_options_close.move(QPoint())
+				if not self.two_player_mode_options_widgets["time_control_button"].isHidden():
+					self.two_player_mode_options_widgets["time_control_button"].hide()
+					self.two_player_mode_options_widgets["variant_button"].hide()
+					self.two_player_mode_options_widgets["position_button"].hide()
+				if self.two_player_mode_options_widgets["time_control_group"].isHidden():
+					self.two_player_mode_options_widgets["time_control_group"].show()
+				if self.two_player_mode_options_widgets["variant_group"].isHidden():
+					self.two_player_mode_options_widgets["variant_group"].show()
+				if self.two_player_mode_options_widgets["position_group"].isHidden():
+					self.two_player_mode_options_widgets["position_group"].show()
+				if self.two_player_mode_options.layout().spacing() == 0:
+					self.two_player_mode_options.layout().setSpacing(5)
+				self.two_player_mode_options_widgets["time_control_group"].setFixedHeight(math.floor(event.size().height() / 3))
+				self.two_player_mode_options_widgets["time_control_group"].setStyleSheet("background-color: #DDD")
+				self.two_player_mode_options_widgets["variant_group"].setFixedHeight(math.floor(event.size().height() / 6))
+				self.two_player_mode_options_widgets["variant_group"].setStyleSheet("background-color: #DDD")
+				self.two_player_mode_options_widgets["position_group"].setFixedHeight(math.floor(event.size().height() / 4))
+				self.two_player_mode_options_widgets["position_group"].setStyleSheet("background-color: #DDD")
+				self.two_player_mode_options_widgets["tc_total"].setFixedSize(QSize(event.size().width() // 6, event.size().height() // 10))
+				self.two_player_mode_options_widgets["tc_total_increment"].setFixedSize(QSize(event.size().width() // 6, event.size().height() // 10))
+				self.two_player_mode_options_widgets["tc_move"].setFixedSize(QSize(event.size().width() // 6, event.size().height() // 10))
+				self.two_player_mode_options_widgets["tc_unlimited"].setFixedSize(QSize(event.size().width() // 6, event.size().height() // 10))
 			else:
-				self.options.setFixedSize(QSize(math.floor(self.width() / 1.5), math.floor(self.height() / 1.5)))
-				self.options.move(QPoint((self.width() - self.options.width()) // 2, (self.height() - self.options.height()) // 2))
-				self.options_close.move(self.options.pos())
-				if self.options_widgets["time_control_button"].isHidden():
-					self.options_widgets["time_control_button"].show()
-					self.options_widgets["variant_button"].show()
-					self.options_widgets["position_button"].show()
-				if self.options.layout().spacing() == 5:
-					self.options.layout().setSpacing(0)
-				self.options_widgets["tc_total"].setFixedSize(QSize(event.size().width() // 10, event.size().height() // 12))
-				self.options_widgets["tc_total_increment"].setFixedSize(QSize(event.size().width() // 10, event.size().height() // 12))
-				self.options_widgets["tc_move"].setFixedSize(QSize(event.size().width() // 10, event.size().height() // 12))
-				self.options_widgets["tc_unlimited"].setFixedSize(QSize(event.size().width() // 10, event.size().height() // 12))
-				self.options_widgets["time_control_group"].setFixedHeight(math.floor(event.size().height() / 6))
-				self.options_widgets["variant_group"].setFixedHeight(math.floor(event.size().height() / 10))
-				self.options_widgets["position_group"].setFixedHeight(math.floor(event.size().height() / 8))
+				self.two_player_mode_options.setFixedSize(QSize(math.floor(self.width() / 1.5), math.floor(self.height() / 1.5)))
+				self.two_player_mode_options.move(QPoint((self.width() - self.two_player_mode_options.width()) // 2, (self.height() - self.two_player_mode_options.height()) // 2))
+				self.two_player_mode_options_close.move(self.two_player_mode_options.pos())
+				if self.two_player_mode_options_widgets["time_control_button"].isHidden():
+					self.two_player_mode_options_widgets["time_control_button"].show()
+					self.two_player_mode_options_widgets["variant_button"].show()
+					self.two_player_mode_options_widgets["position_button"].show()
+					self.two_player_mode_options_widgets["time_control_button"].setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.4);")
+					self.two_player_mode_options_widgets["time_control_button"].selected = True
+					self.two_player_mode_options_widgets["variant_button"].setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.4);")
+					self.two_player_mode_options_widgets["variant_button"].selected = True
+					self.two_player_mode_options_widgets["position_button"].setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.4);")
+					self.two_player_mode_options_widgets["position_button"].selected = True
+				if self.two_player_mode_options.layout().spacing() == 5:
+					self.two_player_mode_options.layout().setSpacing(0)
+				self.two_player_mode_options_widgets["tc_total"].setFixedSize(QSize(event.size().width() // 10, event.size().height() // 12))
+				self.two_player_mode_options_widgets["tc_total_increment"].setFixedSize(QSize(event.size().width() // 10, event.size().height() // 12))
+				self.two_player_mode_options_widgets["tc_move"].setFixedSize(QSize(event.size().width() // 10, event.size().height() // 12))
+				self.two_player_mode_options_widgets["tc_unlimited"].setFixedSize(QSize(event.size().width() // 10, event.size().height() // 12))
+				self.two_player_mode_options_widgets["time_control_group"].setFixedHeight(math.floor(event.size().height() / 6))
+				self.two_player_mode_options_widgets["variant_group"].setFixedHeight(math.floor(event.size().height() / 10))
+				self.two_player_mode_options_widgets["position_group"].setFixedHeight(math.floor(event.size().height() / 8))
+		if self.computer_mode_options is not None:
+			if event.size().width() <= 1440 or event.size().height() <= 1080:
+				self.computer_mode_options.setFixedSize(event.size())
+				self.computer_mode_options.move(QPoint())
+				self.computer_mode_options_close.move(QPoint())
+				if not self.computer_mode_options_widgets["level_button"].isHidden():
+					self.computer_mode_options_widgets["level_button"].hide()
+					self.computer_mode_options_widgets["time_control_button"].hide()
+					self.computer_mode_options_widgets["variant_button"].hide()
+					self.computer_mode_options_widgets["position_button"].hide()
+				if self.computer_mode_options_widgets["time_control_group"].isHidden():
+					self.computer_mode_options_widgets["level_group"].show()
+				if self.computer_mode_options_widgets["time_control_group"].isHidden():
+					self.computer_mode_options_widgets["time_control_group"].show()
+				if self.computer_mode_options_widgets["variant_group"].isHidden():
+					self.computer_mode_options_widgets["variant_group"].show()
+				if self.computer_mode_options_widgets["position_group"].isHidden():
+					self.computer_mode_options_widgets["position_group"].show()
+				if self.computer_mode_options.layout().spacing() == 0:
+					self.computer_mode_options.layout().setSpacing(5)
+				self.computer_mode_options_widgets["level_group"].setFixedHeight(math.floor(event.size().height() / 11))
+				self.computer_mode_options_widgets["level_group"].setStyleSheet("background-color: #DDD")
+				self.computer_mode_options_widgets["time_control_group"].setFixedHeight(math.floor(event.size().height() / 5))
+				self.computer_mode_options_widgets["time_control_group"].setStyleSheet("background-color: #DDD")
+				self.computer_mode_options_widgets["variant_group"].setFixedHeight(math.floor(event.size().height() / 10))
+				self.computer_mode_options_widgets["variant_group"].setStyleSheet("background-color: #DDD")
+				self.computer_mode_options_widgets["position_group"].setFixedHeight(math.floor(event.size().height() / 4))
+				self.computer_mode_options_widgets["position_group"].setStyleSheet("background-color: #DDD")
+				if event.size().height() < 900:
+					for i in self.computer_mode_options_widgets["variant_buttons"]:
+						i.setFixedHeight(20)
+				else:
+					for i in self.computer_mode_options_widgets["variant_buttons"]:
+						i.setFixedHeight(30)
+			else:
+				for i in self.computer_mode_options_widgets["variant_buttons"]:
+					i.setFixedHeight(30)
+				self.computer_mode_options.setFixedSize(QSize(math.floor(self.width() / 1.5), math.floor(self.height() / 1.5)))
+				self.computer_mode_options.move(QPoint((self.width() - self.computer_mode_options.width()) // 2, (self.height() - self.computer_mode_options.height()) // 2))
+				self.computer_mode_options_close.move(self.computer_mode_options.pos())
+				if self.computer_mode_options_widgets["level_button"].isHidden():
+					self.computer_mode_options_widgets["level_button"].show()
+					self.computer_mode_options_widgets["time_control_button"].show()
+					self.computer_mode_options_widgets["variant_button"].show()
+					self.computer_mode_options_widgets["position_button"].show()
+					self.computer_mode_options_widgets["level_button"].setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.4);")
+					self.computer_mode_options_widgets["level_button"].selected = True
+					self.computer_mode_options_widgets["time_control_button"].setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.4);")
+					self.computer_mode_options_widgets["time_control_button"].selected = True
+					self.computer_mode_options_widgets["variant_button"].setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.4);")
+					self.computer_mode_options_widgets["variant_button"].selected = True
+					self.computer_mode_options_widgets["position_button"].setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.4);")
+					self.computer_mode_options_widgets["position_button"].selected = True
+				if self.computer_mode_options.layout().spacing() == 5:
+					self.computer_mode_options.layout().setSpacing(0)
+				self.computer_mode_options_widgets["level_group"].setFixedHeight(math.floor(self.height() / 20))
+				self.computer_mode_options_widgets["time_control_group"].setFixedHeight(math.floor(self.height() / 6))
+				self.computer_mode_options_widgets["variant_group"].setFixedHeight(math.floor(self.height() / 15))
+				self.computer_mode_options_widgets["position_group"].setFixedHeight(math.floor(self.height() / 8))
 		self.quit_button.resize(QSize(min_size // 20, min_size // 20))
 		if not self.animated:
 			self.title_opening_animation.setEndValue(QSize(self.title.maximumWidth(), 200))
@@ -720,9 +1164,9 @@ class MainPage(QWidget):
 		self.select_mode_label_animation.setStartValue(QColor("transparent"))
 		self.select_mode_label_animation.setEndValue(QColor("#CC00FF"))
 		self.select_mode_label_animation.start()
-		self.select_mode_label_animation.finished.connect(self.twoPlayerModeAnimation)
+		self.select_mode_label_animation.finished.connect(self.gameModeButtonsAnimation)
 
-	def twoPlayerModeAnimation(self):
+	def gameModeButtonsAnimation(self):
 		self.select_mode_animation.start()
 		self.two_player_mode_button.move(QPoint(self.two_player_mode_button.pos().x(), self.two_player_mode_button.pos().y() + 100))
 		self.two_player_mode_animation = QPropertyAnimation(self.two_player_mode_button, b"color")
@@ -731,6 +1175,13 @@ class MainPage(QWidget):
 		self.two_player_mode_animation.setEndValue(QColor("#8400FF"))
 		self.two_player_mode_animation.start()
 		self.two_player_mode_animation.finished.connect(self.two_player_mode_button.animationFinished)
+		self.computer_mode_button.move(QPoint(self.computer_mode_button.pos().x(), self.computer_mode_button.pos().y() + 100))
+		self.computer_mode_button_animation = QPropertyAnimation(self.computer_mode_button, b"color")
+		self.computer_mode_button_animation.setDuration(250)
+		self.computer_mode_button_animation.setStartValue(QColor("transparent"))
+		self.computer_mode_button_animation.setEndValue(QColor("#8400FF"))
+		self.computer_mode_button_animation.start()
+		self.computer_mode_button_animation.finished.connect(self.computer_mode_button.animationFinished)
 
 
 class Window(QMainWindow):
@@ -739,10 +1190,11 @@ class Window(QMainWindow):
 		super(Window, self).__init__()
 		self.setWindowTitle("Chess")
 		self.setMinimumSize(QSize(720, 720))
-		self.stacked_pages, self.stacks = QStackedWidget(self), {"main-page": MainPage(self, two_player_mode_function=self.twoPlayerMode), "two-players": twoplayers.TwoPlayers(self), "settings": settings.Settings(self)}
+		self.stacked_pages, self.stacks = QStackedWidget(self), {"main-page": MainPage(self, self.twoPlayerMode, self.computerMode), "two-players": twoplayers.TwoPlayers(self), "settings": settings.Settings(self), "computer": computer.Computer(self)}
 		self.stacked_pages.addWidget(self.stacks["main-page"])
 		self.stacked_pages.addWidget(self.stacks["two-players"])
 		self.stacked_pages.addWidget(self.stacks["settings"])
+		self.stacked_pages.addWidget(self.stacks["computer"])
 		self.showFullScreen()
 		self.stacked_pages.move(0, 0)
 		self.stacked_pages.setFixedSize(self.size())
@@ -753,11 +1205,24 @@ class Window(QMainWindow):
 		self.setIndex(1, self.stacks["two-players"])
 		self.stacks["two-players"].startClocks()
 		self.setWindowTitle("2-Player Chess Game: White to move")
+	
+	def computerMode(self, level, time_control, variant, position_type, position):
+		self.stacks["computer"].computer_level = int(level)
+		self.stacks["computer"].setTimeControl(time_control)
+		self.stacks["computer"].setupBoard(variant, position_type, position)
+		self.setIndex(3, self.stacks["computer"])
+		self.stacks["computer"].startClocks()
+		self.setWindowTitle("Player vs Computer Chess Game: White to move")
 
 	def resetTwoPlayerGame(self):
 		self.stacks["two-players"].deleteLater()
 		self.stacks["two-players"] = twoplayers.TwoPlayers(self)
 		self.stacked_pages.addWidget(self.stacks["two-players"])
+
+	def resetComputerGame(self):
+		self.stacks["computer"].deleteLater()
+		self.stacks["computer"] = computer.Computer(self)
+		self.stacked_pages.addWidget(self.stacks["computer"])
 
 	def setIndex(self, index, widget):
 		self.stacked_pages.setCurrentIndex(index)
