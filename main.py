@@ -370,19 +370,26 @@ class MainPage(QWidget):
 	
 	def computer(self):
 		def styleLevelButtons(text):
-			nonlocal computer_level_0, computer_level_1, computer_level_2, computer_level_3, computer_level
-			computer_level_0.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
-			computer_level_1.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
-			computer_level_2.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
-			computer_level_3.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+			nonlocal computer_level_0, computer_level_1, computer_level_2, computer_level_3, computer_custom, computer_level, computer_path
+			computer_level_0.setStyleSheet("background-color: white; border: none; color: black;")
+			computer_level_1.setStyleSheet("background-color: white; border: none; color: black;")
+			computer_level_2.setStyleSheet("background-color: white; border: none; color: black;")
+			computer_level_3.setStyleSheet("background-color: white; border: none; color: black;")
+			computer_custom.setStyleSheet("background-color: white; border: none; color: black;")
 			if text == "0":
-				computer_level_0.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+				computer_path = False
+				computer_level_0.setStyleSheet("background-color: black; border: none; color: white;")
 			elif text == "1":
-				computer_level_1.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+				computer_path = False
+				computer_level_1.setStyleSheet("background-color: black; border: none; color: white;")
 			elif text == "2":
-				computer_level_2.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+				computer_path = False
+				computer_level_2.setStyleSheet("background-color: black; border: none; color: white;")
+			elif text == "3":
+				computer_path = False
+				computer_level_3.setStyleSheet("background-color: black; border: none; color: white;")
 			else:
-				computer_level_3.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+				computer_custom.setStyleSheet("background-color: black; border: none; color: white;")
 			computer_level = text
 
 		def styleTimeControlButtons(text):
@@ -415,19 +422,6 @@ class MainPage(QWidget):
 				time_control_widget_move.show()
 				time_control_move.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
 
-		def styleVariantButtons(text):
-			nonlocal variant_standard, variant_antichess, variant_threecheck, variant_selected
-			variant_standard.setStyleSheet("background-color: white; border: none; color: black;")
-			variant_antichess.setStyleSheet("background-color: white; border: none; color: black;")
-			variant_threecheck.setStyleSheet("background-color: white; border: none; color: black;")
-			variant_selected = text
-			if text == "Standard":
-				variant_standard.setStyleSheet("background-color: black; border: none; color: white;")
-			elif text == "Antichess":
-				variant_antichess.setStyleSheet("background-color: black; border: none; color: white;")
-			else:
-				variant_threecheck.setStyleSheet("background-color: black; border: none; color: white;")
-		
 		def stylePositionButtons(text):
 			nonlocal position_fen, position_pgn, selected_position, position_widget_fen, position_widget_pgn
 			position_fen.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
@@ -473,11 +467,11 @@ class MainPage(QWidget):
 				time_control_display.setText(str(value) + "s")
 
 		def startGame():
-			nonlocal time_control_display, variant_selected, selected_position, position_text, computer_level
+			nonlocal time_control_display, selected_position, position_text, computer_level, computer_path
 			updatePositionText()
 			if selected_position == "FEN" and position_text.strip() == "":
 				position_text = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-			self.computer_mode_function(computer_level, time_control_display.text(), variant_selected, selected_position, position_text.strip())
+			self.computer_mode_function("level" if computer_level else "path", computer_level if computer_level else computer_path, time_control_display.text(), selected_position, position_text.strip())
 			self.computer_mode_options.deleteLater()
 			self.computer_mode_options_close.deleteLater()
 			self.computer_mode_options = self.computer_mode_options_widgets = None
@@ -487,6 +481,17 @@ class MainPage(QWidget):
 			self.computer_mode_options_close.deleteLater()
 			self.computer_mode_options = self.computer_mode_options_widgets = self.computer_mode_options_close = None
 
+		def setupCustomEngine():
+			nonlocal computer_level_0, computer_custom, computer_level, computer_path
+			file = QFileDialog.getOpenFileName(None, "Select Engine File")
+			if not file[0] and not file[1]:
+				computer_level = "0"
+				computer_custom.setStyleSheet("background-color: white; border: none; color: black;")
+				computer_level_0.setStyleSheet("background-color: black; border: none; color: white;")
+				return
+			computer_level = False
+			computer_path = file[0]
+			
 		# Options scroll area
 		self.computer_mode_options = QGroupBox(self)
 		options_layout = QVBoxLayout()
@@ -502,6 +507,7 @@ class MainPage(QWidget):
 		spacing = QWidget(self.computer_mode_options)
 		spacing.setFixedSize(QSize(1, 30))
 		# Computer level section
+		computer_path = False
 		computer_level = "0"
 		computer_level_button = OptionButton(self, "Computer Level")
 		computer_level_group = QGroupBox(self.computer_mode_options)
@@ -515,11 +521,15 @@ class MainPage(QWidget):
 		computer_level_1 = OptionsButton("1", self, pressed_function=styleLevelButtons, center_text=True, border=False, size=QSize(40, 40))
 		computer_level_2 = OptionsButton("2", self, pressed_function=styleLevelButtons, center_text=True, border=False, size=QSize(40, 40))
 		computer_level_3 = OptionsButton("3", self, pressed_function=styleLevelButtons, center_text=True, border=False, size=QSize(40, 40))
+		computer_custom = OptionsButton("Custom Engine...", self, pressed_function=styleLevelButtons, center_text=True, border=False, size=QSize(150, 40))
+		computer_custom.pressed.connect(setupCustomEngine)
 		computer_level_group_layout.addStretch()
 		computer_level_group_layout.addWidget(computer_level_0)
 		computer_level_group_layout.addWidget(computer_level_1)
 		computer_level_group_layout.addWidget(computer_level_2)
 		computer_level_group_layout.addWidget(computer_level_3)
+		computer_level_group_layout.addSpacing(10)
+		computer_level_group_layout.addWidget(computer_custom)
 		computer_level_group_layout.addStretch()
 		computer_level_group.setLayout(computer_level_group_layout)
 		computer_level_group.hide()
@@ -585,27 +595,6 @@ class MainPage(QWidget):
 		time_control_group_layout.addWidget(time_control_widget, 3, 1)
 		time_control_group.setLayout(time_control_group_layout)
 		time_control_group.hide()
-		# Variant section
-		variant_selected = "Standard"
-		variant_button = OptionButton(self, "Chess Variant")
-		variant_group = QGroupBox(self.computer_mode_options)
-		variant_group.setStyleSheet("background-color: #AAA;")
-		variant_button.pressed.connect(lambda variant_group=variant_group: variant_group.show() if variant_group.isHidden() else variant_group.hide())
-		variant_group.setFixedHeight(math.floor(self.height() / 10))
-		variant_group_layout = QGridLayout()
-		variant_group_layout.setSpacing(5)
-		variant_standard = OptionsButton("  Standard", variant_group, styleVariantButtons, border=False)
-		variant_standard.setFixedHeight(30)
-		variant_standard.setStyleSheet("background-color: black; border: none; color: white;")
-		variant_antichess = OptionsButton("  Antichess", variant_group, styleVariantButtons, border=False)
-		variant_antichess.setFixedHeight(30)
-		variant_threecheck = OptionsButton("  Three Check", variant_group, styleVariantButtons, border=False)
-		variant_threecheck.setFixedHeight(30)
-		variant_group_layout.addWidget(variant_standard, 1, 1)
-		variant_group_layout.addWidget(variant_antichess, 1, 2)
-		variant_group_layout.addWidget(variant_threecheck, 2, 1)
-		variant_group.setLayout(variant_group_layout)
-		variant_group.hide()
 		# Position section
 		selected_position = "FEN"
 		position_text = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -654,8 +643,6 @@ class MainPage(QWidget):
 		options_layout.addWidget(computer_level_group)
 		options_layout.addWidget(time_control_button)
 		options_layout.addWidget(time_control_group)
-		options_layout.addWidget(variant_button)
-		options_layout.addWidget(variant_group)
 		options_layout.addWidget(position_button)
 		options_layout.addWidget(position_group)
 		options_layout.addStretch()
@@ -666,7 +653,7 @@ class MainPage(QWidget):
 		self.computer_mode_options.move(QPoint((self.width() - self.computer_mode_options.width()) // 2, (self.height() - self.computer_mode_options.height()) // 2))
 		self.computer_mode_options.show()
 		self.computer_mode_options.move(self.computer_mode_options.pos())
-		self.computer_mode_options_widgets = {"level_group": computer_level_group, "level_button": computer_level_button, "tc_total": time_control_total, "tc_total_increment": time_control_total_increment, "tc_move": time_control_move, "tc_unlimited": time_control_unlimited, "time_control_group": time_control_group, "variant_group": variant_group, "position_group": position_group, "time_control_button": time_control_button, "variant_button": variant_button, "position_button": position_button, "variant_buttons": [variant_antichess, variant_threecheck, variant_standard], "startGame": startGame}
+		self.computer_mode_options_widgets = {"level_group": computer_level_group, "level_button": computer_level_button, "tc_total": time_control_total, "tc_total_increment": time_control_total_increment, "tc_move": time_control_move, "tc_unlimited": time_control_unlimited, "time_control_group": time_control_group, "position_group": position_group, "time_control_button": time_control_button, "position_button": position_button, "startGame": startGame}
 		if self.width() <= 1440 or self.height() <= 1080:
 			self.computer_mode_options.setFixedSize(self.size())
 			self.computer_mode_options.move(QPoint())
@@ -674,14 +661,11 @@ class MainPage(QWidget):
 			if not computer_level_button.isHidden():
 				computer_level_button.hide()
 				time_control_button.hide()
-				variant_button.hide()
 				position_button.hide()
 			if computer_level_group.isHidden():
 				computer_level_group.show()
 			if time_control_group.isHidden():
 				time_control_group.show()
-			if variant_group.isHidden():
-				variant_group.show()
 			if position_group.isHidden():
 				position_group.show()
 			if options_layout.spacing() == 0:
@@ -690,8 +674,6 @@ class MainPage(QWidget):
 			computer_level_group.setStyleSheet("background-color: #DDD")
 			time_control_group.setFixedHeight(math.floor(self.height() / 5))
 			time_control_group.setStyleSheet("background-color: #DDD")
-			variant_group.setFixedHeight(math.floor(self.height() / 10))
-			variant_group.setStyleSheet("background-color: #DDD")
 			position_group.setFixedHeight(math.floor(self.height() / 4))
 			position_group.setStyleSheet("background-color: #DDD")
 		else:
@@ -701,13 +683,11 @@ class MainPage(QWidget):
 			if self.computer_mode_options_widgets["level_button"].isHidden():
 				self.computer_mode_options_widgets["level_button"].show()
 				self.computer_mode_options_widgets["time_control_button"].show()
-				self.computer_mode_options_widgets["variant_button"].show()
 				self.computer_mode_options_widgets["position_button"].show()
 			if self.computer_mode_options.layout().spacing() == 5:
 				self.computer_mode_options.layout().setSpacing(0)
 			self.computer_mode_options_widgets["level_group"].setFixedHeight(math.floor(self.height() / 20))
 			self.computer_mode_options_widgets["time_control_group"].setFixedHeight(math.floor(self.height() / 6))
-			self.computer_mode_options_widgets["variant_group"].setFixedHeight(math.floor(self.height() / 15))
 			self.computer_mode_options_widgets["position_group"].setFixedHeight(math.floor(self.height() / 8))
 	
 	def twoPlayers(self):
@@ -1094,14 +1074,11 @@ class MainPage(QWidget):
 				if not self.computer_mode_options_widgets["level_button"].isHidden():
 					self.computer_mode_options_widgets["level_button"].hide()
 					self.computer_mode_options_widgets["time_control_button"].hide()
-					self.computer_mode_options_widgets["variant_button"].hide()
 					self.computer_mode_options_widgets["position_button"].hide()
 				if self.computer_mode_options_widgets["time_control_group"].isHidden():
 					self.computer_mode_options_widgets["level_group"].show()
 				if self.computer_mode_options_widgets["time_control_group"].isHidden():
 					self.computer_mode_options_widgets["time_control_group"].show()
-				if self.computer_mode_options_widgets["variant_group"].isHidden():
-					self.computer_mode_options_widgets["variant_group"].show()
 				if self.computer_mode_options_widgets["position_group"].isHidden():
 					self.computer_mode_options_widgets["position_group"].show()
 				if self.computer_mode_options.layout().spacing() == 0:
@@ -1110,33 +1087,20 @@ class MainPage(QWidget):
 				self.computer_mode_options_widgets["level_group"].setStyleSheet("background-color: #DDD")
 				self.computer_mode_options_widgets["time_control_group"].setFixedHeight(math.floor(event.size().height() / 5))
 				self.computer_mode_options_widgets["time_control_group"].setStyleSheet("background-color: #DDD")
-				self.computer_mode_options_widgets["variant_group"].setFixedHeight(math.floor(event.size().height() / 10))
-				self.computer_mode_options_widgets["variant_group"].setStyleSheet("background-color: #DDD")
 				self.computer_mode_options_widgets["position_group"].setFixedHeight(math.floor(event.size().height() / 4))
 				self.computer_mode_options_widgets["position_group"].setStyleSheet("background-color: #DDD")
-				if event.size().height() < 900:
-					for i in self.computer_mode_options_widgets["variant_buttons"]:
-						i.setFixedHeight(20)
-				else:
-					for i in self.computer_mode_options_widgets["variant_buttons"]:
-						i.setFixedHeight(30)
 			else:
-				for i in self.computer_mode_options_widgets["variant_buttons"]:
-					i.setFixedHeight(30)
 				self.computer_mode_options.setFixedSize(QSize(math.floor(self.width() / 1.5), math.floor(self.height() / 1.5)))
 				self.computer_mode_options.move(QPoint((self.width() - self.computer_mode_options.width()) // 2, (self.height() - self.computer_mode_options.height()) // 2))
 				self.computer_mode_options_close.move(self.computer_mode_options.pos())
 				if self.computer_mode_options_widgets["level_button"].isHidden():
 					self.computer_mode_options_widgets["level_button"].show()
 					self.computer_mode_options_widgets["time_control_button"].show()
-					self.computer_mode_options_widgets["variant_button"].show()
 					self.computer_mode_options_widgets["position_button"].show()
 					self.computer_mode_options_widgets["level_button"].setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.4);")
 					self.computer_mode_options_widgets["level_button"].selected = True
 					self.computer_mode_options_widgets["time_control_button"].setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.4);")
 					self.computer_mode_options_widgets["time_control_button"].selected = True
-					self.computer_mode_options_widgets["variant_button"].setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.4);")
-					self.computer_mode_options_widgets["variant_button"].selected = True
 					self.computer_mode_options_widgets["position_button"].setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.4);")
 					self.computer_mode_options_widgets["position_button"].selected = True
 				if self.computer_mode_options.layout().spacing() == 5:
@@ -1206,10 +1170,14 @@ class Window(QMainWindow):
 		self.stacks["two-players"].startClocks()
 		self.setWindowTitle("2-Player Chess Game: White to move")
 	
-	def computerMode(self, level, time_control, variant, position_type, position):
-		self.stacks["computer"].computer_level = int(level)
+	def computerMode(self, computer_type, computer_, time_control, position_type, position):
 		self.stacks["computer"].setTimeControl(time_control)
-		self.stacks["computer"].setupBoard(variant, position_type, position)
+		self.stacks["computer"].setupBoard(position_type, position)
+		if computer_type == "level":
+			self.stacks["computer"].computer_level = int(computer_)
+		else:
+			self.stacks["computer"].computer_level = 0
+			self.stacks["computer"].setupUCI(computer_)
 		self.setIndex(3, self.stacks["computer"])
 		self.stacks["computer"].startClocks()
 		self.setWindowTitle("Player vs Computer Chess Game: White to move")

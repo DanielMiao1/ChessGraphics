@@ -77,17 +77,18 @@ class Piece(QLabel):
 		super(Piece, self).moveEvent(event)
 
 	def mousePressEvent(self, event) -> None:
-		if event.button() == Qt.LeftButton and (self.color != self.parent().game.turn or (self.parent().parent().type_ == "computer" and self.color != self.parent().parent().player_color) or self.parent().parent().computer_moving):
-			for x in self.parent().pieces:
-				if x.showing_moves:
-					for y in x.moves:
-						y.hide()
-					x.showing_moves = False
-					x.setStyleSheet("background-color: transparent;")
-			self.setStyleSheet("background-color: rgba(86, 12, 255, 0.5);")
-			super(Piece, self).mousePressEvent(event)
-			self.mouse_event_start = self.mouse_event_position = None
-			return
+		if event.button() == Qt.LeftButton:
+			if self.color != self.parent().game.turn or (self.parent().parent().type_ == "computer" and self.color != self.parent().parent().player_color) or (self.parent().parent().type_ == "computer" and self.parent().parent().computer_moving):
+				for x in self.parent().pieces:
+					if x.showing_moves:
+						for y in x.moves:
+							y.hide()
+						x.showing_moves = False
+						x.setStyleSheet("background-color: transparent;")
+				self.setStyleSheet("background-color: rgba(86, 12, 255, 0.5);")
+				super(Piece, self).mousePressEvent(event)
+				self.mouse_event_start = self.mouse_event_position = None
+				return
 		if event.button() == Qt.MouseButton.RightButton:
 			self.showing_moves = False
 			self.setStyleSheet("background-color: transparent;")

@@ -232,9 +232,20 @@ class TakebackButton(QPushButton):
 		self.setToolTip("Takeback")
 	
 	def mouseReleaseEvent(self, event) -> None:
+		if not self.parent().game.raw_move_list:
+			return
 		self.parent().game.takeback()
 		self.parent().board.updatePieces()
 		asyncio.get_event_loop().run_until_complete(self.parent().updateTakebackOpening())
+		if self.parent().clocks[0].running:
+			self.parent().clocks[0].pause()
+			self.parent().clocks[1].start()
+		else:
+			self.parent().clocks[0].start()
+			self.parent().clocks[1].pause()
+		self.parent().moves_layout.removeWidget(self.parent().move_buttons[-1])
+		self.parent().move_buttons[-1].deleteLater()
+		self.parent().moves_count -= 0.5
 		super(TakebackButton, self).mouseReleaseEvent(event)
 	
 

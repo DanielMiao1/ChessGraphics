@@ -7,6 +7,7 @@ Player-vs-computer game mode
 
 import json
 import random
+import subprocess
 
 import board
 import chess
@@ -14,6 +15,7 @@ import asyncio
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+from PyQt5.QtTest import *
 from PyQt5.QtWidgets import *
 
 openings = {
@@ -397,10 +399,30 @@ class TakebackButton(QPushButton):
 		self.setToolTip("Takeback")
 	
 	def mouseReleaseEvent(self, event) -> None:
-		self.parent().game.takeback()
+		if not self.parent().game.raw_move_list:
+			return
+		if self.parent().computer_moving:
+			if self.parent().engine is not None:
+				self.parent().engine.stdin.write("stop\n")
+			else:
+				self.parent().get_computer_move_thread.quit()
+				self.parent().get_computer_move_runner.deleteLater()
+				self.parent().get_computer_move_thread.deleteLater()
+			self.parent().computer_moving = False
+		else:
+			self.parent().game.takeback()
 		self.parent().game.takeback()
 		self.parent().board.updatePieces()
 		asyncio.get_event_loop().run_until_complete(self.parent().updateTakebackOpening())
+		if self.parent().clocks[0].running:
+			self.parent().clocks[0].pause()
+			self.parent().clocks[1].start()
+		else:
+			self.parent().clocks[0].start()
+			self.parent().clocks[1].pause()
+		self.parent().moves_layout.removeWidget(self.parent().move_buttons[-1])
+		self.parent().move_buttons[-1].deleteLater()
+		self.parent().moves_count -= 0.5
 		super(TakebackButton, self).mouseReleaseEvent(event)
 	
 
@@ -439,6 +461,9 @@ class Computer(QWidget):
 		self.sidebar = QGroupBox(self)
 		self.sidebar.setStyleSheet("border: none;")
 		self.sidebar_layout = QGridLayout()
+		self.uci_process = QLabel("Connecting to engine...", self)
+		self.uci_process.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Bold.ttf"))[0], 17, italic=True))
+		self.uci_process.hide()
 		self.opening = QLabel("Starting Position", self)
 		self.opening.setWordWrap(True)
 		self.opening.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Bold.ttf"))[0], 17, italic=True))
@@ -455,6 +480,7 @@ class Computer(QWidget):
 		self.moves_wrapper.setWidget(self.moves)
 		self.takeback = TakebackButton(self)
 		self.game_over_label = self.game_result_label = None
+		self.sidebar_layout.addWidget(self.uci_process)
 		self.sidebar_layout.addWidget(self.moves_wrapper)
 		self.sidebar.setLayout(self.sidebar_layout)
 		self.back_button = BackButton(self)
@@ -466,6 +492,8 @@ class Computer(QWidget):
 		self.setFocusPolicy(Qt.NoFocus)
 		self.get_computer_move_thread = self.get_computer_move_runner = None
 		self.computer_moving = False
+		self.uci_identification = QLabel(self)
+		self.engine = self.engine_properties = None
 
 	def setTimeControl(self, time_control):
 		if time_control == "unlimited":
@@ -476,25 +504,54 @@ class Computer(QWidget):
 		self.clocks.append(Clock(self, self.time_control, self.timeout))
 		self.clocks[1].move(QPoint(self.width() - self.clocks[1].width(), 20))
 
-	def setupBoard(self, variant, position_type, position):
-		if variant == "Standard":
-			if position_type == "FEN":
-				self.game = chess.Game(fen=position)
-			else:
-				self.game = chess.Game()
-				self.game.loadPGN(position)
-		elif variant == "Antichess":
-			if position_type == "FEN":
-				self.game = chess.Antichess(fen=position)
-			else:
-				self.game = chess.Antichess()
-				self.game.loadPGN(position)
-		elif variant == "Three Check":
-			if position_type == "FEN":
-				self.game = chess.ThreeCheck(fen=position)
-			else:
-				self.game = chess.ThreeCheck()
-				self.game.loadPGN(position)
+	async def getEngineResponse(self):
+		self.engine.stdin.write("isready\n")
+		response = ""
+		while True:
+			text = self.engine.stdout.readline().strip()
+			if text == "readyok":
+				break
+			elif text:
+				response += text + "\n"
+		return response
+	
+	async def getEngineMove(self):
+		response = ""
+		while True:
+			text = self.engine.stdout.readline().strip()
+			response += text + "\n"
+			if text.startswith("bestmove "):
+				break
+		print(response)
+		return response
+
+	def setupUCI(self, path):
+		self.uci_process.show()
+		self.engine = subprocess.Popen(path, universal_newlines=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, bufsize=1)
+		print(asyncio.get_event_loop().run_until_complete(self.getEngineResponse()))
+		self.uci_process.setText("Connected to engine, preparing communication with engine...")
+		self.engine.stdin.write("uci\n")
+		self.engine_properties = asyncio.get_event_loop().run_until_complete(self.getEngineResponse())
+		found_name = found_authors = False
+		for i in self.engine_properties.splitlines():
+			if i == "":
+				continue
+			if i.startswith("id name"):
+				found_name = True
+				self.uci_identification.setText("Playing with " + i[8:])
+			elif i.startswith("id author"):
+				found_authors = True
+				self.uci_identification.setText(self.uci_identification.text() + " by " + i[10:])
+		if not (found_name and found_authors):
+			self.uci_identification.setText("")
+		self.uci_process.setText("Engine initialization complete")
+
+	def setupBoard(self, position_type, position):
+		if position_type == "FEN":
+			self.game = chess.Game(fen=position)
+		else:
+			self.game = chess.Game()
+			self.game.loadPGN(position)
 		self.board = board.Board(self, self.game)
 		self.sidebar.raise_()
 
@@ -546,6 +603,8 @@ class Computer(QWidget):
 		self.parent().parent().setWindowTitle("2-Player Chess Game: " + ("Black", "White")[self.clocks.index(clock)] + " wins")
 
 	def addMove(self, move) -> None:
+		if not self.uci_process.isHidden():
+			self.uci_process.hide()
 		self.move_buttons.append(MoveButton(self.moves, move))
 		self.moves_layout.addWidget(self.move_buttons[-1], self.getGridIndex()[0], self.getGridIndex()[1])
 		self.move_buttons[-1].show()
@@ -600,6 +659,23 @@ class Computer(QWidget):
 				self.clocks[1].pause()
 				self.clocks[0].start()
 		if self.game.turn != self.player_color:
+			if self.engine is not None:
+				if "+" in self.time_control:
+					self.computer_moving = True
+					self.engine.stdin.write("ucinewgame\nposition fen " + self.game.FEN() + "\n")
+					self.engine.stdin.write("go wtime " + str((self.clocks[0].clock_minutes * 60000 + (self.clocks[0].clock_seconds * 1000))) + " btime " + str((self.clocks[1].clock_minutes * 60000 + (self.clocks[1].clock_seconds * 1000))) + " winc " + self.time_control.split("+")[1] + " binc " + self.time_control.split("+")[1] + "\n")
+					self.get_computer_move_thread = QThread()
+					self.get_computer_move_runner = Thread(lambda: chess.functions.toSAN(asyncio.new_event_loop().run_until_complete(self.getEngineMove()).splitlines()[-1].split()[1], self.game))
+					self.get_computer_move_runner.moveToThread(self.get_computer_move_thread)
+					self.get_computer_move_thread.started.connect(self.get_computer_move_runner.run)
+					self.get_computer_move_runner.output.connect(self.makeComputerMove)
+					self.get_computer_move_runner.finished.connect(self.get_computer_move_thread.quit)
+					self.get_computer_move_runner.finished.connect(self.get_computer_move_runner.deleteLater)
+					self.get_computer_move_thread.finished.connect(self.get_computer_move_thread.deleteLater)
+					self.get_computer_move_thread.start()
+					return
+				else:
+					return
 			if self.computer_level == 0:
 				computer_move = random.choice(self.game.legal_moves(True))
 				self.board.pieceAt(computer_move.old_position).movePiece(computer_move)
@@ -616,10 +692,16 @@ class Computer(QWidget):
 				self.get_computer_move_thread.start()
 
 	def makeComputerMove(self, move):
-		for i in self.game.legal_moves(True):
-			if i.name == move:
-				self.board.pieceAt(i.old_position).movePiece(i)
-				break
+		if "+" not in move and "#" not in move:
+			for i in self.game.legal_moves(True):
+				if i.name.replace("+", "").replace("#", "") == move:
+					self.board.pieceAt(i.old_position).movePiece(i)
+					break
+		else:
+			for i in self.game.legal_moves(True):
+				if i.name == move:
+					self.board.pieceAt(i.old_position).movePiece(i)
+					break
 		self.computer_moving = False
 	
 	def getComputerMove(self):
@@ -649,6 +731,8 @@ class Computer(QWidget):
 				return
 
 	async def updateTakebackOpening(self):
+		if len(self.game.raw_move_list) >= 20:
+			return
 		game = chess.Game()
 		opening = "Starting Position"
 		for x in self.game.raw_move_list:
@@ -673,6 +757,7 @@ class Computer(QWidget):
 		self.animation.setStartValue(QPoint(event.size().width(), 0))
 		self.opening.move(QPoint(event.size().width() // 4 - self.opening.width(), event.size().height() // 2))
 		self.takeback.move(QPoint(event.size().width() // 4 - self.opening.width(), event.size().height() // 2 + self.opening.height()))
+		self.uci_identification.move(QPoint(event.size().width() // 4 - self.opening.width(), event.size().height() // 2 - self.opening.height()))
 		if self.game_over_label is not None and self.game_result_label is not None:
 			self.game_over_label.move(QPoint(event.size().width() // 4 - self.opening.width(), event.size().height() // 2 + self.opening.height()))
 			self.game_result_label.move(QPoint(event.size().width() // 4 - self.opening.width(), event.size().height() // 2 + self.opening.height() + self.game_over_label.height()))
