@@ -722,15 +722,18 @@ class MainPage(QWidget):
 				time_control_move.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
 
 		def styleVariantButtons(text):
-			nonlocal variant_standard, variant_antichess, variant_threecheck, variant_selected
+			nonlocal variant_standard, variant_antichess, variant_threecheck, variant_atomic, variant_selected
 			variant_standard.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
 			variant_antichess.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
 			variant_threecheck.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
+			variant_atomic.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
 			variant_selected = text
 			if text == "Standard":
 				variant_standard.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
 			elif text == "Antichess":
 				variant_antichess.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
+			elif text == "Atomic":
+				variant_atomic.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
 			else:
 				variant_threecheck.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
 		
@@ -886,9 +889,11 @@ class MainPage(QWidget):
 		variant_standard.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
 		variant_antichess = OptionsButton("Antichess", variant_group, styleVariantButtons)
 		variant_threecheck = OptionsButton("Three Check", variant_group, styleVariantButtons)
+		variant_atomic = OptionsButton("Atomic", variant_group, styleVariantButtons)
 		variant_group_layout.addWidget(variant_standard, 1, 1)
 		variant_group_layout.addWidget(variant_antichess, 1, 2)
 		variant_group_layout.addWidget(variant_threecheck, 2, 1)
+		variant_group_layout.addWidget(variant_atomic, 2, 2)
 		variant_group.setLayout(variant_group_layout)
 		variant_group.hide()
 		# Position section

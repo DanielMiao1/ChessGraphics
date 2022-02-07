@@ -19,8 +19,10 @@ class MoveBullet(QLabel):
 		self.piece = piece
 		self.position = position
 		self.setCursor(Qt.PointingHandCursor)
-		self.setPixmap(QPixmap("images/bullet.png"))
-		self.move((coordinateToIndex(self.position)[1] + 1) * 100, (coordinateToIndex(self.position)[0] + 1) * 100)
+		self.setPixmap(QPixmap("images/bullet.png").scaled(self.parent().parent().width() // 25, self.parent().parent().width() // 25))
+		self.resize(QSize(self.parent().parent().width() // 25, self.parent().parent().width() // 25))
+		self.move((coordinateToIndex(self.position)[1] + 1) * (self.parent().parent().width() // 25), (coordinateToIndex(self.position)[0] + 1) * (self.parent().parent().width() // 25))
+		self.move_ = self.move
 		self.move = move
 
 	def enterEvent(self, event: QHoverEvent) -> None:
@@ -35,6 +37,11 @@ class MoveBullet(QLabel):
 		if event.button() == Qt.LeftButton:
 			self.piece.movePiece(self.move)
 		super(MoveBullet, self).mousePressEvent(event)
+	
+	def resizeEvent(self, event):
+		self.setPixmap(QPixmap("images/bullet.png").scaled(event.size().width(), event.size().width()))
+		self.move_((coordinateToIndex(self.position)[1] + 1) * event.size().width(), (coordinateToIndex(self.position)[0] + 1) * event.size().width())
+		super(MoveBullet, self).resizeEvent(event)
 
 
 class Piece(QLabel):
@@ -44,11 +51,12 @@ class Piece(QLabel):
 		self.position = position
 		self.move_animation = None
 		self.moves_loaded = True
-		self.moves = [MoveBullet(self.parent(), self, i, i.new_position) for i in self.parent().game.pieceAt(self.position).moves(show_data=True, evaluate_checks=False)]
+		self.moves = [MoveBullet(self.parent(), self, i, i.new_position) for i in self.parent().game.pieceAt(self.position).moves(show_data=True, evaluate_checks=self.parent().parent().variant == "Three Check")]
 		self.showing_moves = False
 		self.dragging = False
 		self.setCursor(Qt.PointingHandCursor)
-		self.setPixmap(QPixmap("images/standard/" + color + "_" + piece))
+		self.setPixmap(QPixmap("images/standard/" + color + "_" + piece).scaled(self.parent().parent().width() // 25, self.parent().parent().width() // 25))
+		self.resize(QSize(self.parent().parent().width() // 25, self.parent().parent().width() // 25))
 		self.setFocusPolicy(Qt.ClickFocus)
 
 	def showMoves(self, change_background=True):
@@ -66,7 +74,7 @@ class Piece(QLabel):
 					y.hide()
 		if self.parent().game.turn == self.color:
 			if not self.moves_loaded:
-				self.moves = [MoveBullet(self.parent(), self, i, i.new_position) for i in self.parent().game.pieceAt(self.position).moves(show_data=True, evaluate_checks=False)]
+				self.moves = [MoveBullet(self.parent(), self, i, i.new_position) for i in self.parent().game.pieceAt(self.position).moves(show_data=True, evaluate_checks=self.parent().parent().variant == "Three Check")]
 				self.moves_loaded = True
 			for i in self.moves:
 				i.show()
@@ -145,11 +153,11 @@ class Piece(QLabel):
 		if event.button() == Qt.LeftButton:
 			if self.showing_moves:
 				self.setStyleSheet("background-color: transparent;")
-				if not (self.parent().parent().type_ == "computer" and self.color != self.parent().parent().player_color) and not self.parent().parent().computer_moving:
+				if not (self.parent().parent().type_ == "computer" and self.color != self.parent().parent().player_color) and not (self.parent().parent().type_ == "computer" and self.parent().parent().computer_moving):
 					for i in self.moves:
 						i.hide()
 			else:
-				if not (self.parent().parent().type_ == "computer" and self.color != self.parent().parent().player_color) and not self.parent().parent().computer_moving:
+				if not (self.parent().parent().type_ == "computer" and self.color != self.parent().parent().player_color) and not (self.parent().parent().type_ == "computer" and self.parent().parent().computer_moving):
 					self.showMoves()
 			self.showing_moves = not self.showing_moves
 
@@ -167,30 +175,40 @@ class Piece(QLabel):
 		self.position = move.new_position
 		if animate:
 			self.move_animation = QPropertyAnimation(self, b"pos")
-			self.move_animation.setEndValue(QPoint((coordinateToIndex(self.position)[1] + 1) * 100, (coordinateToIndex(self.position)[0] + 1) * 100))
+			self.move_animation.setEndValue(QPoint((coordinateToIndex(self.position)[1] + 1) * (self.parent().parent().width() // 25), (coordinateToIndex(self.position)[0] + 1) * (self.parent().parent().width() // 25)))
 			self.move_animation.setDuration({"Default": 100, "Slow": 225, "Fast": 50}[self.parent().parent().settings_values["piece-animation-speed"]])
 			self.move_animation.start()
 		else:
-			self.move(QPoint((coordinateToIndex(self.position)[1] + 1) * 100, (coordinateToIndex(self.position)[0] + 1) * 100))
+			self.move(QPoint((coordinateToIndex(self.position)[1] + 1) * (self.parent().parent().width() // 25), (coordinateToIndex(self.position)[0] + 1) * (self.parent().parent().width() // 25)))
 		if move.castle is not None:
 			if animate:
 				self.parent().castle_rook_animation = QPropertyAnimation(self.parent().pieceAt(move.castle_rook.position), b"pos")
 			if move.castle == "kingside":
 				if animate:
-					self.parent().castle_rook_animation.setEndValue(QPoint(600, (coordinateToIndex(move.castle_rook.position)[0] + 1) * 100))
+					self.parent().castle_rook_animation.setEndValue(QPoint(600, (coordinateToIndex(move.castle_rook.position)[0] + 1) * (self.parent().parent().width() // 25)))
 				else:
-					self.parent().pieceAt(move.castle_rook.position).move(QPoint(600, (coordinateToIndex(move.castle_rook.position)[0] + 1) * 100))
+					self.parent().pieceAt(move.castle_rook.position).move(QPoint(600, (coordinateToIndex(move.castle_rook.position)[0] + 1) * (self.parent().parent().width() // 25)))
 				self.parent().pieceAt(move.castle_rook.position).position = "f" + move.old_position[1]
 			else:
 				if animate:
-					self.parent().castle_rook_animation.setEndValue(QPoint(400, (coordinateToIndex(move.castle_rook.position)[0] + 1) * 100))
+					self.parent().castle_rook_animation.setEndValue(QPoint(400, (coordinateToIndex(move.castle_rook.position)[0] + 1) * (self.parent().parent().width() // 25)))
 				else:
-					self.parent().pieceAt(move.castle_rook.position).move(QPoint(400, (coordinateToIndex(move.castle_rook.position)[0] + 1) * 100))
+					self.parent().pieceAt(move.castle_rook.position).move(QPoint(400, (coordinateToIndex(move.castle_rook.position)[0] + 1) * (self.parent().parent().width() // 25)))
 				self.parent().pieceAt(move.castle_rook.position).position = "d" + move.old_position[1]
 			if animate:
 				self.parent().castle_rook_animation.setDuration(100)
 				self.parent().castle_rook_animation.start()
 		self.parent().game.move(move)
+		if self.parent().parent().variant == "Atomic":
+			if move.is_capture:
+				squares = self.parent().parent().game.generateExplosionRadius(move.new_position)
+				if squares:
+					for i in self.parent().pieces[:]:
+						if i.piece == "pawn":
+							continue
+						if i.position in squares:
+							self.parent().pieces.remove(i)
+							i.deleteLater()
 		self.parent().white_king.setStyleSheet("background-color: transparent;")
 		self.parent().black_king.setStyleSheet("background-color: transparent;")
 		if self.parent().game.in_check:
@@ -203,12 +221,16 @@ class Piece(QLabel):
 		self.moves = []
 		self.parent().parent().parent().parent().setWindowTitle("2-Player Chess Game: " + self.parent().game.turn.title() + " to move")
 		self.parent().parent().addMove(move.name)
+	
+	def resizeEvent(self, event):
+		self.setPixmap(QPixmap("images/standard/" + self.color + "_" + self.piece).scaled(event.size().width(), event.size().width()))
+		super(Piece, self).resizeEvent(event)
 
 
 class Square(QPushButton):
 	def __init__(self, parent, color, position) -> None:
 		super(Square, self).__init__(parent=parent)
-		self.setFixedSize(QSize(100, 100))
+		self.resize(QSize((self.parent().parent().width() // 25), (self.parent().parent().width() // 25)))
 		self.setStyleSheet(f"background-color: {color}; border: none;")
 		self.position = position
 		self.highlight_square = QPushButton(self.parent())
@@ -259,10 +281,10 @@ class Board(QWidget):
 		for x in self.game.squares:
 			for y in x:
 				self.squares.append(Square(self, parent.settings_values["light-square-color"] if y.color == "white" else parent.settings_values["dark-square-color"], y.position))
-				self.squares[-1].move((coordinateToIndex(y.position)[1] + 1) * 100, (coordinateToIndex(y.position)[0] + 1) * 100)
+				self.squares[-1].move((coordinateToIndex(y.position)[1] + 1) * (self.parent().width() // 25), (coordinateToIndex(y.position)[0] + 1) * (self.parent().width() // 25))
 		for i in self.game.pieces:
 			self.pieces.append(Piece(self, i.position, i.color, i.piece_type))
-			self.pieces[-1].move((coordinateToIndex(i.position)[1] + 1) * 100, (coordinateToIndex(i.position)[0] + 1) * 100)
+			self.pieces[-1].move((coordinateToIndex(i.position)[1] + 1) * (self.parent().width() // 25), (coordinateToIndex(i.position)[0] + 1) * (self.parent().width() // 25))
 			if i.piece_type == "king":
 				if i.color == "white":
 					self.white_king = self.pieces[-1]
@@ -276,7 +298,7 @@ class Board(QWidget):
 		self.pieces = []
 		for i in self.game.pieces:
 			self.pieces.append(Piece(self, i.position, i.color, i.piece_type))
-			self.pieces[-1].move((coordinateToIndex(i.position)[1] + 1) * 100, (coordinateToIndex(i.position)[0] + 1) * 100)
+			self.pieces[-1].move((coordinateToIndex(i.position)[1] + 1) * (self.parent().width() // 25), (coordinateToIndex(i.position)[0] + 1) * (self.parent().width() // 25))
 			self.pieces[-1].show()
 			if i.piece_type == "king":
 				if i.color == "white":
@@ -398,3 +420,15 @@ class Board(QWidget):
 			if i.position == position:
 				return i
 		return False
+
+	def resizeComponents(self):
+		self.resize(QSize(self.parent().width() // 25 * 9, self.parent().width() // 25 * 9))
+		for i in self.squares:
+			i.resize(QSize(self.parent().width() // 25, self.parent().width() // 25))
+			i.move((coordinateToIndex(i.position)[1] + 1) * (self.parent().width() // 25), (coordinateToIndex(i.position)[0] + 1) * (self.parent().width() // 25))
+		
+		for x in self.pieces:
+			x.resize(QSize(self.parent().width() // 25, self.parent().width() // 25))
+			x.move((coordinateToIndex(x.position)[1] + 1) * (self.parent().width() // 25), (coordinateToIndex(x.position)[0] + 1) * (self.parent().width() // 25))
+			for y in x.moves:
+				y.resize(QSize(self.parent().width() // 25, self.parent().width() // 25))

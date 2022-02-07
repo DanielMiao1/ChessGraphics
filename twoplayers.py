@@ -261,7 +261,7 @@ class TwoPlayers(QWidget):
 		self.animation.setEndValue(QPoint())
 		self.animation.setDuration(250)
 		self.moves_count = 1
-		self.board = None
+		self.board = self.variant = None
 		self.sidebar = QGroupBox(self)
 		self.sidebar.setStyleSheet("border: none;")
 		self.sidebar_layout = QGridLayout()
@@ -301,6 +301,7 @@ class TwoPlayers(QWidget):
 		self.clocks[1].move(QPoint(self.width() - self.clocks[1].width(), 20))
 
 	def setupBoard(self, variant, position_type, position):
+		self.variant = variant
 		if variant == "Standard":
 			if position_type == "FEN":
 				self.game = chess.Game(fen=position)
@@ -318,6 +319,12 @@ class TwoPlayers(QWidget):
 				self.game = chess.ThreeCheck(fen=position)
 			else:
 				self.game = chess.ThreeCheck()
+				self.game.loadPGN(position)
+		else:
+			if position_type == "FEN":
+				self.game = chess.Atomic(fen=position)
+			else:
+				self.game = chess.Atomic()
 				self.game.loadPGN(position)
 		self.board = board.Board(self, self.game)
 		self.sidebar.raise_()
@@ -367,7 +374,21 @@ class TwoPlayers(QWidget):
 		else:
 			self.clocks[1].pause()
 		self.game_over = True
+		self.takeback.deleteLater()
 		self.parent().parent().setWindowTitle("2-Player Chess Game: " + ("Black", "White")[self.clocks.index(clock)] + " wins")
+		self.game_over_label = QLabel("Game Over", self)
+		self.game_over_label.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Light.ttf"))[0], 22))
+		self.game_over_label.setAlignment(Qt.AlignCenter)
+		self.game_over_label.setFixedWidth(self.opening.width())
+		self.game_over_label.show()
+		self.game_result_label = QLabel(("Black", "White")[self.clocks.index(clock)] + " wins by clock flag", self)
+		self.game_result_label.setFixedHeight(25)
+		self.game_result_label.show()
+		self.game_over_label.move(QPoint(self.width() // 4 - self.opening.width(), self.height() // 2 + self.opening.height()))
+		self.game_result_label.move(QPoint(self.width() // 4 - self.opening.width(), self.height() // 2 + self.opening.height() + self.game_over_label.height()))
+		self.game_result_label.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Light.ttf"))[0], 20))
+		self.game_result_label.setAlignment(Qt.AlignCenter)
+		self.game_result_label.setFixedWidth(self.opening.width())
 
 	def addMove(self, move) -> None:
 		self.move_buttons.append(MoveButton(self.moves, move))
@@ -379,20 +400,26 @@ class TwoPlayers(QWidget):
 		if self.game.game_over:
 			self.takeback.deleteLater()
 			self.game_over_label = QLabel("Game Over", self)
-			self.game_over_label.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Light.ttf"))[0], 15))
+			self.game_over_label.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Light.ttf"))[0], 22))
+			self.game_over_label.setAlignment(Qt.AlignCenter)
+			self.game_over_label.setFixedWidth(self.opening.width())
 			self.game_over_label.show()
 			if self.game.drawn:
 				self.parent().parent().setWindowTitle("2-Player Chess Game: Draw")
-				self.game_result_label = QLabel("Draw | 1/2-1/2", self)
+				if self.game.is_stalemate:
+					self.game_result_label = QLabel("Stalemate 1/2-1/2", self)
+				else:
+					self.game_result_label = QLabel("Draw 1/2-1/2", self)
 				self.game_result_label.show()
 			else:
 				self.parent().parent().setWindowTitle("2-Player Chess Game: " + {"white": "Black", "black": "White"}[self.game.turn] + " wins")
-				self.game_result_label = QLabel({"white": "Black", "black": "White"}[self.game.turn] + " wins | " + self.game.tags["Result"], self)
-				self.game_result_label.resize(QSize(150, 15))
+				self.game_result_label = QLabel({"white": "Black", "black": "White"}[self.game.turn] + " wins " + self.game.tags["Result"], self)
 				self.game_result_label.show()
 			self.game_over_label.move(QPoint(self.width() // 4 - self.opening.width(), self.height() // 2 + self.opening.height()))
 			self.game_result_label.move(QPoint(self.width() // 4 - self.opening.width(), self.height() // 2 + self.opening.height() + self.game_over_label.height()))
-			self.game_result_label.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Light.ttf"))[0], 15))
+			self.game_result_label.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-Light.ttf"))[0], 20))
+			self.game_result_label.setAlignment(Qt.AlignCenter)
+			self.game_result_label.setFixedWidth(self.opening.width())
 			if self.clocks:
 				if self.clocks[0].running:
 					self.clocks[0].pause()
@@ -459,6 +486,8 @@ class TwoPlayers(QWidget):
 		if self.game_over_label is not None and self.game_result_label is not None:
 			self.game_over_label.move(QPoint(event.size().width() // 4 - self.opening.width(), event.size().height() // 2 + self.opening.height()))
 			self.game_result_label.move(QPoint(event.size().width() // 4 - self.opening.width(), event.size().height() // 2 + self.opening.height() + self.game_over_label.height()))
+			self.game_over_label.setFixedWidth(self.opening.width())
+			self.game_result_label.setFixedWidth(self.opening.width())
 		if self.clocks:
 			self.clocks[0].move(QPoint(event.size().width() - self.clocks[0].width() - 10, event.size().height() - self.clocks[0].height() - 20))
 			self.clocks[1].move(QPoint(event.size().width() - self.clocks[0].width() - 10, 20))
@@ -466,8 +495,6 @@ class TwoPlayers(QWidget):
 			min_size = event.size().height()
 		else:
 			min_size = event.size().width()
-		if self.board is not None:
-			self.board.move(QPoint((event.size().width() - (self.board.squares[0].width() * 10)) // 2, (event.size().height() - (self.board.squares[0].width() * 10)) // 2))
 		self.back_button.resize(QSize(min_size // 20, min_size // 20))
 		self.back_button.move(QPoint(0, 0))
 		self.abort_button.resize(QSize(min_size // 20, min_size // 20))
@@ -476,4 +503,7 @@ class TwoPlayers(QWidget):
 		self.new_button.move(QPoint(min_size // 20 * 2, 0))
 		self.takeback.resize(QSize(min_size // 40, min_size // 40))
 		super(TwoPlayers, self).resizeEvent(event)
+		if self.board is not None:
+			self.board.resizeComponents()
+			self.board.move(QPoint((self.width() - (self.board.squares[0].width() * 10)) // 2, (self.height() - (self.board.squares[0].width() * 10)) // 2))
 	
