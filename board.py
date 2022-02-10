@@ -12,9 +12,58 @@ from PyQt5.QtWidgets import *
 from chess.functions import *
 
 
+class Promotion(QLabel):
+	def __init__(self, parent, piece_symbol, piece, color):
+		super(Promotion, self).__init__(parent)
+		self.setCursor(Qt.PointingHandCursor)
+		self.piece_symbol, self.piece, self.color = piece_symbol, piece, color
+		self.hide()
+	
+	def mouseReleaseEvent(self, event):
+		if self.parent().piece is not None:
+			self.parent().move_name.name = self.parent().move_name.name[:-1] + self.piece_symbol
+			self.parent().move_name.name = self.parent().move_name.promotion = self.piece_symbol
+			self.parent().piece.movePiece(self.parent().move_name, promotion=True)
+		super(Promotion, self).mouseReleaseEvent(event)
+	
+	def resizeEvent(self, event):
+		self.setPixmap(QPixmap("images/standard/" + self.color + "_" + self.piece + ".png").scaled(event.size().width(), event.size().width()))
+		super(Promotion, self).resizeEvent(event)
+	
+
+class Promotions(QPushButton):
+	def __init__(self, parent, color):
+		super(Promotions, self).__init__(parent)
+		self.piece = self.move_name = None
+		self.promotions = []
+		self.color = color
+		for x, y in self.parent().game.properties["promotions"].items():
+			self.promotions.append(Promotion(self, x, y, color))
+		self.setStyleSheet("border: none; background: rgba(0, 0, 0, 0.2);")
+		self.hide()
+	
+	def showEvent(self, event):
+		for i in self.promotions:
+			i.show()
+		super(Promotions, self).showEvent(event)
+	
+	def hideEvent(self, event):
+		for i in self.promotions:
+			i.hide()
+		super(Promotions, self).hideEvent(event)
+	
+	def updatePosition(self, position):
+		self.move(position)
+		self.resize(QSize((self.parent().parent().width() // 25), (self.parent().parent().width() // 25) * len(self.promotions)))
+		for x, y in enumerate(self.promotions):
+			y.move(QPoint(0, 0 + (self.parent().parent().width() // 25 * x)))
+			y.resize(QSize(self.parent().parent().width() // 25, self.parent().parent().width() // 25))
+		self.raise_()
+
+
 class MoveBullet(QLabel):
 	def __init__(self, parent, piece, move, position) -> None:
-		super(MoveBullet, self).__init__(parent=parent)
+		super(MoveBullet, self).__init__(parent)
 		self.hide()
 		self.piece = piece
 		self.position = position
@@ -161,13 +210,33 @@ class Piece(QLabel):
 					self.showMoves()
 			self.showing_moves = not self.showing_moves
 
-	def movePiece(self, move, animate=True) -> None:
-		# TODO: Pawn promotion dialog
+	def movePiece(self, move, animate=True, promotion=False) -> None:
 		if self.parent() is None:
 			return
 		if self.parent().parent().game_over:
 			return
 		self.setStyleSheet("background-color: transparent;")
+		if self.piece == "pawn":
+			if self.color == "white":
+				if move.new_position[1] == "8":
+					if promotion:
+						self.parent().promotion_dialog_white.hide()
+					else:
+						self.parent().promotion_dialog_white.move_name = move
+						self.parent().promotion_dialog_white.piece = self
+						self.parent().promotion_dialog_white.updatePosition(QPoint((coordinateToIndex(move.new_position)[1] + 1) * (self.parent().parent().width() // 25), (coordinateToIndex(move.new_position)[0] + 1) * (self.parent().parent().width() // 25)))
+						self.parent().promotion_dialog_white.show()
+						return
+			else:
+				if move.new_position[1] == "1":
+					if promotion:
+						self.parent().promotion_dialog_black.hide()
+					else:
+						self.parent().promotion_dialog_black.move_name = move
+						self.parent().promotion_dialog_black.piece = self
+						self.parent().promotion_dialog_black.updatePosition(QPoint((coordinateToIndex(move.new_position)[1] + 1) * (self.parent().parent().width() // 25), (coordinateToIndex(move.new_position)[0] + 1) * (self.parent().parent().width() // 25)))
+						self.parent().promotion_dialog_black.show()
+						return
 		for i in self.parent().pieces:
 			i.moves_loaded = False
 			if i.position == move.new_position:
@@ -221,6 +290,9 @@ class Piece(QLabel):
 		self.moves = []
 		self.parent().parent().parent().parent().setWindowTitle("2-Player Chess Game: " + self.parent().game.turn.title() + " to move")
 		self.parent().parent().addMove(move.name)
+		if promotion:
+			self.piece = move.piece.piece_type
+			self.setPixmap(QPixmap("images/standard/" + self.color + "_" + self.piece).scaled(self.width(), self.width()))
 	
 	def resizeEvent(self, event):
 		self.setPixmap(QPixmap("images/standard/" + self.color + "_" + self.piece).scaled(event.size().width(), event.size().width()))
@@ -278,6 +350,7 @@ class Board(QWidget):
 		self.squares, self.pieces = [], []
 		self.drag_square = None
 		self.castle_rook_animation = None
+		self.promotion_dialog_white, self.promotion_dialog_black = Promotions(self, "white"), Promotions(self, "black")
 		for x in self.game.squares:
 			for y in x:
 				self.squares.append(Square(self, parent.settings_values["light-square-color"] if y.color == "white" else parent.settings_values["dark-square-color"], y.position))
