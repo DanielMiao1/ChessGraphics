@@ -211,7 +211,7 @@ class TemporaryMoveButton(MoveButton):
 		super(TemporaryMoveButton, self).__init__(parent, text=text)
 		self.setStyleSheet("background-color: rgba(0, 0, 0, 0.05); color: black;")
 		self.setFocusPolicy(Qt.ClickFocus)
-		
+
 	def enterEvent(self, event: QHoverEvent) -> None:
 		super(TemporaryMoveButton, self).enterEvent(event)
 		self.setStyleSheet("background-color: rgba(0, 0, 0, 0.1); color: black;")
@@ -231,19 +231,19 @@ class AbortButton(QPushButton):
 		self.status_tip.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
-	
+
 	def focusInEvent(self, event) -> None:
 		if event.reason() <= 2:
 			self.status_tip.show()
 			self.setStyleSheet("color: black; background-color: yellow; border: none;")
 		super(AbortButton, self).focusInEvent(event)
-	
+
 	def focusOutEvent(self, event) -> None:
 		if event.reason() <= 2:
 			self.status_tip.hide()
 			self.setStyleSheet("color: black; background-color: white; border: none;")
 		super(AbortButton, self).focusOutEvent(event)
-	
+
 	def resizeEvent(self, event) -> None:
 		self.status_tip.setFixedWidth(event.size().width())
 		self.status_tip.move(QPoint(self.pos().x(), self.pos().y() + event.size().width()))
@@ -270,13 +270,13 @@ class BackButton(QPushButton):
 		self.status_tip.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
-	
+
 	def focusInEvent(self, event) -> None:
 		if event.reason() <= 2:
 			self.status_tip.show()
 			self.setStyleSheet("color: black; background-color: limegreen; border: none;")
 		super(BackButton, self).focusInEvent(event)
-	
+
 	def focusOutEvent(self, event) -> None:
 		if event.reason() <= 2:
 			self.status_tip.hide()
@@ -309,13 +309,13 @@ class NewButton(QPushButton):
 		self.status_tip.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
-	
+
 	def focusInEvent(self, event) -> None:
 		if event.reason() <= 2:
 			self.status_tip.show()
 			self.setStyleSheet("color: black; background-color: green; border: none;")
 		super(NewButton, self).focusInEvent(event)
-	
+
 	def focusOutEvent(self, event) -> None:
 		if event.reason() <= 2:
 			self.status_tip.hide()
@@ -397,7 +397,7 @@ class TakebackButton(QPushButton):
 		self.setStyleSheet("TakebackButton { background-color: transparent; border: none; } TakebackButton:hover { background-color: #AAA; border: none; }")
 		self.setCursor(Qt.PointingHandCursor)
 		self.setToolTip("Takeback")
-	
+
 	def mouseReleaseEvent(self, event) -> None:
 		if not self.parent().game.raw_move_list:
 			return
@@ -422,9 +422,10 @@ class TakebackButton(QPushButton):
 			self.parent().clocks[1].pause()
 		self.parent().moves_layout.removeWidget(self.parent().move_buttons[-1])
 		self.parent().move_buttons[-1].deleteLater()
+		del self.parent().move_buttons[-1]
 		self.parent().moves_count -= 0.5
 		super(TakebackButton, self).mouseReleaseEvent(event)
-	
+
 
 class Thread(QObject):
 	finished = pyqtSignal()
@@ -433,7 +434,7 @@ class Thread(QObject):
 	def __init__(self, function):
 		super(Thread, self).__init__()
 		self.function = function
-	
+
 	def run(self):
 		result = self.function()
 		self.finished.emit()
@@ -515,7 +516,7 @@ class Computer(QWidget):
 			elif text:
 				response += text + "\n"
 		return response
-	
+
 	async def getEngineMove(self):
 		response = ""
 		while True:
@@ -725,7 +726,7 @@ class Computer(QWidget):
 					self.board.pieceAt(i.old_position).movePiece(i)
 					break
 		self.computer_moving = False
-	
+
 	def getComputerMove(self):
 		if self.game.gamePhase() == "opening":
 			if len(self.game.raw_move_list) <= 4:
@@ -744,7 +745,7 @@ class Computer(QWidget):
 			if moves:
 				return random.choice(moves)
 		return self.game.minimax_evaluation(self.computer_level)
-	
+
 	async def updateOpening(self):
 		position = self.game.FEN().split()[0]
 		for i in chess.openings.openings:
@@ -765,7 +766,7 @@ class Computer(QWidget):
 					opening = y["eco"] + " " + y["name"]
 					break
 		self.opening.setText(opening)
-	
+
 	def updateSettingsValues(self):
 		self.settings_values = json.load(open("settings.json"))
 
@@ -803,4 +804,3 @@ class Computer(QWidget):
 		if self.board is not None:
 			self.board.resizeComponents()
 			self.board.move(QPoint((self.width() - (self.board.squares[0].width() * 10)) // 2, (self.height() - (self.board.squares[0].width() * 10)) // 2))
-	

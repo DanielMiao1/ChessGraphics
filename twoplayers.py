@@ -245,6 +245,7 @@ class TakebackButton(QPushButton):
 			self.parent().clocks[1].pause()
 		self.parent().moves_layout.removeWidget(self.parent().move_buttons[-1])
 		self.parent().move_buttons[-1].deleteLater()
+		del self.parent().move_buttons[-1]
 		self.parent().moves_count -= 0.5
 		super(TakebackButton, self).mouseReleaseEvent(event)
 
