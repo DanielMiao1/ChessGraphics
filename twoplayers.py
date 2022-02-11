@@ -44,7 +44,7 @@ class TemporaryMoveButton(MoveButton):
 		super(TemporaryMoveButton, self).__init__(parent, text=text)
 		self.setStyleSheet("background-color: rgba(0, 0, 0, 0.05); color: black;")
 		self.setFocusPolicy(Qt.ClickFocus)
-		
+
 	def enterEvent(self, event: QHoverEvent) -> None:
 		super(TemporaryMoveButton, self).enterEvent(event)
 		self.setStyleSheet("background-color: rgba(0, 0, 0, 0.1); color: black;")
@@ -64,19 +64,19 @@ class AbortButton(QPushButton):
 		self.status_tip.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
-	
+
 	def focusInEvent(self, event) -> None:
 		if event.reason() <= 2:
 			self.status_tip.show()
 			self.setStyleSheet("color: black; background-color: yellow; border: none;")
 		super(AbortButton, self).focusInEvent(event)
-	
+
 	def focusOutEvent(self, event) -> None:
 		if event.reason() <= 2:
 			self.status_tip.hide()
 			self.setStyleSheet("color: black; background-color: white; border: none;")
 		super(AbortButton, self).focusOutEvent(event)
-	
+
 	def resizeEvent(self, event) -> None:
 		self.status_tip.setFixedWidth(event.size().width())
 		self.status_tip.move(QPoint(self.pos().x(), self.pos().y() + event.size().width()))
@@ -103,13 +103,13 @@ class BackButton(QPushButton):
 		self.status_tip.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
-	
+
 	def focusInEvent(self, event) -> None:
 		if event.reason() <= 2:
 			self.status_tip.show()
 			self.setStyleSheet("color: black; background-color: limegreen; border: none;")
 		super(BackButton, self).focusInEvent(event)
-	
+
 	def focusOutEvent(self, event) -> None:
 		if event.reason() <= 2:
 			self.status_tip.hide()
@@ -142,13 +142,13 @@ class NewButton(QPushButton):
 		self.status_tip.setAlignment(Qt.AlignmentFlag.AlignCenter)
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
-	
+
 	def focusInEvent(self, event) -> None:
 		if event.reason() <= 2:
 			self.status_tip.show()
 			self.setStyleSheet("color: black; background-color: green; border: none;")
 		super(NewButton, self).focusInEvent(event)
-	
+
 	def focusOutEvent(self, event) -> None:
 		if event.reason() <= 2:
 			self.status_tip.hide()
@@ -230,7 +230,7 @@ class TakebackButton(QPushButton):
 		self.setStyleSheet("TakebackButton { background-color: transparent; border: none; } TakebackButton:hover { background-color: #AAA; border: none; }")
 		self.setCursor(Qt.PointingHandCursor)
 		self.setToolTip("Takeback")
-	
+
 	def mouseReleaseEvent(self, event) -> None:
 		if not self.parent().game.raw_move_list:
 			return
@@ -247,7 +247,7 @@ class TakebackButton(QPushButton):
 		self.parent().move_buttons[-1].deleteLater()
 		self.parent().moves_count -= 0.5
 		super(TakebackButton, self).mouseReleaseEvent(event)
-	
+
 
 class TwoPlayers(QWidget):
 	def __init__(self, parent):
@@ -408,8 +408,12 @@ class TwoPlayers(QWidget):
 				self.parent().parent().setWindowTitle("2-Player Chess Game: Draw")
 				if self.game.is_stalemate:
 					self.game_result_label = QLabel("Stalemate 1/2-1/2", self)
+				elif self.game.is_fivefold_repetition:
+					self.game_result_label = QLabel("Fivefold Repetition 1/2-1/2", self)
+				elif self.game.insufficient_material:
+					self.game_result_label = QLabel("Insufficient Material 1/2-1/2", self)
 				else:
-					self.game_result_label = QLabel("Draw 1/2-1/2", self)
+					self.game_result_label = QLabel("Seventy Five Moves Without Progress 1/2-1/2", self)
 				self.game_result_label.show()
 			else:
 				self.parent().parent().setWindowTitle("2-Player Chess Game: " + {"white": "Black", "black": "White"}[self.game.turn] + " wins")
@@ -450,7 +454,7 @@ class TwoPlayers(QWidget):
 			elif self.clocks[1].running:
 				self.clocks[1].pause()
 				self.clocks[0].start()
-				
+
 	async def updateOpening(self):
 		position = self.game.FEN().split()[0]
 		for i in chess.openings.openings:
@@ -469,7 +473,7 @@ class TwoPlayers(QWidget):
 					opening = y["eco"] + " " + y["name"]
 					break
 		self.opening.setText(opening)
-	
+
 	def updateSettingsValues(self):
 		self.settings_values = json.load(open("settings.json"))
 
@@ -506,4 +510,3 @@ class TwoPlayers(QWidget):
 		if self.board is not None:
 			self.board.resizeComponents()
 			self.board.move(QPoint((self.width() - (self.board.squares[0].width() * 10)) // 2, (self.height() - (self.board.squares[0].width() * 10)) // 2))
-	

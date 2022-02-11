@@ -258,18 +258,18 @@ class Piece(QLabel):
 				self.parent().castle_rook_animation = QPropertyAnimation(self.parent().pieceAt(move.castle_rook.position), b"pos")
 			if move.castle == "kingside":
 				if animate:
-					self.parent().castle_rook_animation.setEndValue(QPoint(600, (coordinateToIndex(move.castle_rook.position)[0] + 1) * (self.parent().parent().width() // 25)))
+					self.parent().castle_rook_animation.setEndValue(QPoint(6 * (self.parent().parent().width() // 25), (coordinateToIndex(move.castle_rook.position)[0] + 1) * (self.parent().parent().width() // 25)))
 				else:
-					self.parent().pieceAt(move.castle_rook.position).move(QPoint(600, (coordinateToIndex(move.castle_rook.position)[0] + 1) * (self.parent().parent().width() // 25)))
+					self.parent().pieceAt(move.castle_rook.position).move(QPoint(6 * (self.parent().parent().width() // 25), (coordinateToIndex(move.castle_rook.position)[0] + 1) * (self.parent().parent().width() // 25)))
 				self.parent().pieceAt(move.castle_rook.position).position = "f" + move.old_position[1]
 			else:
 				if animate:
-					self.parent().castle_rook_animation.setEndValue(QPoint(400, (coordinateToIndex(move.castle_rook.position)[0] + 1) * (self.parent().parent().width() // 25)))
+					self.parent().castle_rook_animation.setEndValue(QPoint(4 * (self.parent().parent().width() // 25), (coordinateToIndex(move.castle_rook.position)[0] + 1) * (self.parent().parent().width() // 25)))
 				else:
-					self.parent().pieceAt(move.castle_rook.position).move(QPoint(400, (coordinateToIndex(move.castle_rook.position)[0] + 1) * (self.parent().parent().width() // 25)))
+					self.parent().pieceAt(move.castle_rook.position).move(QPoint(4 * (self.parent().parent().width() // 25), (coordinateToIndex(move.castle_rook.position)[0] + 1) * (self.parent().parent().width() // 25)))
 				self.parent().pieceAt(move.castle_rook.position).position = "d" + move.old_position[1]
 			if animate:
-				self.parent().castle_rook_animation.setDuration(100)
+				self.parent().castle_rook_animation.setDuration({"Default": 100, "Slow": 225, "Fast": 50}[self.parent().parent().settings_values["piece-animation-speed"]])
 				self.parent().castle_rook_animation.start()
 		self.parent().game.move(move)
 		if self.parent().parent().variant == "Atomic":
