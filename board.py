@@ -18,18 +18,18 @@ class Promotion(QLabel):
 		self.setCursor(Qt.PointingHandCursor)
 		self.piece_symbol, self.piece, self.color = piece_symbol, piece, color
 		self.hide()
-	
+
 	def mouseReleaseEvent(self, event):
 		if self.parent().piece is not None:
 			self.parent().move_name.name = self.parent().move_name.name[:-1] + self.piece_symbol
 			self.parent().move_name.name = self.parent().move_name.promotion = self.piece_symbol
 			self.parent().piece.movePiece(self.parent().move_name, promotion=True)
 		super(Promotion, self).mouseReleaseEvent(event)
-	
+
 	def resizeEvent(self, event):
 		self.setPixmap(QPixmap("images/standard/" + self.color + "_" + self.piece + ".png").scaled(event.size().width(), event.size().width()))
 		super(Promotion, self).resizeEvent(event)
-	
+
 
 class Promotions(QPushButton):
 	def __init__(self, parent, color):
@@ -41,17 +41,17 @@ class Promotions(QPushButton):
 			self.promotions.append(Promotion(self, x, y, color))
 		self.setStyleSheet("border: none; background: rgba(0, 0, 0, 0.2);")
 		self.hide()
-	
+
 	def showEvent(self, event):
 		for i in self.promotions:
 			i.show()
 		super(Promotions, self).showEvent(event)
-	
+
 	def hideEvent(self, event):
 		for i in self.promotions:
 			i.hide()
 		super(Promotions, self).hideEvent(event)
-	
+
 	def updatePosition(self, position):
 		self.move(position)
 		self.resize(QSize((self.parent().parent().width() // 25), (self.parent().parent().width() // 25) * len(self.promotions)))
@@ -86,7 +86,7 @@ class MoveBullet(QLabel):
 		if event.button() == Qt.LeftButton:
 			self.piece.movePiece(self.move)
 		super(MoveBullet, self).mousePressEvent(event)
-	
+
 	def resizeEvent(self, event):
 		self.setPixmap(QPixmap("images/bullet.png").scaled(event.size().width(), event.size().width()))
 		self.move_((coordinateToIndex(self.position)[1] + 1) * event.size().width(), (coordinateToIndex(self.position)[0] + 1) * event.size().width())
@@ -237,10 +237,14 @@ class Piece(QLabel):
 						self.parent().promotion_dialog_black.updatePosition(QPoint((coordinateToIndex(move.new_position)[1] + 1) * (self.parent().parent().width() // 25), (coordinateToIndex(move.new_position)[0] + 1) * (self.parent().parent().width() // 25)))
 						self.parent().promotion_dialog_black.show()
 						return
-		for i in self.parent().pieces:
-			i.moves_loaded = False
-			if i.position == move.new_position:
-				i.setParent(None)
+		if move.is_capture:
+			for i in self.parent().pieces:
+				i.moves_loaded = False
+				if i.position == move.captured_piece.position:
+					i.setParent(None)
+		else:
+			for i in self.parent().pieces:
+				i.moves_loaded = False
 		self.position = move.new_position
 		if animate:
 			self.move_animation = QPropertyAnimation(self, b"pos")
@@ -293,7 +297,7 @@ class Piece(QLabel):
 		if promotion:
 			self.piece = move.piece.piece_type
 			self.setPixmap(QPixmap("images/standard/" + self.color + "_" + self.piece).scaled(self.width(), self.width()))
-	
+
 	def resizeEvent(self, event):
 		self.setPixmap(QPixmap("images/standard/" + self.color + "_" + self.piece).scaled(event.size().width(), event.size().width()))
 		super(Piece, self).resizeEvent(event)
@@ -333,11 +337,11 @@ class Square(QPushButton):
 		else:
 			self.highlight()
 		super(Square, self).mousePressEvent(event)
-	
+
 	def moveEvent(self, event):
 		self.highlight_square.move(event.pos())
 		super(Square, self).moveEvent(event)
-	
+
 	def resizeEvent(self, event):
 		self.highlight_square.resize(event.size())
 		super(Square, self).resizeEvent(event)
@@ -364,7 +368,7 @@ class Board(QWidget):
 				if i.color == "black":
 					self.black_king = self.pieces[-1]
 		self.setFocusPolicy(Qt.ClickFocus)
-	
+
 	def updatePieces(self):
 		for i in self.pieces:
 			i.deleteLater()
@@ -499,7 +503,7 @@ class Board(QWidget):
 		for i in self.squares:
 			i.resize(QSize(self.parent().width() // 25, self.parent().width() // 25))
 			i.move((coordinateToIndex(i.position)[1] + 1) * (self.parent().width() // 25), (coordinateToIndex(i.position)[0] + 1) * (self.parent().width() // 25))
-		
+
 		for x in self.pieces:
 			x.resize(QSize(self.parent().width() // 25, self.parent().width() // 25))
 			x.move((coordinateToIndex(x.position)[1] + 1) * (self.parent().width() // 25), (coordinateToIndex(x.position)[0] + 1) * (self.parent().width() // 25))
