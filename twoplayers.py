@@ -54,45 +54,6 @@ class TemporaryMoveButton(MoveButton):
 		self.setStyleSheet("background-color: rgba(0, 0, 0, 0.05); color: black;")
 
 
-class AbortButton(QPushButton):
-	def __init__(self, parent):
-		super(AbortButton, self).__init__(parent=parent)
-		self.setText("–")
-		self.setCursor(Qt.CursorShape.PointingHandCursor)
-		self.pressed.connect(self.parent().abort)
-		self.status_tip = QLabel("Abort", parent)
-		self.status_tip.setAlignment(Qt.AlignmentFlag.AlignCenter)
-		self.status_tip.hide()
-		self.setStyleSheet("color: black; background-color: white; border: none;")
-
-	def focusInEvent(self, event) -> None:
-		if event.reason() <= 2:
-			self.status_tip.show()
-			self.setStyleSheet("color: black; background-color: yellow; border: none;")
-		super(AbortButton, self).focusInEvent(event)
-
-	def focusOutEvent(self, event) -> None:
-		if event.reason() <= 2:
-			self.status_tip.hide()
-			self.setStyleSheet("color: black; background-color: white; border: none;")
-		super(AbortButton, self).focusOutEvent(event)
-
-	def resizeEvent(self, event) -> None:
-		self.status_tip.setFixedWidth(event.size().width())
-		self.status_tip.move(QPoint(self.pos().x(), self.pos().y() + event.size().width()))
-		super(AbortButton, self).resizeEvent(event)
-
-	def enterEvent(self, event: QEvent) -> None:
-		self.status_tip.show()
-		self.setStyleSheet("color: black; background-color: yellow; border: none;")
-		super(AbortButton, self).enterEvent(event)
-
-	def leaveEvent(self, event: QEvent) -> None:
-		self.status_tip.hide()
-		self.setStyleSheet("color: black; background-color: white; border: none;")
-		super(AbortButton, self).leaveEvent(event)
-
-
 class BackButton(QPushButton):
 	def __init__(self, parent):
 		super(BackButton, self).__init__(parent=parent)
@@ -130,45 +91,6 @@ class BackButton(QPushButton):
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
 		super(BackButton, self).leaveEvent(event)
-
-
-class NewButton(QPushButton):
-	def __init__(self, parent):
-		super(NewButton, self).__init__(parent=parent)
-		self.setText("+")
-		self.setCursor(Qt.CursorShape.PointingHandCursor)
-		self.pressed.connect(self.parent().new)
-		self.status_tip = QLabel("New", parent)
-		self.status_tip.setAlignment(Qt.AlignmentFlag.AlignCenter)
-		self.status_tip.hide()
-		self.setStyleSheet("color: black; background-color: white; border: none;")
-
-	def focusInEvent(self, event) -> None:
-		if event.reason() <= 2:
-			self.status_tip.show()
-			self.setStyleSheet("color: black; background-color: green; border: none;")
-		super(NewButton, self).focusInEvent(event)
-
-	def focusOutEvent(self, event) -> None:
-		if event.reason() <= 2:
-			self.status_tip.hide()
-			self.setStyleSheet("color: black; background-color: white; border: none;")
-		super(NewButton, self).focusOutEvent(event)
-
-	def resizeEvent(self, event) -> None:
-		self.status_tip.setFixedWidth(event.size().width())
-		self.status_tip.move(QPoint(self.pos().x(), self.pos().y() + event.size().width()))
-		super(NewButton, self).resizeEvent(event)
-
-	def enterEvent(self, event: QEvent) -> None:
-		self.status_tip.show()
-		self.setStyleSheet("color: black; background-color: green; border: none;")
-		super(NewButton, self).enterEvent(event)
-
-	def leaveEvent(self, event: QEvent) -> None:
-		self.status_tip.hide()
-		self.setStyleSheet("color: black; background-color: white; border: none;")
-		super(NewButton, self).leaveEvent(event)
 
 
 class Clock(QPushButton):
@@ -285,8 +207,6 @@ class TwoPlayers(QWidget):
 		self.sidebar_layout.addWidget(self.moves_wrapper)
 		self.sidebar.setLayout(self.sidebar_layout)
 		self.back_button = BackButton(self)
-		self.abort_button = AbortButton(self)
-		self.new_button = NewButton(self)
 		self.clocks = []
 		self.sidebar.move(QPoint((self.width() // 2) + 400, 100))
 		self.temporary_move = None
@@ -347,20 +267,8 @@ class TwoPlayers(QWidget):
 				self.clocks[0].pause()
 			if self.clocks[1].running:
 				self.clocks[1].pause()
-		self.parent().setCurrentIndex(0)
-
-	def abort(self):
-		if self.clocks[0].running:
-			self.clocks[0].pause()
-		if self.clocks[1].running:
-			self.clocks[1].pause()
 		self.parent().parent().resetTwoPlayerGame()
 		self.parent().setCurrentIndex(0)
-
-	def new(self):
-		self.parent().parent().resetTwoPlayerGame()
-		self.parent().setCurrentIndex(0)
-		self.parent().parent().stacks["main-page"].twoPlayers()
 
 	def getGridIndex(self) -> list:
 		columns = 0
@@ -502,10 +410,6 @@ class TwoPlayers(QWidget):
 			min_size = event.size().width()
 		self.back_button.resize(QSize(min_size // 20, min_size // 20))
 		self.back_button.move(QPoint(0, 0))
-		self.abort_button.resize(QSize(min_size // 20, min_size // 20))
-		self.abort_button.move(QPoint(min_size // 20, 0))
-		self.new_button.resize(QSize(min_size // 20, min_size // 20))
-		self.new_button.move(QPoint(min_size // 20 * 2, 0))
 		self.takeback.resize(QSize(min_size // 40, min_size // 40))
 		super(TwoPlayers, self).resizeEvent(event)
 		if self.board is not None:

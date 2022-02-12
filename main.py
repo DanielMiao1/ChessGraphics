@@ -50,14 +50,14 @@ class PushButton(QPushButton):
 		self.setFont(QFont(QFontDatabase.applicationFontFamilies(QFontDatabase.addApplicationFont(QDir.currentPath() + "/fonts/ChakraPetch-SemiBold.ttf"))[0], 15))
 		self.setStyleSheet("color: transparent; background-color: transparent; border: 15px solid transparent;")
 		self.setFocusPolicy(Qt.StrongFocus)
-	
+
 	def focusInEvent(self, event) -> None:
 		if event.reason() <= 2:
 			if self.setting_color:
 				return
 			self.setStyleSheet("color: white; background-color: #6400CF; border: 15px solid #6400CF;")
 		super(PushButton, self).focusInEvent(event)
-	
+
 	def focusOutEvent(self, event) -> None:
 		if event.reason() <= 2:
 			if self.setting_color:
@@ -92,7 +92,9 @@ class PushButton(QPushButton):
 		super(PushButton, self).mouseReleaseEvent(event)
 
 	def keyPressEvent(self, event) -> None:
-		if event.key() in [Qt.Key_Enter, Qt.Key_Return, Qt.Key_Space]:
+		if event.key() in [Qt.Key_Enter, Qt.Key_Return] and self.parent().two_player_mode_options is None and self.parent().computer_mode_options is None:
+			self.pressed.emit()
+		if event.key() == Qt.Key_Space:
 			self.pressed.emit()
 		super(PushButton, self).keyPressEvent(event)
 
@@ -136,13 +138,13 @@ class QuitButton(QPushButton):
 		self.status_tip.hide()
 		self.setStyleSheet("color: black; background-color: white; border: none;")
 		self.setFocusPolicy(Qt.StrongFocus)
-	
+
 	def focusInEvent(self, event) -> None:
 		if event.reason() <= 2:
 			self.status_tip.show()
 			self.setStyleSheet("color: black; background-color: red; border: none;")
 		super(QuitButton, self).focusInEvent(event)
-	
+
 	def focusOutEvent(self, event) -> None:
 		if event.reason() <= 2:
 			self.status_tip.hide()
@@ -177,11 +179,11 @@ class OptionsButton(QPushButton):
 			self.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
 		else:
 			self.setStyleSheet("background-color: white; border: none; color: black;")
-	
+
 	def resizeEvent(self, event):
 		self.text.resize(event.size())
 		super(OptionsButton, self).resizeEvent(event)
-	
+
 	def enterEvent(self, event) -> None:
 		if self.styleSheet().split()[1] == "white;":
 			if self.border:
@@ -189,7 +191,7 @@ class OptionsButton(QPushButton):
 			else:
 				self.setStyleSheet("background-color: #EEEEEE; border: none; color: black")
 		super(OptionsButton, self).enterEvent(event)
-	
+
 	def leaveEvent(self, event) -> None:
 		if self.styleSheet().split()[1] == "#EEEEEE;":
 			if self.border:
@@ -197,12 +199,12 @@ class OptionsButton(QPushButton):
 			else:
 				self.setStyleSheet("background-color: white; border: none; color: black;")
 		super(OptionsButton, self).leaveEvent(event)
-	
+
 	def mousePressEvent(self, event) -> None:
 		if self.pressed_function is not None:
 			self.pressed_function(self.text.text())
 		super(OptionsButton, self).mousePressEvent(event)
-	
+
 
 class StartGame(QPushButton):
 	def __init__(self, parent, text, pressed_function=None):
@@ -211,7 +213,7 @@ class StartGame(QPushButton):
 		self.setText(text)
 		self.setFixedHeight(75)
 		self.setCursor(Qt.CursorShape.PointingHandCursor)
-	
+
 	def mousePressEvent(self, event) -> None:
 		if self.pressed_function is not None:
 			self.pressed_function()
@@ -224,17 +226,17 @@ class OptionButton(QPushButton):
 		self.setStyleSheet("width: 100%; height: 30px; background-color: transparent;")
 		self.setCursor(Qt.CursorShape.PointingHandCursor)
 		self.selected = False
-	
+
 	def focusInEvent(self, event):
 		if event.reason() <= 2:
 			self.setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.2);")
 		super(OptionButton, self).focusInEvent(event)
-	
+
 	def focusOutEvent(self, event):
 		if event.reason() <= 2:
 			self.setStyleSheet("width: 100%; height: 30px; background-color: transparent;")
 		super(OptionButton, self).focusOutEvent(event)
-	
+
 	def keyPressEvent(self, event: QKeyEvent):
 		if event.text() == " ":
 			if not self.selected:
@@ -243,35 +245,35 @@ class OptionButton(QPushButton):
 				self.setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.2);")
 			self.selected = not self.selected
 		super(OptionButton, self).keyPressEvent(event)
-	
+
 	def enterEvent(self, event: QEnterEvent) -> None:
 		self.setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.2);")
 		super(OptionButton, self).enterEvent(event)
-	
+
 	def leaveEvent(self, event) -> None:
 		if not self.selected:
 			self.setStyleSheet("width: 100%; height: 30px; background-color: transparent;")
 		else:
 			self.setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.4);")
 		super(OptionButton, self).leaveEvent(event)
-	
+
 	def mousePressEvent(self, event) -> None:
 		if event.button() == Qt.MouseButton.LeftButton:
 			self.selected = not self.selected
 			self.setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.4);")
 		super(OptionButton, self).mousePressEvent(event)
-	
+
 	def mouseReleaseEvent(self, event) -> None:
 		if not self.selected:
 			self.setStyleSheet("width: 100%; height: 30px; background-color: rgba(0, 0, 0, 0.2);")
 		super(OptionButton, self).mouseReleaseEvent(event)
-	
+
 
 class FENInput(QLineEdit):
 	def __init__(self, parent, key_press_function=None):
 		super(FENInput, self).__init__(parent=parent)
 		self.key_press_function = key_press_function
-	
+
 	def keyPressEvent(self, event) -> None:
 		if self.key_press_function is not None:
 			self.key_press_function()
@@ -282,7 +284,7 @@ class PGNInput(QTextEdit):
 	def __init__(self, parent, key_press_function=None):
 		super(PGNInput, self).__init__(parent=parent)
 		self.key_press_function = key_press_function
-	
+
 	def keyPressEvent(self, event) -> None:
 		if self.key_press_function is not None:
 			self.key_press_function()
@@ -297,26 +299,26 @@ class SettingsButton(PushButton):
 		self.svg.renderer().load(bytearray('<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"><path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/></svg>', encoding='utf-8'))
 		self.setStyleSheet("background-color: transparent; border: none;")
 		self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-	
+
 	def focusInEvent(self, event) -> None:
 		self.setStyleSheet("background-color: #CCC; border: none;")
 		super(SettingsButton, self).focusInEvent(event)
-	
+
 	def focusOutEvent(self, event) -> None:
 		self.setStyleSheet("background-color: transparent; border: none;")
 		super(SettingsButton, self).focusOutEvent(event)
-		
+
 	def enterEvent(self, event) -> None:
 		self.setStyleSheet("background-color: #CCC; border: none;")
 		super(SettingsButton, self).enterEvent(event)
-	
+
 	def leaveEvent(self, event) -> None:
 		self.setStyleSheet("background-color: transparent; border: none;")
 		super(SettingsButton, self).leaveEvent(event)
-	
+
 	def mousePressEvent(self, event) -> None:
 		self.pressed.emit()
-	
+
 	def resizeEvent(self, event) -> None:
 		self.svg.move(QPoint((event.size().width() - 16) // 2, (event.size().height() - 16) // 2))
 		super(SettingsButton, self).resizeEvent(event)
@@ -367,7 +369,7 @@ class MainPage(QWidget):
 
 	def settings(self):
 		self.parent().parent().setIndex(2, self.parent().parent().stacks["settings"])
-	
+
 	def computer(self):
 		def styleLevelButtons(text):
 			nonlocal computer_level_0, computer_level_1, computer_level_2, computer_level_3, computer_custom, computer_level, computer_path
@@ -471,10 +473,8 @@ class MainPage(QWidget):
 			updatePositionText()
 			if selected_position == "FEN" and position_text.strip() == "":
 				position_text = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+			close_dialog()
 			self.computer_mode_function("level" if computer_level else "path", computer_level if computer_level else computer_path, time_control_display.text(), selected_position, position_text.strip())
-			self.computer_mode_options.deleteLater()
-			self.computer_mode_options_close.deleteLater()
-			self.computer_mode_options = self.computer_mode_options_widgets = None
 
 		def close_dialog():
 			self.computer_mode_options.deleteLater()
@@ -491,7 +491,7 @@ class MainPage(QWidget):
 				return
 			computer_level = False
 			computer_path = file[0]
-			
+
 		# Options scroll area
 		self.computer_mode_options = QGroupBox(self)
 		options_layout = QVBoxLayout()
@@ -689,7 +689,7 @@ class MainPage(QWidget):
 			self.computer_mode_options_widgets["level_group"].setFixedHeight(math.floor(self.height() / 20))
 			self.computer_mode_options_widgets["time_control_group"].setFixedHeight(math.floor(self.height() / 6))
 			self.computer_mode_options_widgets["position_group"].setFixedHeight(math.floor(self.height() / 8))
-	
+
 	def twoPlayers(self):
 		def styleTimeControlButtons(text):
 			nonlocal time_control_total, time_control_total_increment, time_control_move, time_control_selected, time_control_widget_total, time_control_widget_total_increment, time_control_widget_move, time_control_display
@@ -736,7 +736,7 @@ class MainPage(QWidget):
 				variant_atomic.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
 			else:
 				variant_threecheck.setStyleSheet("background-color: black; border: 12px solid black; color: white;")
-		
+
 		def stylePositionButtons(text):
 			nonlocal position_fen, position_pgn, selected_position, position_widget_fen, position_widget_pgn
 			position_fen.setStyleSheet("background-color: white; border: 12px solid white; color: black;")
@@ -786,10 +786,8 @@ class MainPage(QWidget):
 			updatePositionText()
 			if selected_position == "FEN" and position_text.strip() == "":
 				position_text = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+			close_dialog()
 			self.two_player_mode_function(time_control_display.text(), variant_selected, selected_position, position_text.strip())
-			self.two_player_mode_options.deleteLater()
-			self.two_player_mode_options_close.deleteLater()
-			self.two_player_mode_options = self.two_player_mode_options_widgets = None
 
 		def close_dialog():
 			self.two_player_mode_options.deleteLater()
@@ -1174,7 +1172,7 @@ class Window(QMainWindow):
 		self.setIndex(1, self.stacks["two-players"])
 		self.stacks["two-players"].startClocks()
 		self.setWindowTitle("2-Player Chess Game: White to move")
-	
+
 	def computerMode(self, computer_type, computer_, time_control, position_type, position):
 		self.stacks["computer"].setTimeControl(time_control)
 		self.stacks["computer"].setupBoard(position_type, position)
@@ -1190,12 +1188,12 @@ class Window(QMainWindow):
 	def resetTwoPlayerGame(self):
 		self.stacks["two-players"].deleteLater()
 		self.stacks["two-players"] = twoplayers.TwoPlayers(self)
-		self.stacked_pages.addWidget(self.stacks["two-players"])
+		self.stacked_pages.insertWidget(1, self.stacks["two-players"])
 
 	def resetComputerGame(self):
 		self.stacks["computer"].deleteLater()
 		self.stacks["computer"] = computer.Computer(self)
-		self.stacked_pages.addWidget(self.stacks["computer"])
+		self.stacked_pages.insertWidget(3, self.stacks["computer"])
 
 	def setIndex(self, index, widget):
 		self.stacked_pages.setCurrentIndex(index)
